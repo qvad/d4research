@@ -22,6 +22,25 @@ import {
 } from "./serverSettings.ts";
 
 describe("serverSettings helpers", () => {
+  it("merges Meko connection edits without resetting compression or switching backends", () => {
+    const selected = applyServerSettingsPatch(DEFAULT_SERVER_SETTINGS, {
+      handoff: {
+        memoryBackend: "meko",
+        meko: { url: "https://meko.example/mcp", datapackId: "test" },
+        contextCompression: { enabled: true },
+      },
+    });
+    const updated = applyServerSettingsPatch(selected, {
+      handoff: { meko: { tokenEnv: "MY_TOKEN" } },
+    });
+    expect(updated.handoff.memoryBackend).toBe("meko");
+    expect(updated.handoff.meko.url).toBe("https://meko.example/mcp");
+    expect(updated.handoff.contextCompression.enabled).toBe(true);
+    expect(
+      applyServerSettingsPatch(updated, { handoff: { memoryBackend: "local" } }).handoff
+        .memoryBackend,
+    ).toBe("local");
+  });
   it("replaces SSH host lists when saving, editing, and removing hosts", () => {
     const host = { id: "mini", label: "Mac mini", target: "mini" };
     const saved = applyServerSettingsPatch(DEFAULT_SERVER_SETTINGS, { deviceHosts: [host] });

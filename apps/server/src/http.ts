@@ -71,6 +71,9 @@ import {
   installSkillFromGit,
 } from "./skillsInventory.ts";
 import { makeConfiguredMemoryConnector } from "./mcp/toolkits/memory/localConnector.ts";
+import { persistHandoffMemory } from "./handoffMemory.ts";
+import { mekoHandoff } from "./mekoHandoff.ts";
+import { MekoReadInput } from "@d4research/contracts/settings";
 import type { LocalMemoConnector, MemoryConnectorError } from "./mcp/toolkits/memory/connectors.ts";
 import {
   deleteMemoAttachment,
@@ -703,6 +706,58 @@ export const makeSkillsInstallRouteLayer = (install: InstallSkillFromGit = insta
   );
 
 export const skillsInstallRouteLayer = makeSkillsInstallRouteLayer();
+export const mekoHandoffRouteLayer = HttpRouter.add(
+  "POST",
+  "/api/handoff/meko",
+  Effect.gen(function* () {
+    yield* authenticateRawRouteWithScope(AuthOrchestrationOperateScope);
+    const request = yield* HttpServerRequest.HttpServerRequest;
+    const body = yield* request.json.pipe(
+      Effect.flatMap(
+        Schema.decodeUnknownEffect(
+          Schema.Struct({
+            action: Schema.Literals(["status", "check", "read"]),
+            reference: Schema.optionalKey(MekoReadInput),
+          }),
+        ),
+      ),
+    );
+    const settings = yield* (yield* ServerSettingsService).getSettings;
+    if (body.action === "status")
+      return HttpServerResponse.jsonUnsafe(mekoHandoff.status(settings.handoff.meko));
+    if (settings.handoff.memoryBackend !== "meko")
+      return HttpServerResponse.jsonUnsafe(
+        { message: "Select Meko MCP before connecting." },
+        { status: 409 },
+      );
+    if (body.action === "read") {
+      if (!body.reference)
+        return HttpServerResponse.jsonUnsafe(
+          { message: "A handoff reference is required." },
+          { status: 400 },
+        );
+      return HttpServerResponse.jsonUnsafe(
+        yield* Effect.promise(() => mekoHandoff.read(settings.handoff.meko, body.reference!)),
+        { headers: { "cache-control": "no-store" } },
+      );
+    }
+    return HttpServerResponse.jsonUnsafe(
+      yield* Effect.promise(() => mekoHandoff.check(settings.handoff.meko)),
+      { headers: { "cache-control": "no-store" } },
+    );
+  }).pipe(
+    Effect.catchTags({
+      EnvironmentAuthInvalidError: HttpServerRespondable.toResponse,
+      EnvironmentInternalError: HttpServerRespondable.toResponse,
+      EnvironmentScopeRequiredError: HttpServerRespondable.toResponse,
+    }),
+    Effect.catch(() =>
+      Effect.succeed(
+        HttpServerResponse.jsonUnsafe({ message: "Invalid Meko request." }, { status: 400 }),
+      ),
+    ),
+  ),
+);
 export const handoffMemoryRouteLayer = HttpRouter.add(
   "POST",
   HANDOFF_MEMORY_PATH,
@@ -717,7 +772,9 @@ export const handoffMemoryRouteLayer = HttpRouter.add(
           { status: 400 },
         );
       }
-      const body = cast<unknown, { text?: unknown; project?: unknown }>(rawBody);
+      const body = cast<unknown, { text?: unknown; project?: unknown; threadId?: unknown }>(
+        rawBody,
+      );
       const text = typeof body.text === "string" ? body.text.trim() : "";
       const project = typeof body.project === "string" ? body.project.trim() : undefined;
       if (!isValidHandoffMemoryText(text)) {
@@ -729,16 +786,19 @@ export const handoffMemoryRouteLayer = HttpRouter.add(
           { status: 400 },
         );
       }
-      const connector = yield* makeConfiguredMemoryConnector();
-      const result = yield* connector.add(text, "t3research-provider-handoff", project);
-      return HttpServerResponse.jsonUnsafe(
-        { ok: result.ok },
-        { headers: { "cache-control": "no-store" } },
-      );
+      const result = yield* persistHandoffMemory({
+        text,
+        project,
+        threadId: typeof body.threadId === "string" ? body.threadId : undefined,
+      });
+      return HttpServerResponse.jsonUnsafe(result, { headers: { "cache-control": "no-store" } });
     }).pipe(
       Effect.orElseSucceed(() =>
         HttpServerResponse.jsonUnsafe(
-          { ok: false, message: "Local Memo could not store the handoff context." },
+          {
+            ok: false,
+            message: "The selected memory backend could not store the handoff context.",
+          },
           { status: 503 },
         ),
       ),
@@ -1198,24 +1258,18 @@ export const handoffPrepareRouteLayer = HttpRouter.add(
       // report the result. The client still attaches the summary to the
       // receiving turn when memoryPersisted is false — Memo is a search
       // mirror, not a gate on the switch.
-      let memoryPersisted = false;
-      if (settings.memory.localEnabled) {
-        memoryPersisted = yield* Effect.gen(function* () {
-          const connector = yield* makeConfiguredMemoryConnector();
-          const result = yield* connector.add(
-            buildHandoffMemoryText({
-              summary: compressed,
-              sourceThreadId,
-              sourceThreadTitle,
-              target,
-              enabledSkills,
-            }),
-            "t3research-provider-handoff",
-            project,
-          );
-          return result.ok;
-        }).pipe(Effect.orElseSucceed(() => false));
-      }
+      const persistence = yield* persistHandoffMemory({
+        text: buildHandoffMemoryText({
+          summary: compressed,
+          sourceThreadId,
+          sourceThreadTitle,
+          target,
+          enabledSkills,
+        }),
+        project,
+        threadId: sourceThreadId,
+      });
+      const memoryPersisted = persistence.ok;
 
       yield* Effect.logInfo("handoff.prepare.completed", {
         sourceThreadId,

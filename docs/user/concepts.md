@@ -63,6 +63,28 @@ In the thread, a handed-off message carries a compact **Handed off to …** row 
 message bubble; expand it to read the context that travelled with it. Handoffs from older versions
 of d4research were a separate machine-written turn, and those still fold away behind the same row.
 
+### Meko handoff memory
+
+To keep a verified copy in Meko, select **Meko MCP** under **Settings → General → Handoff →
+Handoff memory**. Set your Streamable HTTP MCP endpoint, datapack ID, and agent ID. Credentials
+come from the named environment variable on the machine running the d4research server, not from
+the browser. For an unauthenticated local endpoint, clear the credential variable field.
+
+This is opt-in: context goes to the endpoint you configure, which may be hosted. **Inspect API**
+checks connectivity and compatible tools without saving a test record. Automatic handoffs save
+their attached context in the background and verify it by hash. Successful saves do not add chat
+messages; failures appear in the thread and do not stop the receiving provider. No compression
+model or provider session runs as part of the Meko save.
+
+**Recent operations** shows this server process’s bounded receipt history. MCP-capable agents can use
+`handoff_status` and `handoff_recall` to retrieve an exact verified checkpoint for their current
+thread. Retrieved content is reference material, not a replacement for the conversation. These
+receipts are not a permanent checkpoint browser and clear when the server restarts.
+
+Select **Local Memo** or **No memory copy** to stop new Meko saves. This does not delete records
+already stored in Meko. Local Memo documents and research memory keep their existing backend.
+Meko’s datapack access rules determine who can read the stored artifacts.
+
 ## Memo
 
 Memo is local shared memory for handoff context and research findings. The built-in backend is an

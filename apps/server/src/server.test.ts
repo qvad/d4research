@@ -1495,6 +1495,54 @@ const EMPTY_DEVICE_STATE: DeviceServiceState = {
 };
 
 it.layer(NodeServices.layer)("server router seam", (it) => {
+  it.effect("keeps Meko disabled and reports configuration without a remote request", () =>
+    Effect.gen(function* () {
+      yield* buildAppUnderTest();
+      const cookie = yield* getAuthenticatedSessionCookieHeader();
+      const status = yield* HttpClient.post("/api/handoff/meko", {
+        headers: { cookie },
+        body: yield* HttpBody.json({ action: "status" }),
+      });
+      assert.equal(status.status, 200);
+      const statusBody = (yield* status.json) as { configured: boolean };
+      assert.equal(statusBody.configured, false);
+      const check = yield* HttpClient.post("/api/handoff/meko", {
+        headers: { cookie },
+        body: yield* HttpBody.json({ action: "check" }),
+      });
+      assert.equal(check.status, 409);
+    }).pipe(Effect.provide(NodeHttpServer.layerTest)),
+  );
+  it.effect("preserves attached context when Meko is selected but unavailable", () =>
+    Effect.gen(function* () {
+      yield* buildAppUnderTest({
+        layers: {
+          serverSettings: {
+            getSettings: Effect.succeed({
+              ...DEFAULT_SERVER_SETTINGS,
+              handoff: { ...DEFAULT_SERVER_SETTINGS.handoff, memoryBackend: "meko" as const },
+            }),
+          },
+        },
+      });
+      const cookie = yield* getAuthenticatedSessionCookieHeader();
+      const response = yield* HttpClient.post("/api/handoff/prepare", {
+        headers: { cookie },
+        body: yield* HttpBody.json({
+          transcript: "Authoritative context",
+          project: "project-1",
+          sourceThreadId: "thread-1",
+          bypassCompression: true,
+        }),
+      });
+      assert.equal(response.status, 200);
+      assert.deepEqual(yield* response.json, {
+        ok: true,
+        compressed: "Authoritative context",
+        memoryPersisted: false,
+      });
+    }).pipe(Effect.provide(NodeHttpServer.layerTest)),
+  );
   it.effect("prepares a passthrough handoff when Memo is disabled", () =>
     Effect.gen(function* () {
       const settings = {

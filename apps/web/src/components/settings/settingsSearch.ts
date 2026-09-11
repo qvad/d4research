@@ -334,6 +334,12 @@ export const SETTINGS_SEARCH_ITEMS = [
     targetId: "handoff",
   },
   {
+    id: "handoff-memory-backend",
+    title: "Meko MCP handoff memory",
+    to: "/settings/general",
+    targetId: "handoff-memory-backend",
+  },
+  {
     id: "research-pipeline",
     title: "Research",
     to: "/settings/research",
@@ -582,6 +588,12 @@ export const SETTINGS_SEARCH_ITEMS = [
     title: "Contrast",
     to: "/settings/appearance",
     searchTerms: ["colors borders interface"],
+  },
+  {
+    id: "provider-appearance",
+    title: "Provider icons and model names",
+    to: "/settings/providers",
+    searchTerms: ["appearance customize badge small icon display rename"],
   },
   {
     id: "git-fetch-interval",

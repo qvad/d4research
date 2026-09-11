@@ -84,6 +84,8 @@ import {
   type ProviderCommandReactorShape,
 } from "../Services/ProviderCommandReactor.ts";
 import { forkParked, ServerActivation } from "../../serverActivation.ts";
+import { saveMekoHandoff } from "../../mekoHandoff.ts";
+import { extractTrailingProviderHandoffContext } from "@d4research/shared/providerHandoffPrompt";
 import {
   resolveSourceControlWriterModelSelection,
   ServerSettingsService,
@@ -1328,6 +1330,7 @@ const make = Effect.gen(function* () {
     options?: {
       readonly modelSelection?: ModelSelection;
       readonly pendingTurnStart?: boolean;
+      readonly hasHandoffContext?: boolean;
     },
   ) {
     const thread = yield* resolveThreadShell(threadId);
@@ -1420,6 +1423,7 @@ const make = Effect.gen(function* () {
     }
     if (
       activeThreadSession !== null &&
+      !options?.hasHandoffContext &&
       (requestedModelSelection === undefined ||
         requestedModelSelection.instanceId === currentInstanceId)
     ) {
@@ -1526,7 +1530,9 @@ const make = Effect.gen(function* () {
         (currentInfo.driverKind !== desiredInfo.driverKind ||
           currentInfo.continuationIdentity.continuationKey !==
             desiredInfo.continuationIdentity.continuationKey);
-      const shouldRestartForModelChange = modelChanged && sessionModelSwitch === "unsupported";
+      const shouldRestartForModelChange =
+        modelChanged &&
+        (sessionModelSwitch === "unsupported" || options?.hasHandoffContext === true);
       const previousModelSelection = threadModelSelections.get(threadId);
       const shouldRestartForModelSelectionChange =
         preferredProvider === "claudeAgent" &&
@@ -1641,6 +1647,10 @@ const make = Effect.gen(function* () {
       );
     }
     yield* ensureSessionForThread(input.threadId, input.createdAt, {
+      hasHandoffContext:
+        extractTrailingProviderHandoffContext(
+          extractTrailingEnabledSkillsContext(input.messageText).promptText,
+        ).handoff !== null,
       ...(input.modelSelection !== undefined ? { modelSelection: input.modelSelection } : {}),
       pendingTurnStart: true,
     });
@@ -2338,6 +2348,42 @@ const make = Effect.gen(function* () {
 
     const requestedModelSelection = event.payload.modelSelection ?? thread.modelSelection;
     const resolvedModelSelection = sendTurnRequest.value.modelSelection ?? requestedModelSelection;
+    // The visible packet is already attached. Mirroring must never gate sendTurn,
+    // and belongs here so every client and provider gets the same behavior.
+    const handoff =
+      settings.handoff.memoryBackend === "meko"
+        ? extractTrailingProviderHandoffContext(
+            extractTrailingEnabledSkillsContext(message.text).promptText,
+          ).handoff
+        : null;
+    if (handoff !== null) {
+      yield* Effect.gen(function* () {
+        const receipt = yield* saveMekoHandoff(settings.handoff.meko, {
+          text: handoff.summary,
+          threadId: String(thread.id),
+          project: String(thread.projectId),
+        });
+        if (receipt.status === "SUCCESS_WITH_EVIDENCE") return;
+        yield* orchestrationEngine.dispatch({
+          type: "thread.activity.append",
+          commandId: yield* serverCommandId("meko-handoff-warning"),
+          threadId: thread.id,
+          activity: {
+            id: yield* serverEventId(),
+            tone: "error",
+            kind: "handoff.meko.failed",
+            summary: "Meko handoff save was not verified",
+            payload: { detail: receipt.message, status: receipt.status },
+            turnId: null,
+            createdAt: receipt.timestamp,
+          },
+          createdAt: receipt.timestamp,
+        });
+      }).pipe(
+        Effect.catchCause(() => Effect.logWarning("Meko handoff receipt could not be recorded.")),
+        Effect.forkScoped,
+      );
+    }
     yield* appendProviderTargetActivity({
       threadId: event.payload.threadId,
       requested: requestedModelSelection,

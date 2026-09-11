@@ -3,17 +3,12 @@ import { defineConfig, mergeConfig } from "vite-plus";
 
 import baseConfig from "../../vite.config.ts";
 import packageJson from "./package.json" with { type: "json" };
+import {
+  isExternalCliDependency,
+  shouldBundleCliDependency,
+} from "../../scripts/lib/cli-external-packages.ts";
 
-const bundledPackagePrefixes = [
-  "@pierre/diffs",
-  "@d4research/",
-  "effect-acp",
-  "effect-codex-app-server",
-];
-
-export function shouldBundleCliDependency(id: string): boolean {
-  return bundledPackagePrefixes.some((prefix) => id.startsWith(prefix));
-}
+export { shouldBundleCliDependency };
 
 const cliBuildChannel = packageJson.version.includes("-nightly.") ? "nightly" : "latest";
 
@@ -36,6 +31,7 @@ export default mergeConfig(
       clean: false,
       deps: {
         alwaysBundle: shouldBundleCliDependency,
+        neverBundle: isExternalCliDependency,
         onlyBundle: false,
       },
       banner: {

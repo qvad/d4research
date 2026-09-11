@@ -30,6 +30,7 @@ import {
 } from "./SettingsPanels.logic";
 import { SETTINGS_PICKER_TRIGGER_CLASSNAME, useSettingsSearchTarget } from "./settingsLayout";
 import { PanelAnimationsPreview } from "./PanelAnimationsPreview";
+import { MekoHandoffSettings } from "./MekoHandoffSettings";
 const DIFF_LAYOUT_LABELS: Record<DiffLayout, string> = {
   stacked: "Stacked",
   split: "Split",
@@ -3060,6 +3061,7 @@ export function GeneralSettingsPanel() {
       <LegacyFeaturesSection />
 
       <SettingsSection title="Handoff" id="handoff">
+        <MekoHandoffSettings />
         <SettingsRow
           id="handoff-context-compression"
           title="Context compression"
@@ -3084,7 +3086,7 @@ export function GeneralSettingsPanel() {
             <SettingsRow
               id="handoff-compression-backend"
               title="Compression backend"
-              description="Local Ollama model runs free on this machine with no cold start. Provider session spawns a full provider CLI session and spends cloud tokens."
+              description="Local Ollama runs on this machine; the first request may load the model. Provider session starts a provider CLI session and uses its tokens."
               control={
                 <Select
                   value={settings.handoff.contextCompression.backend}

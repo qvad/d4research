@@ -24,6 +24,7 @@ import {
   resolveSelectableProvider,
 } from "./providerModels";
 import { ModelEsque } from "./components/chat/providerIconUtils";
+import { applyModelDisplayNames } from "./providerAppearance";
 import { type ProviderInstanceEntry, deriveProviderInstanceEntries } from "./providerInstances";
 import { sortModelsForProviderInstance } from "./modelOrdering";
 
@@ -177,9 +178,12 @@ function getAppModelOptions(
     options.push({ slug: entry.slug, name: entry.name, isCustom: true });
   }
 
-  return applyInstanceModelPreferences(
-    options,
-    readInstanceModelPreferences(settings, defaultInstanceId),
+  return applyModelDisplayNames(
+    applyInstanceModelPreferences(
+      options,
+      readInstanceModelPreferences(settings, defaultInstanceId),
+    ),
+    settings.providerAppearance[defaultInstanceId]?.modelNames,
   );
 }
 
@@ -232,7 +236,10 @@ export function getAppModelOptionsForInstance(
       { slug: selectedSlug, name: selectedSlug, isCustom: false, isUnavailable: true },
     ];
   }
-  return availableOptions;
+  return applyModelDisplayNames(
+    availableOptions,
+    settings.providerAppearance[entry.instanceId]?.modelNames,
+  );
 }
 
 export function resolveAppModelSelection(

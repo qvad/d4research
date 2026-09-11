@@ -12,6 +12,12 @@ Common reasons:
 
 ## I Only Use One Codex Account
 
+In the web or desktop app, open a provider in **Settings → Providers** to change its display name,
+main icon, and small badge icon. Edit a model's display name in its Models list; clear the field to
+restore its original name. These controls work for every provider. Icon and model-name preferences
+apply on this client, and **Reset icons and model names** restores the defaults. Requests still use
+the original provider and model IDs; conversation text is unchanged.
+
 Use the default provider.
 
 In Settings, your Codex provider can stay like this:

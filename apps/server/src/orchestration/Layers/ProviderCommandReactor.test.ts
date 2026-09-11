@@ -82,6 +82,9 @@ import {
 import type { BoundedDelegationRequest } from "../../mcp/toolkits/research/handlers.ts";
 import { ResearchDelegateError } from "../../mcp/toolkits/research/tools.ts";
 import { projectActivityPayload } from "../ActivityPayloadProjection.ts";
+import { mekoHandoff } from "../../mekoHandoff.ts";
+import type { MekoReceipt } from "@d4research/contracts/settings";
+import { appendProviderHandoffContext } from "@d4research/shared/providerHandoffPrompt";
 
 const asProjectId = (value: string): ProjectId => ProjectId.make(value);
 const asApprovalRequestId = (value: string): ApprovalRequestId => ApprovalRequestId.make(value);
@@ -429,21 +432,20 @@ describe("ProviderCommandReactor", () => {
     const interruptTurn = vi.fn((_: unknown) => input?.interruptTurnEffect?.() ?? Effect.void);
     const respondToRequest = vi.fn<ProviderServiceShape["respondToRequest"]>(() => Effect.void);
     const respondToUserInput = vi.fn<ProviderServiceShape["respondToUserInput"]>(() => Effect.void);
-    const stopSession = vi.fn(
-      (input: unknown): Effect.Effect<void, ProviderAdapterRequestError> =>
-        Effect.sync(() => {
-          const threadId =
-            typeof input === "object" && input !== null && "threadId" in input
-              ? (input as { threadId?: ThreadId }).threadId
-              : undefined;
-          if (!threadId) {
-            return;
-          }
-          const index = runtimeSessions.findIndex((session) => session.threadId === threadId);
-          if (index >= 0) {
-            runtimeSessions.splice(index, 1);
-          }
-        }),
+    const stopSession = vi.fn((input: unknown): Effect.Effect<void, ProviderAdapterRequestError> =>
+      Effect.sync(() => {
+        const threadId =
+          typeof input === "object" && input !== null && "threadId" in input
+            ? (input as { threadId?: ThreadId }).threadId
+            : undefined;
+        if (!threadId) {
+          return;
+        }
+        const index = runtimeSessions.findIndex((session) => session.threadId === threadId);
+        if (index >= 0) {
+          runtimeSessions.splice(index, 1);
+        }
+      }),
     );
     if (input?.stopSessionEffect) {
       stopSession.mockImplementation(() => input.stopSessionEffect!());
@@ -888,6 +890,59 @@ describe("ProviderCommandReactor", () => {
     expect(thread?.session?.threadId).toBe("thread-1");
     expect(thread?.session?.status).toBe("starting");
     expect(thread?.session?.runtimeMode).toBe("approval-required");
+  });
+
+  it("sends the attached context while Meko persistence is still pending", async () => {
+    const harness = await createHarness({ serverSettings: { handoff: { memoryBackend: "meko" } } });
+    const pending = Promise.withResolvers<MekoReceipt>();
+    const entered = Promise.withResolvers<void>();
+    const saved = vi.spyOn(mekoHandoff, "save").mockImplementation(() => {
+      entered.resolve();
+      return pending.promise;
+    });
+    const sent = await Effect.runPromise(Deferred.make<void>());
+    harness.sendTurn.mockImplementation(() =>
+      Deferred.succeed(sent, undefined).pipe(
+        Effect.as({ threadId: ThreadId.make("thread-1"), turnId: asTurnId("turn-1") }),
+      ),
+    );
+    const text = appendProviderHandoffContext("Continue this task", {
+      sourceThreadId: "thread-1",
+      sourceThreadTitle: "Test",
+      targetInstanceId: "codex",
+      targetModel: "gpt-5-codex",
+      summary: "Exact carried evidence",
+    });
+    try {
+      await Effect.runPromise(
+        harness.engine.dispatch({
+          type: "thread.turn.start",
+          commandId: CommandId.make("cmd-meko-pending"),
+          threadId: ThreadId.make("thread-1"),
+          message: { messageId: asMessageId("meko-pending"), role: "user", text, attachments: [] },
+          interactionMode: DEFAULT_PROVIDER_INTERACTION_MODE,
+          runtimeMode: "approval-required",
+          createdAt: "2026-01-01T00:00:00.000Z",
+        }),
+      );
+      await Effect.runPromise(Deferred.await(sent));
+      await entered.promise;
+      expect(saved.mock.calls[0]?.[1]).toEqual({
+        text: "Exact carried evidence",
+        threadId: "thread-1",
+        project: "project-1",
+      });
+      expect(harness.sendTurn.mock.calls[0]?.[0]).toMatchObject({
+        input: expect.stringContaining("Exact carried evidence"),
+      });
+    } finally {
+      pending.resolve({
+        status: "SUCCESS_WITH_EVIDENCE",
+        message: "Saved",
+        timestamp: "2026-01-01T00:00:00.000Z",
+      });
+      saved.mockRestore();
+    }
   });
 
   it("expands a raw dev trigger at the provider boundary for non-web clients", async () => {
@@ -3319,6 +3374,56 @@ describe("ProviderCommandReactor", () => {
         });
       }),
   );
+
+  it("restarts a restricted model in the same thread when context is attached", async () => {
+    const harness = await createHarness({ requiresNewThreadForModelChange: true });
+    const send = async (index: number, text: string, model: string) => {
+      const sent = await Effect.runPromise(Deferred.make<void>());
+      harness.sendTurn.mockImplementation(() =>
+        Deferred.succeed(sent, undefined).pipe(
+          Effect.as({ threadId: ThreadId.make("thread-1"), turnId: asTurnId(`turn-${index}`) }),
+        ),
+      );
+      await Effect.runPromise(
+        harness.engine.dispatch({
+          type: "thread.turn.start",
+          commandId: CommandId.make(`restricted-handoff-${index}`),
+          threadId: ThreadId.make("thread-1"),
+          message: {
+            messageId: asMessageId(`restricted-handoff-${index}`),
+            role: "user",
+            text,
+            attachments: [],
+          },
+          modelSelection: { instanceId: ProviderInstanceId.make("codex"), model },
+          interactionMode: DEFAULT_PROVIDER_INTERACTION_MODE,
+          runtimeMode: "approval-required",
+          createdAt: "2026-01-01T00:00:00.000Z",
+        }),
+      );
+      await Effect.runPromise(Deferred.await(sent));
+    };
+    await send(1, "Original work", "gpt-5-codex");
+    const text = appendProviderHandoffContext("Continue", {
+      sourceThreadId: "thread-1",
+      sourceThreadTitle: "Original thread",
+      targetInstanceId: "codex",
+      targetModel: "gpt-5.1-codex",
+      summary: "Carry the original work",
+    });
+    await send(2, text, "gpt-5.1-codex");
+    expect(harness.startSession).toHaveBeenCalledTimes(2);
+    expect(harness.startSession.mock.calls[1]?.[1]).not.toHaveProperty("resumeCursor");
+    expect(harness.sendTurn.mock.calls[1]?.[0]).toMatchObject({
+      input: expect.stringContaining("Carry the original work"),
+    });
+    const state = await harness.readModel();
+    expect(state.threads).toHaveLength(1);
+    expect(state.threads[0]?.messages.map((message) => message.text)).toEqual([
+      "Original work",
+      text,
+    ]);
+  });
 
   it("starts a first turn on the requested provider instance even when it differs from the thread model", async () => {
     const harness = await createHarness({

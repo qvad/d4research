@@ -8844,6 +8844,9 @@ function ChatViewContent(props: ChatViewProps) {
         return null;
       }
       const reason = getStartedThreadModelChangeBlockReason({
+        // A fresh native session is allowed here: the next send carries context
+        // in this same thread. Keep the restriction in handoff detection above.
+        allowContextHandoff: routeKind === "server",
         providers: providerStatuses,
         hasStartedSession: activeThread.session !== null,
         currentModelSelection: activeThread.modelSelection,
@@ -8852,7 +8855,7 @@ function ChatViewContent(props: ChatViewProps) {
       });
       return reason ? `${reason.description} Start a new thread to use this model.` : null;
     },
-    [activeThread, providerStatuses],
+    [activeThread, providerStatuses, routeKind],
   );
 
   // Every pick is staged, including one that will hand off to another provider.

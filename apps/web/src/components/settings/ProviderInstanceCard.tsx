@@ -40,6 +40,7 @@ import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import type { DriverOption } from "./providerDriverMeta";
 import { ProviderSettingsForm } from "./ProviderSettingsForm";
 import { ProviderModelsSection } from "./ProviderModelsSection";
+import { ProviderAppearanceSettings } from "./ProviderAppearanceSettings";
 import { ProviderInstanceIcon } from "../chat/ProviderInstanceIcon";
 import { ProviderAccentColorPicker } from "./ProviderAccentColorPicker";
 import { RedactedSensitiveText } from "./RedactedSensitiveText";
@@ -598,6 +599,7 @@ export function ProviderInstanceCard({
 
   const titleIconNode = driverKind ? (
     <ProviderInstanceIcon
+      instanceId={instanceId}
       driverKind={driverKind}
       displayName={displayName}
       accentColor={accentColor}
@@ -938,6 +940,14 @@ export function ProviderInstanceCard({
                 description="Used to distinguish this instance in picker rails and model lists."
               />
             </div>
+
+            {driverKind ? (
+              <ProviderAppearanceSettings
+                instanceId={instanceId}
+                driverKind={driverKind}
+                displayName={displayName}
+              />
+            ) : null}
 
             <div>
               <ProviderEnvironmentSection

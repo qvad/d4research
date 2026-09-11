@@ -270,7 +270,18 @@ export const LoadBalancingWeights = Schema.Record(
 
 export const DiffColorScheme = Schema.Literals(["red-green", "blue-orange"]);
 
+const ProviderAppearance = Schema.Struct({
+  icon: Schema.optionalKey(TrimmedNonEmptyString),
+  badgeIcon: Schema.optionalKey(TrimmedNonEmptyString),
+  modelNames: Schema.Record(Schema.String, TrimmedNonEmptyString).pipe(
+    Schema.withDecodingDefault(Effect.succeed({})),
+  ),
+});
+
 export const ClientSettingsSchema = Schema.Struct({
+  providerAppearance: Schema.Record(ProviderInstanceId, ProviderAppearance).pipe(
+    Schema.withDecodingDefault(Effect.succeed({})),
+  ),
   diffColorScheme: DiffColorScheme.pipe(
     Schema.withDecodingDefault(Effect.succeed("red-green" as const)),
   ),
@@ -998,11 +1009,50 @@ export const HandoffContextCompressionSettings = Schema.Struct({
 export type HandoffContextCompressionSettings = typeof HandoffContextCompressionSettings.Type;
 
 export const HandoffSettings = Schema.Struct({
+  memoryBackend: Schema.Literals(["local", "meko", "none"]).pipe(
+    Schema.withDecodingDefault(Effect.succeed("local" as const)),
+  ),
+  meko: Schema.Struct({
+    url: TrimmedString.pipe(Schema.withDecodingDefault(Effect.succeed(""))),
+    tokenEnv: TrimmedString.pipe(Schema.withDecodingDefault(Effect.succeed("MEKO_API_KEY"))),
+    datapackId: TrimmedString.pipe(Schema.withDecodingDefault(Effect.succeed(""))),
+    agentId: TrimmedString.pipe(Schema.withDecodingDefault(Effect.succeed("d4research"))),
+  }).pipe(Schema.withDecodingDefault(Effect.succeed({}))),
   contextCompression: HandoffContextCompressionSettings.pipe(
     Schema.withDecodingDefault(Effect.succeed({})),
   ),
 }).pipe(Schema.withDecodingDefault(Effect.succeed({})));
 export type HandoffSettings = typeof HandoffSettings.Type;
+
+export const MekoReceipt = Schema.Struct({
+  status: Schema.Literals([
+    "SUCCESS_WITH_EVIDENCE",
+    "ERROR_TOOL_FAILURE",
+    "ERROR_AUTH_RESTRICTED",
+    "ERROR_TIMEOUT",
+    "ERROR_CONFIGURATION",
+    "ERROR_BUSY",
+  ]),
+  message: Schema.String,
+  timestamp: Schema.String,
+  contentHash: Schema.optionalKey(Schema.String),
+  conversationId: Schema.optionalKey(Schema.String),
+  size: Schema.optionalKey(Schema.Int),
+  threadId: Schema.optionalKey(Schema.String),
+  project: Schema.optionalKey(Schema.String),
+});
+export type MekoReceipt = typeof MekoReceipt.Type;
+export const MekoStatus = Schema.Struct({
+  configured: Schema.Boolean,
+  recent: Schema.Array(MekoReceipt),
+  message: Schema.optionalKey(Schema.String),
+});
+export const MekoReadInput = Schema.Struct({
+  contentHash: Schema.String.check(Schema.isPattern(/^[a-f0-9]{64}$/)),
+  conversationId: TrimmedNonEmptyString,
+  threadId: TrimmedNonEmptyString,
+  project: TrimmedNonEmptyString,
+});
 
 export const DEFAULT_HANDOFF_SETTINGS: HandoffSettings = Schema.decodeSync(HandoffSettings)({});
 
@@ -1589,6 +1639,15 @@ export const ServerSettingsPatch = Schema.Struct({
   ),
   handoff: Schema.optionalKey(
     Schema.Struct({
+      memoryBackend: Schema.optionalKey(Schema.Literals(["local", "meko", "none"])),
+      meko: Schema.optionalKey(
+        Schema.Struct({
+          url: Schema.optionalKey(TrimmedString),
+          tokenEnv: Schema.optionalKey(TrimmedString),
+          datapackId: Schema.optionalKey(TrimmedString),
+          agentId: Schema.optionalKey(TrimmedString),
+        }),
+      ),
       contextCompression: Schema.optionalKey(
         Schema.Struct({
           enabled: Schema.optionalKey(Schema.Boolean),
@@ -1704,6 +1763,7 @@ export const ServerSettingsPatch = Schema.Struct({
 export type ServerSettingsPatch = typeof ServerSettingsPatch.Type;
 
 export const ClientSettingsPatch = Schema.Struct({
+  providerAppearance: Schema.optionalKey(Schema.Record(ProviderInstanceId, ProviderAppearance)),
   diffColorScheme: Schema.optionalKey(DiffColorScheme),
   loadBalancingEnabled: Schema.optionalKey(Schema.Boolean),
   loadBalancingWeights: Schema.optionalKey(LoadBalancingWeights),

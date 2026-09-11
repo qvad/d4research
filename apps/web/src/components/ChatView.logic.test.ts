@@ -936,6 +936,27 @@ describe("buildExpiredTerminalContextToastCopy", () => {
 });
 
 describe("getStartedThreadModelChangeBlockReason", () => {
+  it.each([
+    { instanceId: "claudeAgent", model: "claude-opus" },
+    { instanceId: "agy", model: "gemini-other" },
+  ])("allows a started Gemini thread to stage a handoff to $instanceId", (next) => {
+    const input = {
+      providers: [
+        { instanceId: ProviderInstanceId.make("agy"), requiresNewThreadForModelChange: true },
+        { instanceId: ProviderInstanceId.make("claudeAgent") },
+      ],
+      hasStartedSession: true,
+      currentModelSelection: {
+        instanceId: ProviderInstanceId.make("agy"),
+        model: "gemini-original",
+      },
+      nextModelSelection: { ...next, instanceId: ProviderInstanceId.make(next.instanceId) },
+    };
+    expect(getStartedThreadModelChangeBlockReason(input)).not.toBeNull();
+    expect(
+      getStartedThreadModelChangeBlockReason({ ...input, allowContextHandoff: true }),
+    ).toBeNull();
+  });
   const providers = [
     {
       instanceId: ProviderInstanceId.make("codex"),

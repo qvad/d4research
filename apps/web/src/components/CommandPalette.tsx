@@ -1193,6 +1193,7 @@ function OpenCommandPaletteDialog(props: {
               providerDisplayName={
                 thread.session?.providerName ?? providerEntry?.displayName ?? modelInstanceId
               }
+              providerInstanceId={providerEntry?.instanceId}
             />
           );
         },

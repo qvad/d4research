@@ -20,6 +20,26 @@ const decodeServerSettingsPatch = Schema.decodeUnknownSync(ServerSettingsPatch);
 const encodeServerSettings = Schema.encodeSync(ServerSettings);
 const decodeClaudeSettings = Schema.decodeUnknownSync(ClaudeSettings);
 
+describe("provider appearance preferences", () => {
+  it("defaults to no overrides and round-trips independent provider appearances", () => {
+    expect(decodeClientSettings({}).providerAppearance).toEqual({});
+    const providerAppearance = {
+      codex: {
+        icon: "claudeAgent",
+        badgeIcon: "cursor",
+        modelNames: { "gpt-6-astra": "Research" },
+      },
+      claude_work: { icon: "opencode", badgeIcon: "none", modelNames: { opus: "Writer" } },
+    };
+    expect(decodeClientSettingsPatch({ providerAppearance }).providerAppearance).toEqual(
+      providerAppearance,
+    );
+    expect(
+      encodeClientSettings(decodeClientSettings({ providerAppearance })).providerAppearance,
+    ).toEqual(providerAppearance);
+  });
+});
+
 describe("ServerSettings usage price overrides", () => {
   const prices = { inputCostPerMillionTokens: 2, outputCostPerMillionTokens: 8 };
 
@@ -107,6 +127,22 @@ describe("custom model settings", () => {
 });
 
 describe("ServerSettings handoff compression", () => {
+  it("keeps Meko opt-in and round-trips an explicit MCP destination", () => {
+    expect(decodeServerSettings({}).handoff.memoryBackend).toBe("local");
+    expect(decodeServerSettings({}).handoff.meko.url).toBe("");
+    const handoff = {
+      memoryBackend: "meko",
+      meko: {
+        url: "https://meko.example/mcp",
+        datapackId: "test",
+        agentId: "d4research",
+        tokenEnv: "MEKO_TEST_TOKEN",
+      },
+    };
+    const settings = decodeServerSettings({ handoff });
+    expect(decodeServerSettings(encodeServerSettings(settings)).handoff).toMatchObject(handoff);
+    expect(decodeServerSettingsPatch({ handoff })).toEqual({ handoff });
+  });
   it("defaults local compression to the workstation Qwen model", () => {
     expect(decodeServerSettings({}).handoff.contextCompression.localModel).toBe(
       "qwen38-sys:latest",
