@@ -1,7 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
 
 import type { MuseSubscriptionUsage } from "./protocol.ts";
-import { isMuseUsageLimitFailure, museUsageLimitResetAt, museUsageLimits } from "./usageLimits.ts";
+import {
+  isMuseUsageLimitFailure,
+  museUsageLimitResetAt,
+  museUsageToLimits,
+  withoutExpiredMuseWindows,
+} from "./usageLimits.ts";
 
 const usage = {
   observedAtMs: 1791447762610,
@@ -55,11 +60,11 @@ describe("Muse usage limit failures", () => {
   });
 });
 
-describe("Muse usage limits", () => {
-  it("reports both windows as of the observation and caps an overrun at 100%", () => {
-    const overrun = { ...usage, window: { ...usage.window, usedPercent: 103 } };
-    expect(museUsageLimits(overrun, nowMs + 60_000)).toEqual({
+describe("Muse account usage", () => {
+  it("reports the session and weekly windows, capped at 100, with the tier as plan", () => {
+    expect(museUsageToLimits({ ...usage, window: { ...usage.window, usedPercent: 103 } })).toEqual({
       checkedAt: "2026-10-08T08:22:42.610Z",
+      authLabel: "tier-1",
       windows: [
         {
           id: "session",
@@ -75,19 +80,23 @@ describe("Muse usage limits", () => {
           label: "Weekly",
           usedPercent: 5,
           resetsAt: "2026-10-12T00:00:00.000Z",
-          windowDurationMins: 10_080,
+          windowDurationMins: 10080,
         },
       ],
     });
+    expect(museUsageToLimits({ ...usage, tier: " " })).not.toHaveProperty("authLabel");
   });
 
   it("drops a window once its reset has passed, because no newer reading exists", () => {
-    const afterSessionReset = museUsageLimits(usage, usage.window.resetsAtMs);
+    const report = museUsageToLimits(usage);
+    expect(withoutExpiredMuseWindows(report, nowMs + 60_000)).toBe(report);
+
+    const afterSessionReset = withoutExpiredMuseWindows(report, usage.window.resetsAtMs);
     expect(afterSessionReset.windows.map((window) => window.id)).toEqual(["weekly"]);
     expect(afterSessionReset.checkedAt).toBe("2026-10-08T08:22:42.610Z");
 
-    const afterWeeklyReset = museUsageLimits(usage, usage.weekly.resetsAtMs);
-    expect(afterWeeklyReset).toEqual({ checkedAt: "2026-10-12T00:00:00.000Z", windows: [] });
-    expect(museUsageLimits(undefined, nowMs).windows).toEqual([]);
+    const afterWeeklyReset = withoutExpiredMuseWindows(report, usage.weekly.resetsAtMs);
+    expect(afterWeeklyReset.windows).toEqual([]);
+    expect(afterWeeklyReset.checkedAt).toBe("2026-10-12T00:00:00.000Z");
   });
 });

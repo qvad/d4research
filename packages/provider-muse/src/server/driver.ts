@@ -1,11 +1,12 @@
-import { ProviderDriverKind } from "@d4research/contracts";
+import { ProviderDriverKind, type ServerProvider } from "@d4research/contracts";
 import { MuseSettings } from "../settings.ts";
 import * as HostProcess from "@d4research/shared/HostProcess";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
-import * as Path from "effect/Path";
 import * as Ref from "effect/Ref";
+import * as Semaphore from "effect/Semaphore";
+import * as Path from "effect/Path";
 import * as Schema from "effect/Schema";
 import * as HttpClient from "effect/http/HttpClient";
 import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
@@ -22,11 +23,12 @@ import * as ProviderContinuationRequests from "@d4research/provider-core/server/
 import { checkMuseProviderStatus, makePendingMuseProvider } from "./status.ts";
 import * as ProviderEventLoggers from "@d4research/provider-core/server/ProviderEventLoggers";
 import { makeManagedServerProvider } from "@d4research/provider-core/server/managedProvider";
+import type { ProviderUsageLimitsReport } from "@d4research/provider-core/server/snapshot";
+import { makeUsageLimits } from "@d4research/provider-core/server/usageLimits";
 import { enrichMuseSnapshot, latestMuseVersion, museMaintenance } from "./maintenance.ts";
 import { makeMuseEnvironment } from "./sdk.ts";
 import { museUsageReader } from "./usage.ts";
-import { museUsageLimits } from "./usageLimits.ts";
-import type { MuseSubscriptionUsage } from "./protocol.ts";
+import { withoutExpiredMuseWindows } from "./usageLimits.ts";
 import type * as MuseUsageHome from "./MuseUsageHome.ts";
 import {
   defaultProviderContinuationIdentity,
@@ -108,6 +110,24 @@ export const MuseDriver: ProviderDriver<
       accentColor,
       continuationGroupKey: continuationIdentity.continuationKey,
     });
+    // Only a running CLI reports usage; status probes cannot fetch it.
+    const latestUsage = yield* Ref.make<ProviderUsageLimitsReport | undefined>(undefined);
+    const usagePermit = yield* Semaphore.make(1);
+    const withLatestUsage = (provider: ServerProvider) =>
+      Effect.all([Ref.get(latestUsage), DateTime.now]).pipe(
+        Effect.map(([latest, now]): ServerProvider => {
+          if (!latest || !provider.installed) return provider;
+          const report = withoutExpiredMuseWindows(latest, DateTime.toEpochMillis(now));
+          return {
+            ...provider,
+            ...(report.authLabel ? { auth: { ...provider.auth, label: report.authLabel } } : {}),
+            usageLimits: makeUsageLimits({
+              checkedAt: report.checkedAt,
+              windows: report.windows,
+            }),
+          };
+        }),
+      );
     const snapshotSettings = yield* makeProviderSnapshotSettingsSource(effectiveConfig);
     const resolveInstallation = yield* makeCachedProviderMaintenanceResolution(
       resolveProviderMaintenanceCapabilitiesEffect(museMaintenance, {
@@ -134,9 +154,6 @@ export const MuseDriver: ProviderDriver<
           : undefined;
       return latestVersion !== undefined ? { ...capabilities, latestVersion } : capabilities;
     });
-    // MSP has no usage probe: a new host has observed nothing, so limits come from the reports
-    // that sessions deliver while they run, and the status check republishes the latest one.
-    const latestUsage = yield* Ref.make<MuseSubscriptionUsage | undefined>(undefined);
     const snapshot = yield* makeManagedServerProvider<ProviderSnapshotSettings<MuseSettings>>({
       // Status refresh respects update checks; explicit updates use the resolver below.
       resolveMaintenance: (options) =>
@@ -154,17 +171,8 @@ export const MuseDriver: ProviderDriver<
       initialSnapshot: (settings) =>
         makePendingMuseProvider(settings.provider).pipe(Effect.map(stampIdentity)),
       checkProvider: checkMuseProviderStatus(effectiveConfig, processEnvironment, cwd).pipe(
-        Effect.flatMap((status) =>
-          effectiveConfig.enabled && status.installed
-            ? Effect.all([Ref.get(latestUsage), DateTime.now]).pipe(
-                Effect.map(([usage, now]) => ({
-                  ...status,
-                  usageLimits: museUsageLimits(usage, DateTime.toEpochMillis(now)),
-                })),
-              )
-            : Effect.succeed(status),
-        ),
         Effect.map(stampIdentity),
+        Effect.flatMap(withLatestUsage),
         Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, spawner),
         Effect.provideService(FileSystem.FileSystem, fileSystem),
         Effect.provideService(Path.Path, path),
@@ -201,20 +209,16 @@ export const MuseDriver: ProviderDriver<
       environment: processEnvironment,
       modelCatalog,
       ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
-      // Every session of the account repeats the report; publish only one that is not older.
-      onSubscriptionUsage: (usage) =>
-        Ref.modify(latestUsage, (previous) =>
-          previous !== undefined && previous.observedAtMs > usage.observedAtMs
-            ? [false, previous]
-            : [true, usage],
-        ).pipe(
-          Effect.flatMap((accepted) =>
-            accepted
-              ? snapshot.applyUsageLimits(museUsageLimits(usage, usage.observedAtMs))
-              : Effect.void,
-          ),
-        ),
       continuationRequests,
+      onUsageLimits: (report) =>
+        usagePermit.withPermits(1)(
+          Effect.gen(function* () {
+            const previous = yield* Ref.get(latestUsage);
+            if (previous && Date.parse(report.checkedAt) < Date.parse(previous.checkedAt)) return;
+            yield* Ref.set(latestUsage, report);
+            yield* snapshot.applyUsageLimits({ ...report, complete: true });
+          }),
+        ),
     });
     const textGeneration = yield* makeMuseTextGeneration(effectiveConfig, {
       environment: processEnvironment,
@@ -227,7 +231,7 @@ export const MuseDriver: ProviderDriver<
       displayName,
       accentColor,
       enabled,
-      snapshot: { ...snapshot, resolveMaintenance },
+      snapshot: { ...snapshot, resolveMaintenance, refreshUsage: Effect.void },
       orchestrationAdapter,
       textGeneration,
     } satisfies ProviderInstance;

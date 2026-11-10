@@ -194,9 +194,9 @@ Grok reports the remaining subscription allowance and reset time for its current
 after signing in with `grok login`. Explicit `XAI_API_KEY` connections and custom authentication
 or endpoint configurations do not report subscription limits.
 
-Muse Code reports its session and weekly limits when a Muse turn runs. After the server starts,
-Limits shows no Muse reading until the first Muse turn. The reading does not update between
-Muse turns.
+Muse Code reports its session and weekly limits and its tier when a Muse turn runs. After the
+server starts, Limits shows no Muse reading until the first Muse turn. The reading does not update
+between Muse turns, and a window disappears once its reset time passes.
 
 Ollama cloud reports limits for Claude instances that use the Ollama preset. Create an API key in
 your ollama.com account and add it as `OLLAMA_API_KEY` in the instance's
@@ -212,7 +212,8 @@ using a proxy through `ANTHROPIC_AUTH_TOKEN`.
 To see pooled accounts, open **Settings → Providers → Usage providers → Add hub**. Choose the
 environment that will connect to the hub and enter its URL and management key.
 
-The accounts appear under **Usage → Limits**. Codex accounts show banked reset credits; select an
+The hub's Codex, Claude, xAI (shown as Grok) and Antigravity accounts appear under **Usage → Limits**;
+accounts for other providers are not read. Codex accounts show banked reset credits; select an
 account and choose **Use reset** to redeem one. No hub plugin is required.
 
 This connection supplies usage information; configure
