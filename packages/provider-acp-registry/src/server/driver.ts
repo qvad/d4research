@@ -33,7 +33,10 @@ import {
   type ProviderDriver,
   type ProviderInstance,
 } from "@d4research/provider-core/server/driver";
-import { providerModelsFromSettings } from "@d4research/provider-core/server/snapshotProbe";
+import {
+  providerModelsFromSettings,
+  providerProbeEnvironment,
+} from "@d4research/provider-core/server/snapshotProbe";
 import { makeManualOnlyProviderMaintenanceCapabilities } from "@d4research/provider-core/server/maintenanceResolver";
 import {
   haveProviderSnapshotSettingsChanged,
@@ -414,7 +417,7 @@ export const checkAcpRegistryProviderStatus = Effect.fn("AcpRegistryDriver.check
         instanceId: input.instanceId,
         settings: input.settings,
         cwd: input.cwd,
-        environment: input.environment,
+        environment: providerProbeEnvironment(input.environment),
       }),
     );
     return Result.isFailure(probed)
