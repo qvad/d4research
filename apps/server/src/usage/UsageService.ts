@@ -335,8 +335,10 @@ export const make = Effect.gen(function* () {
   const resolveTranscriptDirs = Effect.fn("UsageService.resolveTranscriptDirs")(function* (
     settings: ServerSettingsValue,
     retentionCutoffMs: number,
+    awaitRefresh: boolean,
   ) {
     const dirs: Array<TranscriptSource> = [];
+    const pending: Array<ScannedDir> = [];
     const seen = new Set<string>();
     for (const { driver, reader } of transcriptReaders) {
       const { provider, format } = reader;
@@ -344,14 +346,21 @@ export const make = Effect.gen(function* () {
         yield* usageInstances(driver, settings),
         (instance) =>
           reader
-            .directories(instance)
+            .directories(instance, { awaitRefresh })
             .pipe(
               Effect.map((dirs) =>
                 dirs.map((dir) => ({ ...dir, instanceId: instance.instanceId })),
               ),
             ),
       );
-      for (const { dir: resolvedDirectory, fileName, instanceId } of directories.flat()) {
+      for (const { dir: resolvedDirectory, fileName, instanceId, refreshing } of directories.flat()) {
+        if (refreshing) {
+          const key = `${provider}\0${resolvedDirectory}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          pending.push({ provider, dir: resolvedDirectory, volumeId: "", files: [], refreshing });
+          continue;
+        }
         let directory = resolvedDirectory;
         if (provider === "claude") {
           const instance = settings.providerInstances[instanceId];
@@ -421,7 +430,7 @@ export const make = Effect.gen(function* () {
         });
       }
     }
-    return dirs;
+    return { dirs, pending };
   });
 
   // Share first loads so concurrent readers cannot scan against a still-empty cache.
@@ -673,9 +682,11 @@ export const make = Effect.gen(function* () {
     retentionCutoffMs: number,
     awaitRefresh: boolean,
   ) {
-    const dirs = yield* resolveTranscriptDirs(settings, retentionCutoffMs).pipe(
-      Effect.provideContext(readerContext),
-    );
+    const { dirs, pending } = yield* resolveTranscriptDirs(
+      settings,
+      retentionCutoffMs,
+      awaitRefresh,
+    ).pipe(Effect.provideContext(readerContext));
 
     const scans = Effect.forEach(
       scanReaders,
@@ -709,7 +720,7 @@ export const make = Effect.gen(function* () {
       [Effect.forEach(dirs, (dir) => scanTranscriptDir(dir, windowStartMs)), scans],
       { concurrency: "unbounded" },
     );
-    const scanned: readonly ScannedDir[] = [...transcripts, ...scanDirs.flat()];
+    const scanned: readonly ScannedDir[] = [...transcripts, ...pending, ...scanDirs.flat()];
     return scanned;
   });
 
