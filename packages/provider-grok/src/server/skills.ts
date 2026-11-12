@@ -1,3 +1,4 @@
+import { resolveProviderProbeTimeoutMs } from "@d4research/provider-core/server/snapshotProbe";
 // The CLI catalog honors ignored/disabled skills and nested plugin skills that flat scans miss.
 import type { ServerProviderSkill } from "@d4research/contracts";
 import type { GrokSettings } from "../settings.ts";
@@ -97,7 +98,12 @@ export const discoverGrokSkills = Effect.fn("discoverGrokSkills")(function* (
         shell: spawnCommand.shell,
       }),
     );
-  }).pipe(Effect.timeoutOption(GROK_SKILLS_PROBE_TIMEOUT_MS), Effect.result);
+  }).pipe(
+    Effect.timeoutOption(
+      resolveProviderProbeTimeoutMs("grok", GROK_SKILLS_PROBE_TIMEOUT_MS, environment),
+    ),
+    Effect.result,
+  );
 
   if (Result.isFailure(inspectResult) || Option.isNone(inspectResult.success)) {
     yield* Effect.logDebug("Grok skill discovery failed; continuing without skills.");
