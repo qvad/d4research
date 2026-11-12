@@ -193,16 +193,40 @@ const alternateProviderInstance = {
   },
 } satisfies ProviderInstance;
 
+const antigravityInstanceId = ProviderInstanceId.make("antigravity_test");
+const antigravityDriver = ProviderDriverKind.make("antigravity");
+const antigravityProviderInstance = {
+  ...providerInstance,
+  instanceId: antigravityInstanceId,
+  driverKind: antigravityDriver,
+  continuationIdentity: { driverKind: antigravityDriver, continuationKey: "antigravity:test" },
+  displayName: "Antigravity test",
+  orchestrationAdapter: {
+    ...orchestrationAdapter,
+    instanceId: antigravityInstanceId,
+    driver: antigravityDriver,
+    getCapabilities: () =>
+      Effect.succeed({
+        ...CodexProviderCapabilitiesV2,
+        turns: { ...CodexProviderCapabilitiesV2.turns, supportsNativeGoals: true },
+      }),
+  },
+} satisfies ProviderInstance;
+
 const layerTestProviderInstanceRegistry = Layer.succeed(
   ProviderInstanceRegistry.ProviderInstanceRegistry,
   {
     getInstance: (instanceId) =>
       Effect.succeed(
-        [providerInstance, alternateProviderInstance].find(
+        [providerInstance, alternateProviderInstance, antigravityProviderInstance].find(
           (instance) => instanceId === instance.instanceId,
         ),
       ),
-    listInstances: Effect.succeed([providerInstance, alternateProviderInstance]),
+    listInstances: Effect.succeed([
+      providerInstance,
+      alternateProviderInstance,
+      antigravityProviderInstance,
+    ]),
     listUnavailable: Effect.succeed([]),
     streamChanges: Stream.empty,
     subscribeChanges: Effect.never,
@@ -6202,6 +6226,49 @@ it.layer(layerTest)("RuntimeLayer.layer lifecycle", (it) => {
           newerSelection.instanceId,
         );
         assert.deepEqual(after.thread.modelSelection, newerSelection);
+      }),
+  );
+
+  it.effect.each(["", "pause", "resume", "clear", "edit"])(
+    "refuses unsupported Antigravity goal controls: %s",
+    (control) =>
+      Effect.gen(function* () {
+        const orchestrator = yield* Orchestrator.OrchestratorV2;
+        const threadId = ThreadId.make(`antigravity-goal-control-${control}`);
+        yield* orchestrator.dispatch({
+          type: "thread.create",
+          commandId: CommandId.make(`${threadId}:create`),
+          threadId,
+          projectId: ProjectId.make(`${threadId}:project`),
+          createdBy: "user",
+          creationSource: "web",
+          title: "Native goal",
+          modelSelection: { ...modelSelection, instanceId: antigravityInstanceId },
+          runtimeMode: "full-access",
+          interactionMode: "default",
+          branch: null,
+          worktreePath: process.cwd(),
+        });
+        const sequence = yield* orchestrator.getThreadEventSequence(threadId);
+        const refused = yield* Effect.flip(
+          orchestrator.dispatch({
+            type: "message.dispatch",
+            commandId: CommandId.make(`${threadId}:goal`),
+            threadId,
+            messageId: MessageId.make(`${threadId}:goal`),
+            text: `/goal ${control}`,
+            attachments: [],
+            dispatchMode: { type: "start_immediately" },
+            createdBy: "user",
+            creationSource: "web",
+          }),
+        );
+        assert.instanceOf(refused, Orchestrator.OrchestratorDispatchError);
+        assert.equal(
+          refused.cause,
+          "Antigravity accepts /goal followed by an objective. Interrupt the running turn, then ask Antigravity to stop the current goal.",
+        );
+        assert.equal(yield* orchestrator.getThreadEventSequence(threadId), sequence);
       }),
   );
 

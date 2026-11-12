@@ -1139,12 +1139,16 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
     command: OrchestrationV2ServerCommand,
     providerInstanceId: ProviderInstanceId,
   ) {
-    const { driver } = yield* providerAdapters
-      .get(providerInstanceId)
-      .pipe(mapDispatchError(command));
+    const adapter = yield* providerAdapters.get(providerInstanceId).pipe(mapDispatchError(command));
+    const { driver } = adapter;
+    if (driver === "opencode" || driver === "antigravity") {
+      const capabilities = yield* adapter.getCapabilities().pipe(mapDispatchError(command));
+      return capabilities.turns.supportsNativeGoals === true ? driver : undefined;
+    }
     return driver === "codex" || driver === "claudeAgent" ? driver : undefined;
   });
-  /** Claude Code reads `/goal pause` and `/goal resume` as new goals named "pause" and "resume". */
+
+  /** Unsupported goal controls can become new objectives in native providers. */
   const ensureGoalCommandSupported = Effect.fn("Orchestrator.ensureGoalCommandSupported")(
     function* (
       command: OrchestrationV2ServerCommand,
@@ -1155,8 +1159,18 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
       providerInstanceId: ProviderInstanceId,
     ) {
       const goalCommand = parseGoalCommand(message);
-      if (goalCommand?.type !== "pause" && goalCommand?.type !== "resume") return;
-      if ((yield* goalDriverFor(command, providerInstanceId)) !== "claudeAgent") return;
+      if (goalCommand === null || goalCommand.type === "set") return;
+      const driver = yield* goalDriverFor(command, providerInstanceId);
+      if (driver === "antigravity") {
+        return yield* new OrchestratorDispatchError({
+          commandId: command.commandId,
+          commandType: command.type,
+          cause:
+            "Antigravity accepts /goal followed by an objective. Interrupt the running turn, then ask Antigravity to stop the current goal.",
+        });
+      }
+      if (goalCommand.type !== "pause" && goalCommand.type !== "resume") return;
+      if (driver !== "claudeAgent") return;
       return yield* new OrchestratorDispatchError({
         commandId: command.commandId,
         commandType: command.type,
