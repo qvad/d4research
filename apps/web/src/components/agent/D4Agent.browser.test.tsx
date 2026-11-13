@@ -59,6 +59,18 @@ const mocks = vi.hoisted(() => ({
   taskModelSelection: null as ModelSelection | null,
   updateSettings: vi.fn(async () => ({ _tag: "Success" })),
   running: false,
+  interrupt: vi.fn(async () => ({ _tag: "Success", value: undefined })),
+  respondToApproval: vi.fn(async () => ({ _tag: "Success", value: undefined })),
+  pendingRequests: null as null | {
+    approvals: ReadonlyArray<{
+      requestId: string;
+      requestKind: "command";
+      createdAt: string;
+      detail: string;
+      responseCapability: "live";
+    }>;
+    userInputs: ReadonlyArray<never>;
+  },
   allowed: true,
   enabled: true,
   configLoaded: true,
@@ -95,7 +107,15 @@ vi.mock("@d4research/client-runtime/state/server", async (importOriginal) => {
 });
 vi.mock("../../state/threads", () => ({
   environmentThreadShells: { threadShellAtom: () => "shell" },
+  environmentThreadDetails: { pendingRequestsAtom: () => "pending-requests" },
+  threadEnvironment: {
+    interruptTurn: { kind: "interrupt" },
+    respondToApproval: { kind: "respond-approval" },
+  },
   useEnvironmentThread: vi.fn(),
+}));
+vi.mock("../../state/use-orchestration-command", () => ({
+  useOrchestrationCommand: () => mocks.interrupt,
 }));
 vi.mock("../../lib/attachmentUploadQueue", () => ({
   useAttachmentUploadStore: (selector: (store: { uploadsByImageId: object }) => unknown) =>
@@ -168,7 +188,9 @@ vi.mock("@effect/atom-react", async (importOriginal) => ({
             },
           }
         : null
-      : mocks.allowed,
+      : value === "pending-requests"
+        ? mocks.pendingRequests
+        : mocks.allowed,
 }));
 vi.mock("../../state/server", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../state/server")>()),
@@ -209,7 +231,9 @@ vi.mock("../../state/use-atom-command", () => ({
                 ? mocks.newSession
                 : command.kind === "proposal"
                   ? mocks.resolveProposal
-                  : mocks.resolve,
+                  : command.kind === "respond-approval"
+                    ? mocks.respondToApproval
+                    : mocks.resolve,
 }));
 vi.mock("../../state/query", () => ({
   formatEnvironmentQueryError: vi.fn(),
@@ -243,6 +267,7 @@ vi.mock("../../state/entities", () => ({
       : {
           projectId: mocks.routeProjectId ?? mocks.state?.projectId,
           runtime: mocks.running ? { status: "running" } : null,
+          hasPendingApprovals: mocks.pendingRequests !== null,
         },
   useProjects: () => mocks.projects,
   readProjects: () => mocks.projects,
@@ -432,6 +457,9 @@ async function setupNia() {
   mocks.taskModelSelection = null;
   mocks.updateSettings.mockClear();
   mocks.running = false;
+  mocks.interrupt.mockClear();
+  mocks.respondToApproval.mockClear();
+  mocks.pendingRequests = null;
   mocks.allowed = true;
   mocks.enabled = true;
   mocks.configLoaded = true;
@@ -1926,6 +1954,40 @@ it("keeps an attachment-only draft bound to its context and sends it only after 
     },
   });
   expect(container.textContent).not.toContain("notes.txt");
+});
+
+it("answers a provider approval raised inside Nia's thread and stops a running turn", async () => {
+  await using _nia = await setupNia();
+  mocks.running = true;
+  mocks.pendingRequests = {
+    approvals: [
+      {
+        requestId: "request-1",
+        requestKind: "command",
+        createdAt: "2026-11-13T05:30:14.000Z",
+        detail: "rm intel.json",
+        responseCapability: "live",
+      },
+    ],
+    userInputs: [],
+  };
+  await screen.rerender(
+    <D4AgentChat environmentId={environmentId} state={mocks.state!} refresh={mocks.refresh} />,
+  );
+  const requests = document.querySelector<HTMLElement>('[aria-label="Nia needs your approval"]')!;
+  expect(requests.textContent).toContain("rm intel.json");
+  const decline = Array.from(requests.querySelectorAll("button")).find((button) =>
+    /decline|deny|reject/i.test(button.textContent ?? ""),
+  )!;
+  await act(async () => decline.click());
+  expect(mocks.respondToApproval).toHaveBeenCalledWith({
+    environmentId,
+    input: { threadId, requestId: "request-1", decision: "decline" },
+  });
+  await act(async () =>
+    container.querySelector<HTMLButtonElement>('button[aria-label="Stop generation"]')!.click(),
+  );
+  expect(mocks.interrupt).toHaveBeenCalledWith({ environmentId, input: { threadId } });
 });
 
 it("sends the selected active-turn queue and steer behavior and preserves rejected attachments", async () => {

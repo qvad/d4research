@@ -17,7 +17,10 @@ import {
   insertAgentMention,
   type AgentDraftOrigin,
 } from "@d4research/client-runtime/d4-agent-references";
-import { squashAtomCommandFailure } from "@d4research/client-runtime/state/runtime";
+import {
+  isAtomCommandInterrupted,
+  squashAtomCommandFailure,
+} from "@d4research/client-runtime/state/runtime";
 import { fileAttachmentTooLargeMessage } from "@d4research/client-runtime/state/attachments";
 import { createModelSelection } from "@d4research/shared/model";
 import { useAtomValue } from "@effect/atom-react";
@@ -42,10 +45,13 @@ import {
   resolveAppModelSelectionState,
 } from "../../modelSelection";
 import { providerInstanceEntriesFor } from "../../providerInstances";
-import { useProjects, useThreadShells } from "../../state/entities";
+import { useProjects, useThreadShell, useThreadShells } from "../../state/entities";
 import { useEnvironmentProviders } from "../../state/environments";
 import { EMPTY_SERVER_PROVIDERS, serverEnvironment } from "../../state/server";
 import { useAtomCommand } from "../../state/use-atom-command";
+import { useOrchestrationCommand } from "../../state/use-orchestration-command";
+import { threadEnvironment } from "../../state/threads";
+import { deriveCanInterruptRunningThread } from "../../session-logic";
 import { ProviderModelPicker } from "../chat/ProviderModelPicker";
 import { TraitsPicker } from "../chat/TraitsPicker";
 import { VoiceConversationButton } from "../chat/VoiceConversationControl";
@@ -92,6 +98,16 @@ export function D4AgentComposer({
   const canConfigure = useAtomValue(serverEnvironment.updateSettings.permissionAtom(environmentId));
   const send = useAtomCommand(serverEnvironment.sendD4AgentMessage);
   const updateSettings = useAtomCommand(serverEnvironment.updateSettings);
+  const interrupt = useOrchestrationCommand(threadEnvironment.interruptTurn, {
+    reportFailure: false,
+  });
+  const agentShell = useThreadShell(
+    state.threadId ? { environmentId, threadId: state.threadId } : null,
+  );
+  const canInterrupt = deriveCanInterruptRunningThread(
+    state.threadId !== null,
+    agentShell?.runtime ?? null,
+  );
   const providersByEnvironment = useEnvironmentProviders();
   const projects = useProjects();
   const threads = useThreadShells();
@@ -687,7 +703,7 @@ export function D4AgentComposer({
                   canOperateThread={enabled && allowed}
                   pendingAction={null}
                   isRunning={active}
-                  canInterrupt={false}
+                  canInterrupt={canInterrupt}
                   followUpBehavior="queue"
                   showPlanFollowUpPrompt={false}
                   promptHasText={text.trim().length > 0}
@@ -706,7 +722,15 @@ export function D4AgentComposer({
                     void submit(active && (event.metaKey || event.ctrlKey) ? "steer" : "queue");
                   }}
                   onPreviousPendingQuestion={noop}
-                  onInterrupt={noop}
+                  onInterrupt={() => {
+                    if (state.threadId === null) return;
+                    void interrupt({ environmentId, input: { threadId: state.threadId } }).then(
+                      (result) => {
+                        if (result._tag === "Failure" && !isAtomCommandInterrupted(result))
+                          setError("Could not stop Nia's turn.");
+                      },
+                    );
+                  }}
                   onImplementPlanInNewThread={noop}
                 />
               </ComposerFooter.Actions>

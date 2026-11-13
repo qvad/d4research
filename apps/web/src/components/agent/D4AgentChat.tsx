@@ -51,7 +51,11 @@ import { ChatWorkspaceHeader } from "../chat/ChatWorkspaceHeader";
 import { NiaFilePanel } from "./NiaFilePanel";
 import { NiaRoutines } from "./NiaRoutines";
 import { D4AgentComposer } from "./D4AgentComposer";
+import { NiaThreadRequests } from "./NiaThreadRequests";
+import { Button } from "../ui/button";
 import { useRightPanelStore } from "../../rightPanelStore";
+
+const noop = () => {};
 
 export function D4AgentRoute({
   environmentId,
@@ -82,6 +86,9 @@ export function D4AgentRoute({
   const resolveArchivedRoute = environmentId !== null && threadId !== null && shell === null;
   const query = useD4AgentState(environmentId, isAgentProject || resolveArchivedRoute);
   const state = query.data;
+  // Nia's page shows replies only. The thread view is the ordinary chat for the same thread, with
+  // tool calls, questions and everything else Nia's page leaves out.
+  const [threadViewId, setThreadViewId] = useState<ThreadId | null>(null);
   const isAgentRoute =
     isAgentProject || (threadId !== null && state?.chatThreadIds?.includes(threadId) === true);
   // Ordinary chats never wait on Nia's identity: when that request did not settle, every route
@@ -92,8 +99,25 @@ export function D4AgentRoute({
         Loading Nia…
       </p>
     );
+  if (isAgentRoute && state && threadId !== null && threadViewId === threadId)
+    return (
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-1.5 text-xs text-muted-foreground">
+          <span>Thread view of Nia's session</span>
+          <Button size="xs" variant="outline" onClick={() => setThreadViewId(null)}>
+            Back to Nia
+          </Button>
+        </div>
+        <div className="min-h-0 flex-1">{children}</div>
+      </div>
+    );
   return isAgentRoute && state && environmentId !== null ? (
-    <D4AgentChat environmentId={environmentId} state={state} refresh={query.refresh} />
+    <D4AgentChat
+      environmentId={environmentId}
+      state={state}
+      refresh={query.refresh}
+      onOpenThreadView={() => setThreadViewId(threadId)}
+    />
   ) : (
     children
   );
@@ -103,10 +127,12 @@ export function D4AgentChat({
   environmentId,
   state,
   refresh,
+  onOpenThreadView,
 }: {
   environmentId: EnvironmentId;
   state: D4AgentState;
   refresh: () => void;
+  onOpenThreadView?: () => void;
 }) {
   const config = useAtomValue(serverEnvironment.configValueAtom(environmentId));
   const agentThreadRef = state.threadId ? { environmentId, threadId: state.threadId } : undefined;
@@ -114,6 +140,8 @@ export function D4AgentChat({
   const agentProject = useProject(
     state.projectId ? { environmentId, projectId: state.projectId } : null,
   );
+  const waitingOnRequest =
+    agentShell?.hasPendingApprovals === true || agentShell?.hasPendingUserInput === true;
   const activity = agentActivityLabel({
     runtime: agentShell?.runtime ?? null,
     latestRun: agentShell?.latestRun ?? null,
@@ -186,7 +214,14 @@ export function D4AgentChat({
                 <WorkspaceBreadcrumbText>Nia</WorkspaceBreadcrumbText>
               </WorkspaceBreadcrumbItem>
             </WorkspaceBreadcrumb>
-            <NiaRoutines environmentId={environmentId} state={state} />
+            <div className="flex items-center gap-2">
+              {onOpenThreadView ? (
+                <Button size="xs" variant="outline" onClick={onOpenThreadView}>
+                  Thread view
+                </Button>
+              ) : null}
+              <NiaRoutines environmentId={environmentId} state={state} />
+            </div>
           </ChatWorkspaceHeader>
           <ChatCanvas composerOverlayElement={composerOverlayElement}>
             <div
@@ -379,7 +414,19 @@ export function D4AgentChat({
                   state={state}
                   active={activity.tone === "working"}
                   refresh={refresh}
-                  banner={approvals}
+                  banner={
+                    agentThreadRef && waitingOnRequest ? (
+                      <>
+                        <NiaThreadRequests
+                          threadRef={agentThreadRef}
+                          onOpenThread={onOpenThreadView ?? noop}
+                        />
+                        {approvals}
+                      </>
+                    ) : (
+                      approvals
+                    )
+                  }
                 />
               </div>
             </div>
