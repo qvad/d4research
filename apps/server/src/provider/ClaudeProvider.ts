@@ -136,7 +136,7 @@ function parseOllamaTagsPayload(payload: unknown): ReadonlyArray<string> {
 
 // Recognize the Ollama preset and launch environment, including loopback aliases
 // and token-marked endpoints on non-default ports.
-function claudeUsesLocalOllama(environment: NodeJS.ProcessEnv): boolean {
+export function claudeUsesLocalOllama(environment: NodeJS.ProcessEnv): boolean {
   const raw = environment.ANTHROPIC_BASE_URL?.trim();
   if (!raw) return false;
   let url: URL;

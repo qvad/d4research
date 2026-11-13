@@ -1,5 +1,6 @@
 import { ClaudeSettings, ProviderDriverKind } from "@d4research/contracts";
 import * as Cache from "effect/Cache";
+import * as Digest from "effect/crypto/Digest";
 import * as Duration from "effect/Duration";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";
@@ -25,9 +26,11 @@ import { ProviderDriverError } from "../Errors.ts";
 import { claudeUsageReader } from "./claudeUsage.ts";
 import { makeClaudeScopedLimitNames } from "../claudeUsageLimits.ts";
 import * as ClaudeResetCredits from "../claudeResetCredits.ts";
+import { readOllamaUsageLimits } from "../ollamaUsageLimits.ts";
 import * as ResetCreditCoordinator from "../resetCreditCoordinator.ts";
 import {
   checkClaudeProviderStatus,
+  claudeUsesLocalOllama,
   makePendingClaudeProvider,
   probeClaudeCapabilities,
   probeClaudeWorkspaceSnapshot,
@@ -71,6 +74,7 @@ export type ClaudeDriverEnv =
   | ClaudeAdapterV2DriverEnv
   | ProviderHost.ProviderHost
   | ChildProcessSpawner.ChildProcessSpawner
+  | Digest.Digest
   | ResetCreditCoordinator.ResetCreditCoordinator
   | SecureRandom.SecureRandom
   | FileSystem.FileSystem
@@ -242,6 +246,22 @@ export const ClaudeDriver: ProviderDriver<
       Effect.map((result) => result.capabilities),
     );
 
+    // The Ollama preset bills cloud models to an ollama.com account, which reports limits for an API key.
+    const ollamaApiKey = claudeUsesLocalOllama(processEnv)
+      ? processEnv.OLLAMA_API_KEY?.trim()
+      : undefined;
+    const digest = yield* Digest.Digest;
+    // Ollama recommends reading the balance at most once per minute.
+    const readOllamaLimits = ollamaApiKey
+      ? yield* Effect.cachedWithTTL(
+          readOllamaUsageLimits(ollamaApiKey).pipe(
+            Effect.provideService(HttpClient.HttpClient, httpClient),
+            Effect.provideService(Digest.Digest, digest),
+          ),
+          Duration.minutes(1),
+        )
+      : undefined;
+
     const checkProvider = catalogService.refreshInBackground.pipe(
       Effect.andThen(
         modelCatalog.pipe(
@@ -265,6 +285,11 @@ export const ClaudeDriver: ProviderDriver<
             provider.auth.status === "unauthenticated"
               ? Cache.invalidateAll(capabilitiesProbeCache)
               : Effect.void,
+          ),
+          Effect.flatMap((provider) =>
+            readOllamaLimits && provider.enabled && provider.installed
+              ? readOllamaLimits.pipe(Effect.map((usageLimits) => ({ ...provider, usageLimits })))
+              : Effect.succeed(provider),
           ),
           Effect.map(stampIdentity),
         ),

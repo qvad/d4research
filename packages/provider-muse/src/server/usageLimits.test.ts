@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 
 import type { MuseSubscriptionUsage } from "./protocol.ts";
-import { isMuseUsageLimitFailure, museUsageLimitResetAt } from "./usageLimits.ts";
+import { isMuseUsageLimitFailure, museUsageLimitResetAt, museUsageLimits } from "./usageLimits.ts";
 
 const usage = {
   observedAtMs: 1791447762610,
@@ -52,5 +52,42 @@ describe("Muse usage limit failures", () => {
     expect(museUsageLimitResetAt(sessionOut, usage.window.resetsAtMs)).toBeNull();
     const afterNamedReset = Date.parse("2026-10-14T00:00:00Z");
     expect(museUsageLimitResetAt(undefined, afterNamedReset, { message: realRefusal })).toBeNull();
+  });
+});
+
+describe("Muse usage limits", () => {
+  it("reports both windows as of the observation and caps an overrun at 100%", () => {
+    const overrun = { ...usage, window: { ...usage.window, usedPercent: 103 } };
+    expect(museUsageLimits(overrun, nowMs + 60_000)).toEqual({
+      checkedAt: "2026-10-08T08:22:42.610Z",
+      windows: [
+        {
+          id: "session",
+          kind: "session",
+          label: "Session",
+          usedPercent: 100,
+          resetsAt: "2026-10-08T13:19:17.000Z",
+          windowDurationMins: 300,
+        },
+        {
+          id: "weekly",
+          kind: "weekly",
+          label: "Weekly",
+          usedPercent: 5,
+          resetsAt: "2026-10-12T00:00:00.000Z",
+          windowDurationMins: 10_080,
+        },
+      ],
+    });
+  });
+
+  it("drops a window once its reset has passed, because no newer reading exists", () => {
+    const afterSessionReset = museUsageLimits(usage, usage.window.resetsAtMs);
+    expect(afterSessionReset.windows.map((window) => window.id)).toEqual(["weekly"]);
+    expect(afterSessionReset.checkedAt).toBe("2026-10-08T08:22:42.610Z");
+
+    const afterWeeklyReset = museUsageLimits(usage, usage.weekly.resetsAtMs);
+    expect(afterWeeklyReset).toEqual({ checkedAt: "2026-10-12T00:00:00.000Z", windows: [] });
+    expect(museUsageLimits(undefined, nowMs).windows).toEqual([]);
   });
 });

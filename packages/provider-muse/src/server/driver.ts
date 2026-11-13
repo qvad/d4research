@@ -1,9 +1,11 @@
 import { ProviderDriverKind } from "@d4research/contracts";
 import { MuseSettings } from "../settings.ts";
 import * as HostProcess from "@d4research/shared/HostProcess";
+import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
+import * as Ref from "effect/Ref";
 import * as Schema from "effect/Schema";
 import * as HttpClient from "effect/http/HttpClient";
 import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
@@ -23,6 +25,8 @@ import { makeManagedServerProvider } from "@d4research/provider-core/server/mana
 import { enrichMuseSnapshot, latestMuseVersion, museMaintenance } from "./maintenance.ts";
 import { makeMuseEnvironment } from "./sdk.ts";
 import { museUsageReader } from "./usage.ts";
+import { museUsageLimits } from "./usageLimits.ts";
+import type { MuseSubscriptionUsage } from "./protocol.ts";
 import type * as MuseUsageHome from "./MuseUsageHome.ts";
 import {
   defaultProviderContinuationIdentity,
@@ -130,6 +134,9 @@ export const MuseDriver: ProviderDriver<
           : undefined;
       return latestVersion !== undefined ? { ...capabilities, latestVersion } : capabilities;
     });
+    // MSP has no usage probe: a new host has observed nothing, so limits come from the reports
+    // that sessions deliver while they run, and the status check republishes the latest one.
+    const latestUsage = yield* Ref.make<MuseSubscriptionUsage | undefined>(undefined);
     const snapshot = yield* makeManagedServerProvider<ProviderSnapshotSettings<MuseSettings>>({
       // Status refresh respects update checks; explicit updates use the resolver below.
       resolveMaintenance: (options) =>
@@ -147,6 +154,16 @@ export const MuseDriver: ProviderDriver<
       initialSnapshot: (settings) =>
         makePendingMuseProvider(settings.provider).pipe(Effect.map(stampIdentity)),
       checkProvider: checkMuseProviderStatus(effectiveConfig, processEnvironment, cwd).pipe(
+        Effect.flatMap((status) =>
+          effectiveConfig.enabled && status.installed
+            ? Effect.all([Ref.get(latestUsage), DateTime.now]).pipe(
+                Effect.map(([usage, now]) => ({
+                  ...status,
+                  usageLimits: museUsageLimits(usage, DateTime.toEpochMillis(now)),
+                })),
+              )
+            : Effect.succeed(status),
+        ),
         Effect.map(stampIdentity),
         Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, spawner),
         Effect.provideService(FileSystem.FileSystem, fileSystem),
@@ -184,6 +201,19 @@ export const MuseDriver: ProviderDriver<
       environment: processEnvironment,
       modelCatalog,
       ...(eventLoggers.native ? { nativeEventLogger: eventLoggers.native } : {}),
+      // Every session of the account repeats the report; publish only one that is not older.
+      onSubscriptionUsage: (usage) =>
+        Ref.modify(latestUsage, (previous) =>
+          previous !== undefined && previous.observedAtMs > usage.observedAtMs
+            ? [false, previous]
+            : [true, usage],
+        ).pipe(
+          Effect.flatMap((accepted) =>
+            accepted
+              ? snapshot.applyUsageLimits(museUsageLimits(usage, usage.observedAtMs))
+              : Effect.void,
+          ),
+        ),
       continuationRequests,
     });
     const textGeneration = yield* makeMuseTextGeneration(effectiveConfig, {

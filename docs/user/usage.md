@@ -194,6 +194,16 @@ Grok reports the remaining subscription allowance and reset time for its current
 after signing in with `grok login`. Explicit `XAI_API_KEY` connections and custom authentication
 or endpoint configurations do not report subscription limits.
 
+Muse Code reports its session and weekly limits when a Muse turn runs. After the server starts,
+Limits shows no Muse reading until the first Muse turn. The reading does not update between
+Muse turns.
+
+Ollama cloud reports limits for Claude instances that use the Ollama preset. Create an API key in
+your ollama.com account and add it as `OLLAMA_API_KEY` in the instance's
+**Environment variables**, then refresh provider status. Limits then shows the included credits
+of the current billing period, or the session and weekly limits on older plans, in the Claude
+group with an Ollama label. Signing in with `ollama signin` alone does not report them.
+
 API-key accounts may not report subscription limits. This also applies to Claude connections
 using a proxy through `ANTHROPIC_AUTH_TOKEN`.
 

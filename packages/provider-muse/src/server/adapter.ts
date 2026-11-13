@@ -202,6 +202,7 @@ export interface MuseAdapterV2Options {
   readonly createHost?: typeof createMuseSdkHost;
   readonly requestTimeoutMs?: number;
   readonly nativeEventLogger?: ProviderEventLoggers.EventNdjsonLogger;
+  readonly onSubscriptionUsage?: (usage: MuseSubscriptionUsage) => Effect.Effect<void>;
   readonly continuationRequests?: {
     readonly offer: (
       request: ProviderContinuationRequests.ProviderContinuationRequest,
@@ -1377,6 +1378,9 @@ export const makeMuseAdapterV2 = Effect.fn("makeMuseAdapterV2")(function* (
         // usage/changed is account-wide and carries no session ID.
         if (method === "usage/changed") {
           latestSubscriptionUsage = yield* decode(MuseSubscriptionUsage, params);
+          if (options.onSubscriptionUsage) {
+            yield* options.onSubscriptionUsage(latestSubscriptionUsage);
+          }
           return;
         }
         if (params.sessionId !== nativeSessionId) return;
