@@ -10,7 +10,7 @@ import type {
 } from "@d4research/contracts";
 
 import { EMPTY_TOTALS, type UsageRecord } from "@d4research/provider-core/server/usage";
-import { cacheSavingsUsd, priceUsage, type RateTable } from "./usagePricing.ts";
+import { cacheSavingsUsd, lookupRate, priceUsage, type RateTable } from "./usagePricing.ts";
 
 // en-CA gives ISO-ordered parts in the requested zone; Date getters are host-local.
 function makeDayFormatter(timeZone: string): (timestampMs: number) => string {
@@ -69,6 +69,7 @@ export interface AggregateOptions {
   readonly rates: RateTable;
   readonly priceOverrides?: RateTable;
   readonly modelAliases?: ReadonlyMap<string, string>;
+  readonly rateModel?: (provider: UsageRecord["provider"], model: string) => string | undefined;
   readonly modelFilter?: UsageModelFilter;
   readonly resolution?: UsageResolution;
   readonly sinceTimeMs?: number;
@@ -235,12 +236,16 @@ export class UsageAggregator {
     return true;
   }
 
-  // Aliases use the target's rate, replacing provider-specific rateModel.
+  // Aliases use the target's rate. Only an unpriced target goes through the provider's own rate naming.
   #mapModel(record: UsageRecord): UsageRecord {
     const model = this.#options.modelAliases?.get(record.model);
     if (model === undefined) return record;
     const { rateModel: _rateModel, ...rest } = record;
-    return { ...rest, model };
+    const rateModel =
+      lookupRate(this.#options.rates, model) === null
+        ? this.#options.rateModel?.(record.provider, model)
+        : undefined;
+    return rateModel === undefined ? { ...rest, model } : { ...rest, model, rateModel };
   }
 
   // Time-ordered records usually reuse the previous bucket; avoid rebuilding its key.
