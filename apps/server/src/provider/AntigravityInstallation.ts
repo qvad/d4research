@@ -457,6 +457,16 @@ export const makeAntigravityInstallation = Effect.fn("AntigravityInstallation.ma
         ),
     );
 
+  const withValidationTimeout = Effect.timeoutOrElse({
+    duration: VALIDATION_TIMEOUT,
+    orElse: () =>
+      Effect.fail(
+        installationError(
+          "verify",
+          "Antigravity runtime verification timed out after 90 seconds. Check this environment's server logs for startup errors, then retry installation.",
+        ),
+      ),
+  });
   const validate =
     options.validate ??
     Effect.fn("AntigravityInstallation.validate")(
@@ -610,10 +620,7 @@ export const makeAntigravityInstallation = Effect.fn("AntigravityInstallation.ma
           );
         }
         yield* report("verifying", "Checking the installed runtime.");
-        yield* validate(existing, asset.version).pipe(
-          Effect.scoped,
-          Effect.timeout(VALIDATION_TIMEOUT),
-        );
+        yield* validate(existing, asset.version).pipe(Effect.scoped, withValidationTimeout);
         yield* activate();
         return;
       }
@@ -870,7 +877,7 @@ export const makeAntigravityInstallation = Effect.fn("AntigravityInstallation.ma
           managedVersionDirectory: pairDirectory,
         },
         asset.version,
-      ).pipe(Effect.scoped, Effect.timeout(VALIDATION_TIMEOUT));
+      ).pipe(Effect.scoped, withValidationTimeout);
       const record: InstalledRelease = {
         releaseId,
         version: asset.version,
@@ -894,10 +901,7 @@ export const makeAntigravityInstallation = Effect.fn("AntigravityInstallation.ma
           completedRelease(releaseId).pipe(
             Effect.flatMap((existing) =>
               existing.version === asset.version
-                ? validate(existing, asset.version).pipe(
-                    Effect.scoped,
-                    Effect.timeout(VALIDATION_TIMEOUT),
-                  )
+                ? validate(existing, asset.version).pipe(Effect.scoped, withValidationTimeout)
                 : Effect.fail(
                     installationError(
                       "activate",
@@ -905,12 +909,14 @@ export const makeAntigravityInstallation = Effect.fn("AntigravityInstallation.ma
                     ),
                   ),
             ),
-            Effect.mapError(() =>
-              installationError(
-                "activate",
-                "Could not publish the Antigravity runtime. The previous release is unchanged. Try again.",
-                cause,
-              ),
+            Effect.mapError((error) =>
+              isInstallationError(error) && error.operation === "verify"
+                ? error
+                : installationError(
+                    "activate",
+                    "Could not publish the Antigravity runtime. The previous release is unchanged. Try again.",
+                    cause,
+                  ),
             ),
           ),
         ),
@@ -1024,7 +1030,7 @@ export const makeAntigravityInstallation = Effect.fn("AntigravityInstallation.ma
             ? install(asset!)
             : validate(reuse, reuse.version!).pipe(
                 Effect.scoped,
-                Effect.timeout(VALIDATION_TIMEOUT),
+                withValidationTimeout,
                 Effect.andThen(ensureEligible(reuse.version!)),
                 Effect.andThen(
                   SubscriptionRef.update(state, (value) => ({
