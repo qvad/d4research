@@ -1384,6 +1384,25 @@ describe("AntigravityAdapterV2 work after the prompt ends", () => {
     }).pipe(Effect.provide(layerSession)),
   );
 
+  // agy names its background commands `<session>/task-<n>`; the agent passes that to
+  // t3_background_wait, which must not fail since the adapter already holds the run open.
+  it.effect("accepts t3_background_wait for a command it already tracks", () =>
+    Effect.gen(function* () {
+      const { session, providerThread, startTurn, throughPromptSettled } =
+        yield* openSessionWithRunningCommand({ WaitMsBeforeAsync: 10000 });
+      yield* startTurn(1, false);
+      yield* throughPromptSettled;
+      const taskIds = ["mock-session-1/task-2"];
+      assert.isDefined(session.awaitBackgroundTasks, "t3_background_wait must not be unsupported");
+      const result = yield* session.awaitBackgroundTasks!({
+        providerThread,
+        taskIds,
+        awaited: true,
+      });
+      assert.deepEqual(result.matched, taskIds);
+    }).pipe(Effect.provide(layerSession)),
+  );
+
   // Files as agy 1.5.12 wrote them: the launch sits in the child's inbox, and the child's report
   // lands in the parent's inbox with no session update. Only the agent's own reply follows.
   it.effect.each([
