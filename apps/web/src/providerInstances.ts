@@ -50,8 +50,23 @@ export interface ProviderInstanceEntry {
 }
 
 /** Disabled instances may retain ready status until reconciliation. */
-export function isProviderInstancePickerReady(entry: ProviderInstanceEntry): boolean {
+function isProviderInstanceHealthy(entry: ProviderInstanceEntry): boolean {
   return entry.enabled && entry.isAvailable && entry.status === "ready";
+}
+
+/** Also true after a check that only failed or ran late: an earlier check's models stay offered. */
+export function isProviderInstancePickerReady(entry: ProviderInstanceEntry): boolean {
+  if (isProviderInstanceHealthy(entry)) return true;
+  const { auth, modelsRetained } = entry.snapshot;
+  if (!entry.enabled || !entry.isAvailable) return false;
+  if (modelsRetained === true) return true;
+  // The sign-in was confirmed, so the warning is about something else, such as a late catalog.
+  return (
+    entry.status === "warning" &&
+    entry.installed &&
+    auth.status === "authenticated" &&
+    entry.models.length > 0
+  );
 }
 
 export function isProviderInstancePickerVisible(entry: ProviderInstanceEntry): boolean {
@@ -230,7 +245,7 @@ export function resolveSelectableProviderInstanceEntry(
     }
   }
   return (
-    entries.find(isProviderInstancePickerReady) ??
+    entries.find(isProviderInstanceHealthy) ??
     entries.find((entry) => isSelectableProviderInstanceEntry(entry) && entry.status !== "error")
   );
 }
