@@ -445,6 +445,7 @@ export interface AcpAdapterV2Flavor {
   ) => ReadonlyArray<ProviderApprovalOption>;
   readonly onSessionEvent?: (
     event: AcpSessionRuntime.AcpSessionRuntimeEvent,
+    cwd: string,
   ) => Effect.Effect<void>;
   readonly subagentsIdleOnTurnCompletion?: boolean;
   readonly supportsCompaction?: boolean;
@@ -6603,7 +6604,8 @@ export const makeAcpAdapterV2 = Effect.fn("makeAcpAdapterV2")(function* (
               }
               return runRuntimeCallbackAtGeneration(
                 handlerGeneration,
-                flavor.onSessionEvent?.(event) ?? Effect.void,
+                flavor.onSessionEvent?.(event, input.runtimePolicy.cwd ?? process.cwd()) ??
+                  Effect.void,
               ).pipe(Effect.asVoid);
             }),
             Effect.forkIn(handlerOptions.scope ?? runtimeScope ?? sessionScope),
