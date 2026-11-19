@@ -187,6 +187,9 @@ export const makeAcpRegistryAdapterV2 = Effect.fn("makeAcpRegistryAdapterV2")(fu
   const startupKey =
     options.settings.source === "local" ? `local:${options.instanceId}` : registryAgentId;
   const isDevin = registryAgentId === "devin";
+  const isAntigravityCli =
+    options.settings.source === "local" &&
+    /^agy(\.exe|\.cmd)?$/i.test(options.settings.commandPath.split(/[\\/]/).pop() ?? "");
   // Local installs launch the `copilot` binary directly with no registry id.
   const isCopilot =
     registryAgentId === "github-copilot-cli" ||
@@ -219,6 +222,16 @@ export const makeAcpRegistryAdapterV2 = Effect.fn("makeAcpRegistryAdapterV2")(fu
         }
       : AcpProviderCapabilitiesV2,
     customModels: readCustomModelEntries(options.settings.customModels).map((entry) => entry.slug),
+    ...(isAntigravityCli
+      ? {
+          // agy replies on the root session when a background command it started exits;
+          // no prompt response follows, so the continuation ends on the deferred finalize.
+          wakeOnDetachedRequest: true,
+          replyEndsWithUsageUpdate: true,
+          enablePostSettleContinuation: true,
+          deferFinalizeForBackgroundWork: true,
+        }
+      : {}),
     promptFailure: (cause) => acpRegistryPromptFailure(registryAgentId, cause),
     ...(registryAgentId === "factory-droid"
       ? { extractElicitationForm: extractDroidElicitationForm }
