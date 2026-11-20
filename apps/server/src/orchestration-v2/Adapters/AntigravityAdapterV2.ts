@@ -283,6 +283,7 @@ export function makeAntigravityAcpAdapterFlavor(
     // ACP 1.3.0 treats /compact as ordinary model input.
     supportsCompaction: false,
     requiresSignIn: isAntigravitySignInRequiredError,
+    checksVersionAtHandshake: true,
     // Antigravity can leave a prompt open without updates; long tools and approvals pause this.
     promptInactivityTimeout: "15 minutes",
     reportsPerTurnPromptUsage: true,

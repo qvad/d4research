@@ -23,6 +23,7 @@ import { runMigrations } from "../persistence/Migrations.ts";
 import ProjectWorkspaceRoots from "../persistence/Migrations/041_ProjectionProjectWorkspaceRoots.ts";
 import * as ProjectEnrichmentService from "../project/ProjectEnrichmentService.ts";
 import * as ProjectService from "../project/ProjectService.ts";
+import * as ModelManifest from "../provider/ModelManifest.ts";
 import * as ProviderInstanceRegistry from "../provider/ProviderInstanceRegistry.ts";
 import * as ServerSettings from "../serverSettings.ts";
 import * as SourceControlProviderRegistry from "../sourceControl/SourceControlProviderRegistry.ts";
@@ -165,6 +166,7 @@ const layerRuntime = (dbPath: string) => {
     Layer.provide(layerCheckpointStore),
     Layer.provide(layerServerConfig),
     Layer.provide(ServerSettings.layerTest()),
+    Layer.provide(ModelManifest.layerTest),
     Layer.provide(
       Layer.succeed(ProviderInstanceRegistry.ProviderInstanceRegistry, {
         getInstance: () => Effect.undefined,
