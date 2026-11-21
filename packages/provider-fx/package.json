@@ -33,9 +33,9 @@
     "effect": "catalog:"
   },
   "devDependencies": {
+    "@d4research/provider-testing": "workspace:*",
     "@effect/platform-node": "catalog:",
     "@effect/vitest": "catalog:",
-    "@d4research/provider-testing": "workspace:*",
     "@types/node": "catalog:",
     "effect-acp": "workspace:*",
     "vite-plus": "catalog:"
