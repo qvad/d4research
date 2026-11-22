@@ -1,8 +1,17 @@
-import type { ComposerThreadDraftState } from "../composerDraftStore";
-import type { ModelSelection } from "@d4research/contracts";
 import { scopeProjectRef } from "@d4research/client-runtime/environment";
-import type { EnvironmentId, ProjectId, ScopedProjectRef } from "@d4research/contracts";
-import type { DraftThreadEnvMode } from "../composerDraftStore";
+import type { EnvironmentThreadShell } from "@d4research/client-runtime/state/shell";
+import type {
+  EnvironmentId,
+  ModelSelection,
+  ProjectId,
+  ScopedProjectRef,
+} from "@d4research/contracts";
+import type { ComposerThreadDraftState, DraftThreadEnvMode } from "../composerDraftStore";
+
+type ComposerModelSelectionState = Pick<
+  ComposerThreadDraftState,
+  "activeProvider" | "modelSelectionByProvider" | "modelSelectionExplicit"
+>;
 
 interface ThreadContextLike {
   environmentId: EnvironmentId;
@@ -35,6 +44,48 @@ export function resolveNewDraftStartFromOrigin(input: {
   return input.envMode === "worktree" && input.newWorktreesStartFromOrigin;
 }
 
+export function resolveNewThreadModelSelectionOverride(input: {
+  readonly projectDefaultSelection: ModelSelection | null;
+  readonly carrySelection: ModelSelection | null;
+  readonly carrySourceDraftId: string | null;
+  readonly destinationDraftId: string;
+}): ModelSelection | null {
+  return (
+    input.projectDefaultSelection ??
+    (input.carrySourceDraftId === input.destinationDraftId ? null : input.carrySelection)
+  );
+}
+
+export function hasExplicitComposerModelSelection(
+  draft: ComposerModelSelectionState | null | undefined,
+): boolean {
+  const activeProvider = draft?.activeProvider;
+  return (
+    draft?.modelSelectionExplicit === true &&
+    activeProvider !== null &&
+    activeProvider !== undefined &&
+    draft.modelSelectionByProvider[activeProvider] !== undefined
+  );
+}
+
+export function threadHasStarted(
+  thread: Pick<EnvironmentThreadShell, "latestRun" | "itemCount" | "runtime"> | null | undefined,
+): boolean {
+  return Boolean(thread && (thread.latestRun !== null || thread.itemCount > 0 || thread.runtime));
+}
+
+/**
+ * A draft is seeded from sticky state, project defaults, prompt links, or a carried selection.
+ * That seed is what an unstarted thread sends; once the thread has started, its own selection
+ * wins unless the user picked a model or traits for it.
+ */
+export function draftModelSelectionApplies(
+  draft: Pick<ComposerThreadDraftState, "modelSelectionExplicit"> | null | undefined,
+  threadStarted: boolean,
+): boolean {
+  return !threadStarted || draft?.modelSelectionExplicit === true;
+}
+
 export function resolveThreadActionProjectRef(
   context: ChatThreadActionContext,
 ): ScopedProjectRef | null {
@@ -61,32 +112,3 @@ export async function startNewThreadFromContext(
   await context.handleNewThread(projectRef);
   return true;
 }
-
-export function resolveNewThreadModelSelectionOverride(input: {
-  readonly projectDefaultSelection: ModelSelection | null;
-  readonly carrySelection: ModelSelection | null;
-  readonly carrySourceDraftId: string | null;
-  readonly destinationDraftId: string;
-}): ModelSelection | null {
-  return (
-    input.projectDefaultSelection ??
-    (input.carrySourceDraftId === input.destinationDraftId ? null : input.carrySelection)
-  );
-}
-
-export function hasExplicitComposerModelSelection(
-  draft: ComposerModelSelectionState | null | undefined,
-): boolean {
-  const activeProvider = draft?.activeProvider;
-  return (
-    draft?.modelSelectionExplicit === true &&
-    activeProvider !== null &&
-    activeProvider !== undefined &&
-    draft.modelSelectionByProvider[activeProvider] !== undefined
-  );
-}
-
-type ComposerModelSelectionState = Pick<
-  ComposerThreadDraftState,
-  "activeProvider" | "modelSelectionByProvider" | "modelSelectionExplicit"
->;

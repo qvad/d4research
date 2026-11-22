@@ -1,6 +1,7 @@
+import { T } from "gt-react";
 import { type ReactNode } from "react";
 
-import { Sheet, SheetPopup } from "./ui/sheet";
+import { Sheet, SheetHeader, SheetPopup, SheetTitle } from "./ui/sheet";
 
 export function RightPanelSheet(props: {
   animationDurationMs: number;
@@ -32,6 +33,11 @@ export function RightPanelSheet(props: {
             : "wco:mt-(--workspace-topbar-height) wco:h-[calc(100%-var(--workspace-topbar-height))] wco:max-h-[calc(100%-var(--workspace-topbar-height))]",
         ].join(" ")}
       >
+        <SheetHeader className="sr-only">
+          <SheetTitle>
+            <T>Workspace panel</T>
+          </SheetTitle>
+        </SheetHeader>
         {props.children}
       </SheetPopup>
     </Sheet>

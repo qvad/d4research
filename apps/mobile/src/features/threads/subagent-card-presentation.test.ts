@@ -1,6 +1,7 @@
 import * as DateTime from "effect/DateTime";
 import { describe, expect, it } from "vite-plus/test";
-import { subagentCardDetail, subagentCardElapsed } from "./subagent-card-presentation";
+import { subagentCardDetail } from "@d4research/client-runtime/state/subagent-display";
+import { subagentCardElapsed } from "./subagent-card-presentation";
 
 describe("subagent card", () => {
   it("shows readable result text and suppresses generic completion messages", () => {
@@ -28,13 +29,13 @@ describe("subagent card", () => {
   const done = { status: "completed" as const, startedAt: start, completedAt: end };
 
   it("freezes settled durations and spans the group's wall time", () => {
-    expect(subagentCardElapsed([done], DateTime.toEpochMillis(later))).toBe("1m");
+    expect(subagentCardElapsed([done], DateTime.toEpochMillis(later))).toBe("1m 0s");
     expect(
       subagentCardElapsed(
         [done, { ...done, startedAt: end, completedAt: later }],
         DateTime.toEpochMillis(later),
       ),
-    ).toBe("2m");
+    ).toBe("2m 0s");
   });
 
   it("counts live work but never uses a settled agent's age as its duration", () => {
@@ -42,7 +43,7 @@ describe("subagent card", () => {
     expect(subagentCardElapsed([unfinished], DateTime.toEpochMillis(later))).toBeNull();
     expect(
       subagentCardElapsed([{ ...unfinished, status: "running" }], DateTime.toEpochMillis(later)),
-    ).toBe("2m");
+    ).toBe("2m 0s");
     expect(
       subagentCardElapsed([{ ...unfinished, status: "idle" }], DateTime.toEpochMillis(later)),
     ).toBeNull();

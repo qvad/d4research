@@ -57,8 +57,20 @@ import * as PreviewAutomationBroker from "../../PreviewAutomationBroker.ts";
 import * as PreviewBrowser from "../../../preview/PreviewBrowser.ts";
 import * as UsageService from "../../../usage/UsageService.ts";
 import * as UsageLimitSources from "../../../usage/UsageLimitSources.ts";
+import * as EnvironmentTheme from "../../../environmentTheme.ts";
+import * as GitManager from "../../../git/GitManager.ts";
+import * as IssueService from "../../../issue/IssueService.ts";
+import * as PullRequestService from "../../../pullRequest/PullRequestService.ts";
+import * as TaskFolders from "../../../workspace/TaskFolders.ts";
+import * as ThreadIssueService from "../../../orchestration-v2/ThreadIssueService.ts";
 
 const layerStubServices = Layer.mergeAll(
+  Layer.mock(EnvironmentTheme.EnvironmentThemeService)({}),
+  Layer.mock(GitManager.GitManager)({}),
+  Layer.mock(IssueService.IssueService)({}),
+  Layer.mock(PullRequestService.PullRequestService)({}),
+  Layer.mock(TaskFolders.TaskFolders)({}),
+  Layer.mock(ThreadIssueService.ThreadIssueService)({}),
   Layer.mock(AssetSigner.AssetSigner)({}),
   Layer.mock(AlmanacService)({}),
   Layer.mock(RemoteDelegation)({}),
@@ -72,7 +84,9 @@ const layerStubServices = Layer.mergeAll(
   Layer.mock(ThreadWorkspaces.ThreadWorkspaces)({}),
   SqlitePersistence.layerMemory,
   Layer.mock(Orchestrator.OrchestratorV2)({}),
-  Layer.mock(ProjectionStore.ProjectionStoreV2)({}),
+  Layer.mock(ProjectionStore.ProjectionStoreV2)({
+    getThreadShell: () => Effect.succeed(null),
+  }),
   Layer.mock(DeviceService.DeviceService)({}),
   Layer.mock(ThreadManagementService.ThreadManagementService)({}),
   Layer.mock(ProviderRegistry.ProviderRegistry)({}),

@@ -1,3 +1,4 @@
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
 import { useAtomMount, useAtomSubscribe, useAtomValue } from "@effect/atom-react";
 import { executeAtomQuery } from "@d4research/client-runtime/state/runtime";
 import {
@@ -10,8 +11,10 @@ import * as Schema from "effect/Schema";
 import * as Option from "effect/Option";
 import { useLayoutEffect, useRef, useState } from "react";
 import { AsyncResult, Atom } from "effect/reactivity";
+import { msg } from "gt-react-native";
 
 import { environmentCatalog } from "../../connection/catalog";
+import { m } from "../../i18n/messages";
 import { appAtomRegistry } from "../../state/atom-registry";
 import { projectEnvironment } from "../../state/projects";
 import { useDebouncedValue } from "../../state/queries";
@@ -290,7 +293,9 @@ export function useFileTreeEntries(input: {
           validatedDirectories,
           errors: new Map(current.errors).set(
             directoryPath,
-            error instanceof Error ? error.message : "Files unavailable",
+            error instanceof Error
+              ? (errorDisplayMessage(error, m) ?? error.message)
+              : m(msg("Files unavailable")),
           ),
         };
       });

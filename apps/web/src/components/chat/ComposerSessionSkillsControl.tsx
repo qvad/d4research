@@ -4,7 +4,7 @@ import {
   ThreadId,
 } from "@d4research/contracts";
 import { mergeEnabledSkillNames } from "@d4research/shared/enabledSkillsContext";
-import { CheckIcon, SearchIcon, SparklesIcon } from "lucide-react";
+import { BookOpenIcon, CheckIcon, SearchIcon } from "lucide-react";
 import { memo, type ComponentProps, useEffect, useState } from "react";
 
 import {
@@ -79,7 +79,7 @@ export function ComposerSessionSkillsTriggerButton({
       data-chat-session-skills-trigger="true"
       {...props}
     >
-      <SparklesIcon className="size-3.5" aria-hidden="true" />
+      <BookOpenIcon className="size-3.5" aria-hidden="true" />
     </Button>
   );
 }

@@ -7,14 +7,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 const saved = vi.hoisted(() => [] as unknown[]);
 vi.mock("../../state/preferences", async () => {
-  const { Atom } = await import("effect/reactivity");
+  const Effect = await import("effect/Effect");
   return {
-    updateMobilePreferencesAtom: Atom.writable(
-      () => null,
-      (_ctx, patch: unknown) => {
+    saveMobilePreferences: {
+      label: "save preferences",
+      run: (_registry: unknown, patch: unknown) => {
         saved.push(patch);
+        return Effect.void;
       },
-    ),
+    },
   };
 });
 

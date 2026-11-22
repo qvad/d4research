@@ -19,12 +19,13 @@
     "generate": "graphqlgen"
   },
   "dependencies": {
-    "@effect/platform-node": "catalog:",
     "@d4research/contracts": "workspace:*",
     "@d4research/provider-core": "workspace:*",
     "@d4research/shared": "workspace:*",
     "@d4research/source-control-core": "workspace:*",
-    "effect": "catalog:"
+    "@effect/platform-node": "catalog:",
+    "effect": "catalog:",
+    "yaml": "catalog:"
   },
   "devDependencies": {
     "@d4research/source-control-testing": "workspace:*",

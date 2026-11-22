@@ -246,7 +246,7 @@ vi.mock("../../state/query", () => ({
   }),
 }));
 vi.mock("../../state/entities", async () => {
-  const { relabelThreadLinks } = await import("@d4research/shared/threadLinks");
+  const { relabelThreadLinks } = await import("@d4research/shared/threadLinksCopy");
   return {
     useLiveThreadLinkLabels: (markdown: string, environment: EnvironmentId) =>
       relabelThreadLinks(markdown, environment, (ref) => mocks.threadTitles[ref.threadId]),
@@ -522,7 +522,10 @@ vi.mock("../threads/thread-list-v2-items", () => ({
   ThreadListV2SnoozedShelfHeader: () => null,
   ThreadListV2WorkingShelfHeader: () => null,
 }));
-vi.mock("../threads/threadListAnimations", () => ({ THREAD_SIDEBAR_ROW_LAYOUT: undefined }));
+vi.mock("../threads/threadListAnimations", () => ({
+  THREAD_SIDEBAR_ROW_LAYOUT: undefined,
+  THREAD_LIST_ROW_LAYOUT: undefined,
+}));
 vi.mock("../threads/thread-provider-instance", () => ({
   useThreadRowProviderInstanceResolver: () => () => null,
 }));
@@ -1620,11 +1623,13 @@ it("pins the agent above filters in the actual mobile HomeScreen", async () => {
       }),
     ],
     pendingTasks: [],
+    visible: true,
     catalogState: {
       hasConnections: true,
       hasReadyEnvironment: true,
       isLoadingConnections: false,
       hasConnectingEnvironment: false,
+      hasSyncingConnectedEnvironment: false,
       connectingEnvironments: [],
       connectionState: "connected",
       connectionError: null,

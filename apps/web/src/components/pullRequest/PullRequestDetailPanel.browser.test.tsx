@@ -289,7 +289,7 @@ function setup() {
   checkoutState.error = null;
   prepareThread.mockReset().mockResolvedValue({
     _tag: "Success",
-    value: { branch: "feature", worktreePath: "/workspace/pr" },
+    value: { branch: "feature", worktreePath: "/workspace/pr", pullRequest: { url: detail.url } },
   });
   update.mockReset().mockResolvedValue({ _tag: "Success", value: undefined });
 }
@@ -574,7 +574,9 @@ it("restores the selected PR tab when switching threads and remounting the right
     const selected = selectActiveRightPanelSurface(useRightPanelStore.getState().byThreadKey, ref);
     return (
       <RightPanelSurfaceContent
-        sideChatParentPanel={{ openToolDiff: vi.fn(), runShellCommand: vi.fn() }}
+        workspaceRevision={null}
+        issuesSupported={false}
+        sideChatParentPanel={{ hostRef: ref, openToolDiff: vi.fn(), runShellCommand: vi.fn() }}
         surface={selected}
         activeSurfaceId={selected?.id ?? null}
         threadRef={ref}

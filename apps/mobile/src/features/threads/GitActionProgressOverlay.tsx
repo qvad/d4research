@@ -1,3 +1,4 @@
+import { useGT } from "gt-react-native";
 import { tryOpenExternalUrl } from "../../lib/openExternalUrl";
 import * as Haptics from "expo-haptics";
 import { useEffect, useRef } from "react";
@@ -12,6 +13,7 @@ export function GitActionProgressOverlay(props: {
   readonly onDismiss: () => void;
   readonly onOpenPullRequest?: (url: string) => Promise<boolean>;
 }) {
+  const gt = useGT();
   const { progress, onDismiss } = props;
   const openPullRequest = props.onOpenPullRequest;
   const prevPhaseRef = useRef(progress.phase);
@@ -54,7 +56,7 @@ export function GitActionProgressOverlay(props: {
       pointerEvents="box-none"
     >
       <Toast
-        message={progress.label ?? "Source control"}
+        message={progress.label ?? gt("Source control")}
         description={progress.description ?? undefined}
         tone={
           progress.phase === "error"
@@ -64,7 +66,7 @@ export function GitActionProgressOverlay(props: {
               : "default"
         }
         busy={progress.phase === "running"}
-        action={progress.prUrl ? { label: "Open PR", onPress: handlePress } : undefined}
+        action={progress.prUrl ? { label: gt("Open PR"), onPress: handlePress } : undefined}
         onDismiss={progress.phase === "running" ? undefined : onDismiss}
       />
     </Animated.View>

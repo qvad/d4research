@@ -1,5 +1,7 @@
 import type { ScheduledTaskWebhookEndpoint } from "@d4research/contracts";
 import { isLocalLoopbackHost } from "@d4research/shared/hostClassification";
+import { mFallback, msg } from "gt-i18n";
+import type { MFunctionType } from "gt-i18n/types";
 
 export interface WebhookAddress {
   readonly address: string;
@@ -10,6 +12,7 @@ export interface WebhookAddress {
 export function webhookAddress(
   endpoint: ScheduledTaskWebhookEndpoint,
   httpBaseUrl: string | null,
+  resolve: MFunctionType = mFallback,
 ): WebhookAddress {
   if (endpoint.url !== null) {
     return { address: endpoint.url, copyable: true, note: null };
@@ -18,7 +21,7 @@ export function webhookAddress(
     return {
       address: endpoint.path,
       copyable: false,
-      note: "Connect to this environment to resolve its webhook address.",
+      note: resolve(msg("Connect to this environment to resolve its webhook address.")),
     };
   }
   const url = new URL(endpoint.path, httpBaseUrl);
@@ -26,7 +29,15 @@ export function webhookAddress(
     address: url.href,
     copyable: true,
     note: isLocalLoopbackHost(url.hostname)
-      ? "Only this computer can call this address. Use a reachable HTTPS proxy for cloud services."
-      : "Works wherever this environment's address is reachable, for example over Tailscale or your own proxy.",
+      ? resolve(
+          msg(
+            "Only this computer can call this address. Use a reachable HTTPS proxy for cloud services.",
+          ),
+        )
+      : resolve(
+          msg(
+            "Works wherever this environment's address is reachable, for example over Tailscale or your own proxy.",
+          ),
+        ),
   };
 }

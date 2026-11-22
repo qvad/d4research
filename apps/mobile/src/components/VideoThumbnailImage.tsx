@@ -14,6 +14,7 @@ export function VideoThumbnailImage(props: {
   readonly contentFit?: "cover" | "contain";
 }) {
   const { cacheKey, source } = props;
+  // Extraction starts only while the screen is focused; leaving it skips queued loads.
   const isFocused = useIsFocused();
   const [loaded, setLoaded] = useState<{ key: string; thumbnail: VideoThumbnail } | null>(null);
   const thumbnail = loaded?.key === cacheKey ? loaded.thumbnail : cachedVideoThumbnail(cacheKey);
@@ -35,13 +36,17 @@ export function VideoThumbnailImage(props: {
     return () => controller.abort();
   }, [cacheKey, source, isFocused]);
 
-  return thumbnail ? (
+  // iOS draws a frame object the moment its prop is set, with the contentFit the view has then,
+  // and a later contentFit never refits it. Send the frame after mount so contentFit is set first.
+  const [laidOut, setLaidOut] = useState(false);
+  return (
     <Image
-      source={thumbnail}
+      onLayout={() => setLaidOut(true)}
+      source={laidOut ? thumbnail : null}
       style={StyleSheet.absoluteFill}
       contentFit={props.contentFit ?? "cover"}
       recyclingKey={cacheKey}
       accessible={false}
     />
-  ) : null;
+  );
 }

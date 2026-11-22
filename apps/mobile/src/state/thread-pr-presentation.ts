@@ -6,7 +6,11 @@ import type {
   ThreadPullRequestLink,
   VcsStatusResult,
 } from "@d4research/contracts";
-import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
+import {
+  sourceControlClients,
+  type ChangeRequestTerminology,
+} from "@d4research/client-runtime/source-control-clients";
+import { changeRequestTermKind } from "../lib/changeRequestTerm";
 
 import {
   legacyThreadPullRequestKey,
@@ -14,10 +18,14 @@ import {
   resolveThreadPullRequestBadge,
   threadPullRequestKeyOf,
 } from "@d4research/client-runtime/thread-pull-requests";
+import { msg } from "gt-react-native";
+
+import { m, type MessageResolver } from "../i18n/messages";
 
 export type ThreadPr = NonNullable<VcsStatusResult["pr"]>;
 
 export interface ThreadPrPresentation {
+  readonly changeRequest: ChangeRequestTerminology;
   readonly number: number;
   readonly state: ThreadPr["state"] | null;
   readonly kind: "pull-request" | "stack";
@@ -33,17 +41,24 @@ export interface ThreadPrPresentation {
 const PR_STATE_TEXT_CLASS: Record<ThreadPr["state"], string> = {
   open: "text-adaptive-emerald-600-400",
   merged: "text-adaptive-violet-600-400",
-  closed: "text-foreground-muted",
+  closed: "text-adaptive-rose-600-400",
 };
 
+function prStateKey(state: ThreadPr["state"] | "draft" | null) {
+  return state ?? "pending";
+}
+
+/** Render callers pass `useMessages()` so the label follows a language switch. */
 export function presentThreadPr(
   pr: ThreadPr,
   provider: VcsStatusResult["sourceControlProvider"] | null | undefined,
+  resolve: MessageResolver = m,
 ): ThreadPrPresentation {
   const { changeRequest } = sourceControlClients.get(provider?.kind);
   const isDraft = pr.state === "open" && pr.isDraft === true;
   return {
     kind: "pull-request",
+    changeRequest,
     others: 0,
     number: pr.number,
     state: pr.state,
@@ -51,17 +66,29 @@ export function presentThreadPr(
     updatedAt: pr.updatedAt ?? null,
     url: pr.url,
     label: String(pr.number),
-    accessibilityLabel: `#${pr.number} ${changeRequest.singular} ${isDraft ? "draft" : pr.state}`,
+    accessibilityLabel: resolve(
+      msg(
+        "{term, select, mr {#{number} merge request {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} cr {#{number} change request {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} other {#{number} pull request {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}}}",
+        {
+          number: String(pr.number),
+          term: changeRequestTermKind(changeRequest),
+          state: prStateKey(isDraft ? "draft" : pr.state),
+        },
+      ),
+    ),
     textClassName: isDraft ? "text-foreground-muted" : PR_STATE_TEXT_CLASS[pr.state],
   };
 }
 
 export function presentThreadLinkedPullRequests(
   links: ReadonlyArray<ThreadPullRequestLink>,
+  resolve: MessageResolver = m,
 ): ThreadPrPresentation | null {
   const link = resolveThreadCurrentPullRequestLink(links);
   const badge = resolveThreadPullRequestBadge(links);
   if (link === null || badge === null) return null;
+  const { changeRequest } =
+    sourceControlClients.findByChangeRequestUrl(link.url) ?? sourceControlClients.get(undefined);
   const snapshot = link.snapshot;
   const linkedCount = badge.kind === "pull-request" && badge.others > 0 ? badge.others + 1 : null;
   const isMultiple = badge.kind === "stack" || linkedCount !== null;
@@ -81,6 +108,7 @@ export function presentThreadLinkedPullRequests(
         : String(link.number);
   return {
     kind: badge.kind,
+    changeRequest,
     others: badge.kind === "pull-request" ? badge.others : 0,
     number: link.number,
     state,
@@ -90,16 +118,38 @@ export function presentThreadLinkedPullRequests(
     label,
     accessibilityLabel:
       badge.kind === "stack"
-        ? `${badge.layers} pull requests in stack, ${isDraft ? "draft" : (state ?? "status pending")}`
+        ? resolve(
+            msg(
+              "{term, select, mr {{count, plural, one {{count} merge requests in stack, {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} other {{count} merge requests in stack, {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}}}} cr {{count, plural, one {{count} change requests in stack, {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} other {{count} change requests in stack, {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}}}} other {{count, plural, one {{count} pull requests in stack, {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} other {{count} pull requests in stack, {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}}}}}",
+              {
+                count: badge.layers,
+                term: changeRequestTermKind(changeRequest),
+                state: prStateKey(isDraft ? "draft" : state),
+              },
+            ),
+          )
         : linkedCount !== null
-          ? `${linkedCount} linked pull requests, overall ${badge.state}`
-          : `#${link.number} pull request ${state === null ? "status pending" : isDraft ? "draft" : state}`,
-    textClassName:
-      state === null || isDraft
-        ? "text-foreground-muted"
-        : isMultiple && state === "closed"
-          ? "text-adaptive-rose-600-400"
-          : PR_STATE_TEXT_CLASS[state],
+          ? resolve(
+              msg(
+                "{term, select, mr {{count, plural, one {{count} linked merge requests, overall {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} other {{count} linked merge requests, overall {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}}}} cr {{count, plural, one {{count} linked change requests, overall {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} other {{count} linked change requests, overall {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}}}} other {{count, plural, one {{count} linked pull requests, overall {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} other {{count} linked pull requests, overall {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}}}}}",
+                {
+                  count: linkedCount,
+                  term: changeRequestTermKind(changeRequest),
+                  state: prStateKey(badge.state),
+                },
+              ),
+            )
+          : resolve(
+              msg(
+                "{term, select, mr {#{number} merge request {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} cr {#{number} change request {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}} other {#{number} pull request {state, select, pending {status pending} draft {draft} open {open} merged {merged} other {closed}}}}",
+                {
+                  number: String(link.number),
+                  term: changeRequestTermKind(changeRequest),
+                  state: prStateKey(state === null ? null : isDraft ? "draft" : state),
+                },
+              ),
+            ),
+    textClassName: state === null || isDraft ? "text-foreground-muted" : PR_STATE_TEXT_CLASS[state],
   };
 }
 
@@ -108,10 +158,11 @@ export function resolveThreadPrSource(
   capabilities:
     | Pick<ExecutionEnvironmentCapabilities, "threadPullRequests" | "threadPullRequestLinking">
     | undefined,
+  resolve: MessageResolver = m,
 ) {
   const supportsSnapshots = capabilities?.threadPullRequests === true;
   const linkedPresentation = supportsSnapshots
-    ? presentThreadLinkedPullRequests(thread.pullRequests)
+    ? presentThreadLinkedPullRequests(thread.pullRequests, resolve)
     : null;
   const pullRequestRef =
     linkedPresentation !== null
@@ -122,10 +173,16 @@ export function resolveThreadPrSource(
   return { linkedPresentation, pullRequestRef };
 }
 
-export function resolveThreadPrBadgeAction(pr: ThreadPrPresentation) {
+export function resolveThreadPrBadgeAction(pr: ThreadPrPresentation, resolve: MessageResolver = m) {
   return pr.kind === "stack" || pr.others > 0
-    ? { kind: "list" as const, accessibilityLabel: `Show ${pr.accessibilityLabel}` }
-    : { kind: "open" as const, accessibilityLabel: `Open ${pr.accessibilityLabel}` };
+    ? {
+        kind: "list" as const,
+        accessibilityLabel: resolve(msg("Show {label}", { label: pr.accessibilityLabel })),
+      }
+    : {
+        kind: "open" as const,
+        accessibilityLabel: resolve(msg("Open {label}", { label: pr.accessibilityLabel })),
+      };
 }
 
 /** Records `value` as the newest entry, evicting the least recently answered beyond `limit`. */

@@ -14,7 +14,7 @@ const INERT = [
 
 // Shared test setup and vendored mobile dependencies affect every package.
 const RUNS_EVERYTHING = [
-  /^packages\/shared\/src\/(HostProcess|testing\/(longTempDir|providerEnv))\.ts$/,
+  /^packages\/shared\/src\/(HostProcess|testing\/(longTempDir|providerEnv|gitEnv|gitRepositoryEnv))\.ts$/,
   /^apps\/mobile\/deps\//,
 ];
 
@@ -178,7 +178,8 @@ function decide(files, packages, full) {
     affected: [...affected].sort(),
     outputs: {
       typecheck: affected.size > 0,
-      build: has("@d4research/desktop") || has("d4research") || has("@d4research/web") || desktopLaunch,
+      build:
+        has("@d4research/desktop") || has("d4research") || has("@d4research/web") || desktopLaunch,
       desktop_launch: desktopLaunch,
       test: tested.length > 0,
       // Empty means every package the Test job covers.

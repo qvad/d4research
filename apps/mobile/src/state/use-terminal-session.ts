@@ -2,7 +2,7 @@ import {
   combineTerminalSessionState,
   EMPTY_TERMINAL_BUFFER_STATE,
   EMPTY_TERMINAL_SESSION_STATE,
-  terminalOutputText,
+  terminalOutputReplay,
   type KnownTerminalSession,
   type TerminalSessionState,
 } from "@d4research/client-runtime/state/terminal";
@@ -59,7 +59,7 @@ export function useAttachedTerminalSession(input: {
   const materializeBuffer = input.materializeBuffer ?? true;
   // Older installed binaries and the text fallback still need initialBuffer.
   const buffer = useMemo(
-    () => (materializeBuffer ? terminalOutputText(output) : ""),
+    () => (materializeBuffer ? terminalOutputReplay(output) : ""),
     [materializeBuffer, output],
   );
 

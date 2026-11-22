@@ -86,13 +86,13 @@ const fixture = Effect.gen(function* () {
   const store = yield* Store.D4AgentStore.pipe(Effect.provide(storeLayer));
   const sql = yield* SqlClient.SqlClient;
   yield* sql`CREATE TABLE projection_projects (project_id TEXT, workspace_root TEXT)`;
-  yield* sql`CREATE TABLE orchestration_v2_projection_threads (thread_id TEXT, project_id TEXT)`;
+  yield* sql`CREATE TABLE orchestration_v2_projection_threads (thread_id TEXT, project_id TEXT, payload_json TEXT NOT NULL DEFAULT '{}')`;
   yield* sql`INSERT INTO projection_projects VALUES ('agent-project', ${store.workspace})`;
   for (const id of ["work-a", "work-b", "unmapped"])
-    yield* sql`INSERT INTO orchestration_v2_projection_threads VALUES (${`thread-${id}`}, ${id})`;
+    yield* sql`INSERT INTO orchestration_v2_projection_threads (thread_id, project_id) VALUES (${`thread-${id}`}, ${id})`;
   const bindThread = Effect.fnUntraced(function* (context: D4BrainContext, id: string) {
     const threadId = ThreadId.make(id);
-    yield* sql`INSERT INTO orchestration_v2_projection_threads VALUES (${threadId}, 'agent-project')`;
+    yield* sql`INSERT INTO orchestration_v2_projection_threads (thread_id, project_id) VALUES (${threadId}, 'agent-project')`;
     yield* store.update((state) => ({
       ...state,
       threadId,

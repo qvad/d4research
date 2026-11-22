@@ -1,14 +1,15 @@
 import { type KnownTerminalSession } from "@d4research/client-runtime/state/terminal";
 import { DEFAULT_TERMINAL_ID, type ProjectScript } from "@d4research/contracts";
-import { nextTerminalId, resolveTerminalSessionLabel } from "@d4research/shared/terminalLabels";
+import { nextTerminalId } from "@d4research/shared/terminalLabels";
+import { resolveTerminalSessionLabel } from "@d4research/shared/terminalLabelsCopy";
 import * as Arr from "effect/Array";
 import * as Order from "effect/Order";
+import { msg } from "gt-react-native";
 
-export {
-  getTerminalLabel,
-  nextTerminalId,
-  resolveTerminalSessionLabel,
-} from "@d4research/shared/terminalLabels";
+import { m, type MessageResolver } from "../../i18n/messages";
+
+export { resolveTerminalSessionLabel } from "@d4research/shared/terminalLabelsCopy";
+export { getTerminalLabel, nextTerminalId } from "@d4research/shared/terminalLabels";
 
 export interface TerminalMenuSession {
   readonly terminalId: string;
@@ -41,24 +42,29 @@ export function basename(input: string | null): string | null {
   return segments[segments.length - 1] ?? normalized;
 }
 
-export function getTerminalStatusLabel(input: {
-  readonly status: TerminalMenuSession["status"];
-  readonly hasRunningSubprocess?: boolean;
-}): string {
+export function getTerminalStatusLabel(
+  input: {
+    readonly status: TerminalMenuSession["status"];
+    readonly hasRunningSubprocess?: boolean;
+  },
+  resolve: MessageResolver = m,
+): string {
   if (input.status === "running") {
-    return input.hasRunningSubprocess ? "Task running" : "Ready";
+    return input.hasRunningSubprocess
+      ? resolve(msg("Task running", { $context: "terminal status" }))
+      : resolve(msg("Ready", { $context: "terminal status" }));
   }
   if (input.status === "starting") {
-    return "Starting";
+    return resolve(msg("Starting", { $context: "terminal status" }));
   }
   if (input.status === "exited") {
-    return "Exited";
+    return resolve(msg("Exited", { $context: "terminal status" }));
   }
   if (input.status === "error") {
-    return "Error";
+    return resolve(msg("Error", { $context: "terminal status" }));
   }
 
-  return "Not started";
+  return resolve(msg("Not started", { $context: "terminal status" }));
 }
 
 /**
@@ -81,11 +87,14 @@ export function nextOpenTerminalId(input: {
   return nextTerminalId([...listed, routeId], input.uniqueSuffix);
 }
 
-export function buildTerminalMenuSessions(input: {
-  readonly knownSessions: ReadonlyArray<KnownTerminalSession>;
-  readonly workspaceRoot: string | null;
-  readonly currentSession?: TerminalMenuSession | null;
-}): ReadonlyArray<TerminalMenuSession> {
+export function buildTerminalMenuSessions(
+  input: {
+    readonly knownSessions: ReadonlyArray<KnownTerminalSession>;
+    readonly workspaceRoot: string | null;
+    readonly currentSession?: TerminalMenuSession | null;
+  },
+  resolve: MessageResolver = m,
+): ReadonlyArray<TerminalMenuSession> {
   const sessionsById = new Map<string, TerminalMenuSession>();
 
   for (const session of input.knownSessions) {
@@ -102,7 +111,11 @@ export function buildTerminalMenuSessions(input: {
       cwd: session.state.summary?.cwd ?? input.workspaceRoot,
       status: session.state.status,
       hasRunningSubprocess: session.state.hasRunningSubprocess,
-      displayLabel: resolveTerminalSessionLabel(session.target.terminalId, session.state.summary),
+      displayLabel: resolveTerminalSessionLabel(
+        session.target.terminalId,
+        session.state.summary,
+        resolve,
+      ),
       updatedAt: session.state.updatedAt,
     });
   }

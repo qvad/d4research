@@ -5,6 +5,7 @@ import {
   resolveNewTaskBranchWorktreePath,
   resolveNewTaskBranchLabel,
   resolveNewTaskLocalWorkspaceSelection,
+  resolveNewTaskWorkspaceSelection,
 } from "./new-task-context-presentation";
 
 describe("resolveNewTaskLocalWorkspaceSelection", () => {
@@ -158,5 +159,39 @@ describe("filterNewTaskBranches", () => {
 
   it("matches a typed space against the dash a branch name uses", () => {
     expect(search("  login page ")).toEqual(["Feature/Login-Page"]);
+  });
+});
+
+// Non-repository folders can still create worktrees from tracked repositories.
+describe("resolveNewTaskWorkspaceSelection", () => {
+  it("keeps a worktree of tracked repositories for a non-git project folder", () => {
+    const fallback = { mode: "worktree", branch: null, worktreePath: null } as const;
+    expect(
+      resolveNewTaskWorkspaceSelection({
+        selection: {
+          mode: "worktree",
+          branch: "main",
+          worktreePath: null,
+          startFromOrigin: true,
+          repositories: ["/workspace/api"],
+        },
+        fallback,
+        isGitRepo: false,
+        tracksGitRepositories: true,
+      }),
+    ).toEqual({
+      mode: "worktree",
+      branch: null,
+      worktreePath: null,
+      repositories: ["/workspace/api"],
+    });
+    expect(
+      resolveNewTaskWorkspaceSelection({
+        selection: undefined,
+        fallback,
+        isGitRepo: false,
+        tracksGitRepositories: true,
+      }),
+    ).toEqual(fallback);
   });
 });

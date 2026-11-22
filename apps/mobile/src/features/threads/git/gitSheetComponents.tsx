@@ -1,9 +1,14 @@
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
+import type { VcsStatusResult } from "@d4research/contracts";
+import { changeRequestTermKind } from "../../../lib/changeRequestTerm";
 import { SymbolView } from "../../../components/ui/AppSymbol";
+import { msg } from "gt-react-native";
 import type { ComponentProps } from "react";
 import { Platform, Pressable, View } from "react-native";
 import { AppText as Text } from "../../../components/ui/AppText";
 import { Button } from "../../../components/ui/Button";
 import { cn } from "../../../lib/cn";
+import type { MessageResolver } from "../../../i18n/messages";
 
 export function SheetActionButton(props: {
   readonly icon: ComponentProps<typeof SymbolView>["name"];
@@ -134,36 +139,66 @@ export function menuItemIconName(
 export function statusSummary(
   gitStatus: {
     readonly isRepo?: boolean;
+    readonly sourceControlProvider?: VcsStatusResult["sourceControlProvider"];
     readonly hasWorkingTreeChanges?: boolean;
     readonly workingTree?: { readonly files: readonly { readonly path: string }[] };
     readonly aheadCount?: number;
     readonly behindCount?: number;
     readonly pr?: { readonly state?: string; readonly number?: number } | null;
   } | null,
+  resolve: MessageResolver,
 ): string {
   if (!gitStatus) {
-    return "Loading branch status\u2026";
+    return resolve(msg("Loading branch status\u2026"));
   }
 
   if (!gitStatus.isRepo) {
-    return "Not a git repository";
+    return resolve(msg("Not a git repository"));
   }
 
   const parts: string[] = [];
   if (gitStatus.hasWorkingTreeChanges) {
     const fileCount = gitStatus.workingTree?.files.length ?? 0;
-    parts.push(`${fileCount} file${fileCount === 1 ? "" : "s"} changed`);
+    parts.push(
+      resolve(
+        msg("{count, plural, one {{count} file changed} other {{count} files changed}}", {
+          count: fileCount,
+        }),
+      ),
+    );
   } else {
-    parts.push("Clean");
+    parts.push(resolve(msg("Clean", { $context: "git working tree has no changes" })));
   }
   if ((gitStatus.aheadCount ?? 0) > 0) {
-    parts.push(`${gitStatus.aheadCount} ahead`);
+    parts.push(
+      resolve(
+        msg("{count, plural, one {{count} ahead} other {{count} ahead}}", {
+          count: gitStatus.aheadCount,
+        }),
+      ),
+    );
   }
   if ((gitStatus.behindCount ?? 0) > 0) {
-    parts.push(`${gitStatus.behindCount} behind`);
+    parts.push(
+      resolve(
+        msg("{count, plural, one {{count} behind} other {{count} behind}}", {
+          count: gitStatus.behindCount,
+        }),
+      ),
+    );
   }
   if (gitStatus.pr?.state === "open") {
-    parts.push(`PR #${gitStatus.pr.number} open`);
+    const term = changeRequestTermKind(
+      sourceControlClients.get(gitStatus.sourceControlProvider?.kind).changeRequest,
+    );
+    parts.push(
+      resolve(
+        msg(
+          "{term, select, mr {MR #{number} open} cr {change request #{number} open} other {PR #{number} open}}",
+          { term, number: gitStatus.pr.number },
+        ),
+      ),
+    );
   }
 
   return parts.join(" \u00b7 ");

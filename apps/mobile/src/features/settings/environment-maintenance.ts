@@ -11,7 +11,10 @@ import {
   newestCliReleaseVersion,
 } from "@d4research/shared/cliRelease";
 import { compareSemverVersions } from "@d4research/shared/semver";
+import { msg } from "gt-react-native";
 import * as Schema from "effect/Schema";
+
+import { m } from "../../i18n/messages";
 
 export function canMaintainEnvironment(session: AuthSessionState | null, connected: boolean) {
   return (
@@ -57,12 +60,16 @@ export async function findEnvironmentUpdate(currentVersion: string, signal: Abor
   const channel = cliReleaseChannelOf(currentVersion);
   for (let page = 1; ; page++) {
     const response = await fetch(cliReleaseIndexPageUrl(page), { signal });
-    if (!response.ok) throw new Error(`Could not check releases (${response.status}). Try again.`);
+    if (!response.ok)
+      throw new Error(
+        m(msg("Could not check releases ({status}). Try again.", { status: response.status })),
+      );
     const releases = decodeReleases(await response.json());
     const version = newestCliReleaseVersion(releases, channel);
     if (version !== undefined) {
       return compareSemverVersions(version, currentVersion) > 0 ? version : null;
     }
-    if (releases.length < 100) throw new Error(`No ${channel} release was found.`);
+    if (releases.length < 100)
+      throw new Error(m(msg("No {channel} release was found.", { channel })));
   }
 }

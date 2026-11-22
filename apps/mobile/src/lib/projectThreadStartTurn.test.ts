@@ -99,6 +99,35 @@ describe("project thread title", () => {
     expect(input.bootstrap.createThread.title).toBe(input.titleSeed);
     expect(input.message.text).toBe(text);
   });
+
+  it("starts a worktree of a plain project folder from each repository's default branch", () => {
+    const input = buildProjectThreadStartTurnInput({
+      projectId: ProjectId.make("project"),
+      projectCwd: "/workspace",
+      threadId: "thread",
+      commandId: "command",
+      messageId: "message",
+      createdAt: "2026-09-04T00:00:00Z",
+      text: "Fix the build",
+      uploadedAttachments: [],
+      modelSelection: { instanceId: ProviderInstanceId.make("codex"), model: "gpt-5.6-sol" },
+      runtimeMode: "full-access",
+      interactionMode: "default",
+      workspaceMode: "worktree",
+      branch: null,
+      worktreePath: null,
+      startFromOrigin: false,
+      worktreeRepositories: ["/workspace/api"],
+      worktreeBranchName: "d4research/new",
+    });
+
+    expect(input.bootstrap.prepareWorktree).toEqual({
+      projectCwd: "/workspace",
+      baseBranch: "HEAD",
+      branch: "d4research/new",
+      repositories: [{ path: "/workspace/api" }],
+    });
+  });
 });
 
 describe("new thread on an existing branch", () => {

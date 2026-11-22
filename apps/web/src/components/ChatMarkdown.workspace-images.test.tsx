@@ -1,5 +1,5 @@
 import { EnvironmentId, ThreadId } from "@d4research/contracts";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup } from "../../test/renderToStaticMarkup";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const testState = vi.hoisted(() => ({
@@ -25,7 +25,12 @@ vi.mock("../hooks/useTheme", () => ({
   useRenderedAppearance: () => "dark",
   useTheme: () => ({ resolvedTheme: "dark" }),
 }));
+vi.mock("../state/clientHostEnvironment", async () => {
+  const { Atom } = await import("effect/reactivity");
+  return { clientHostEnvironmentAtom: Atom.family(() => Atom.make(false)) };
+});
 vi.mock("../state/use-atom-query-runner", () => ({ useAtomQueryRunner: () => vi.fn() }));
+vi.mock("../useNativeFileDrag", () => ({ useNativeFileDrag: () => ({}) }));
 vi.mock("../state/use-atom-command", () => ({ useAtomCommand: () => vi.fn() }));
 vi.mock("../state/session", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../state/session")>()),
@@ -120,6 +125,7 @@ describe("ChatMarkdown workspace images", () => {
         _tag: "media-file",
         threadId: threadRef.threadId,
         path: expectedPath,
+        hostOnly: true,
       },
     ]);
   });
@@ -140,6 +146,7 @@ describe("ChatMarkdown workspace images", () => {
         _tag: "media-file",
         threadId: threadRef.threadId,
         path: "C:\\Users\\shawn\\project\\.t3\\workspace-image.svg",
+        hostOnly: true,
       },
       { _tag: "media-file", threadId: threadRef.threadId, path: imagePath },
       { _tag: "media-file", threadId: threadRef.threadId, path: imagePath },

@@ -1,4 +1,7 @@
-import type { EnvironmentShellSummary } from "@d4research/client-runtime/state/shell";
+import {
+  EMPTY_SHELL_STATE,
+  type EnvironmentShellSummary,
+} from "@d4research/client-runtime/state/shell";
 import {
   BearerConnectionProfile,
   BearerConnectionTarget,
@@ -7,7 +10,11 @@ import { EnvironmentId } from "@d4research/contracts";
 import { describe, expect, it } from "@effect/vitest";
 import * as Option from "effect/Option";
 
-import { projectWorkspaceEnvironment, projectWorkspaceState } from "./workspaceModel";
+import {
+  isEnvironmentShellPending,
+  projectWorkspaceEnvironment,
+  projectWorkspaceState,
+} from "./workspaceModel";
 import type { EnvironmentPresentation } from "./environments";
 
 const ENVIRONMENT_ID = EnvironmentId.make("environment-1");
@@ -44,6 +51,7 @@ function environment(
       traceId: phase === "error" ? "trace-1" : null,
     },
     serverConfig: null,
+    refusedRouteIds: [],
   };
 }
 
@@ -97,6 +105,15 @@ describe("mobile workspace projection", () => {
     expect(state.connectingEnvironments[0]?.connectionState).toBe("reconnecting");
     expect(state.hasConnectingEnvironment).toBe(true);
     expect(state.hasReadyEnvironment).toBe(true);
+  });
+
+  it("waits for shell cache initialization and synchronization, but not completed reads", () => {
+    expect(isEnvironmentShellPending(EMPTY_SHELL_STATE)).toBe(true);
+    expect(isEnvironmentShellPending({ ...EMPTY_SHELL_STATE, status: "synchronizing" })).toBe(true);
+    expect(isEnvironmentShellPending({ ...EMPTY_SHELL_STATE, status: "cached" })).toBe(false);
+    expect(
+      isEnvironmentShellPending({ ...EMPTY_SHELL_STATE, error: Option.some("Cache failed.") }),
+    ).toBe(false);
   });
 
   it("keeps retained snapshots visible while reconnecting without claiming readiness", () => {

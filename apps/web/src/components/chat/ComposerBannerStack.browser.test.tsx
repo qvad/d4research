@@ -38,7 +38,8 @@ async function render(width: number, description: string) {
   );
 }
 
-const hasDetails = () => container.querySelector('[aria-label="Show notice details"]') !== null;
+const hasDetails = () =>
+  container.querySelector('[aria-label="Show details: Usage limits"]') !== null;
 
 it("only offers notice details when the description cannot fit", async () => {
   await using _fixture = await setupFixture();
@@ -66,7 +67,7 @@ it("only offers notice details when the description cannot fit", async () => {
   });
   container.style.width = "300px";
   await resized;
-  expect(hasDetails()).toBe(false);
+  expect(hasDetails()).toBe(true);
 });
 
 function noticeRow(width: string, children: ReactNode) {

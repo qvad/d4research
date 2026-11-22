@@ -2,6 +2,7 @@ import type { ProviderInstanceId } from "@d4research/contracts";
 
 const MODEL_KEY_PREFIX = "model:";
 const LEGACY_SECTION_KEY_PREFIX = "legacy-models:";
+const SUB_PROVIDER_SECTION_KEY_PREFIX = "sub-provider:";
 
 export function modelPickerModelKey(instanceId: ProviderInstanceId, slug: string): string {
   return `${MODEL_KEY_PREFIX}${instanceId.length}:${instanceId}${slug}`;
@@ -57,4 +58,11 @@ export function defaultExpandedLegacyInstanceIds(
       .filter(([, models]) => models.some((model) => model.isLegacy))
       .map(([instanceId]) => instanceId),
   );
+}
+
+export function modelPickerSubProviderSectionKey(
+  instanceId: ProviderInstanceId,
+  subProvider: string,
+): string {
+  return `${SUB_PROVIDER_SECTION_KEY_PREFIX}${instanceId.length}:${instanceId}${subProvider}`;
 }

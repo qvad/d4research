@@ -1,11 +1,15 @@
 import { assert, describe, it } from "@effect/vitest";
 import * as NodeServices from "@effect/platform-node/NodeServices";
+import { EDITORS, REMOTE_CAPABLE_EDITOR_IDS } from "@d4research/contracts";
+import { resolveEditorCommand } from "@d4research/shared/editor";
 import * as HostProcess from "@d4research/shared/HostProcess";
+import { makePathDirectoryListings, PathDirectoryListings } from "@d4research/shared/shell";
 import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
+import * as TestClock from "effect/testing/TestClock";
 import { vi } from "vite-plus/test";
 import type * as Electron from "electron";
 
@@ -22,6 +26,7 @@ import * as DesktopBackendConfiguration from "../../backend/DesktopBackendConfig
 import * as DesktopBackendManager from "../../backend/DesktopBackendManager.ts";
 import * as DesktopBackendPool from "../../backend/DesktopBackendPool.ts";
 import * as DesktopAppSettings from "../../settings/DesktopAppSettings.ts";
+import * as DesktopWslEnvironment from "../../wsl/DesktopWslEnvironment.ts";
 import * as ElectronDialog from "../../electron/ElectronDialog.ts";
 import * as ElectronWindow from "../../electron/ElectronWindow.ts";
 import {
@@ -30,6 +35,7 @@ import {
   probeRemoteEditors,
   readMedia,
   syncHtmlFullscreen,
+  toLocalBackendPath,
 } from "./window.ts";
 
 const readyWslConfig: DesktopBackendManager.DesktopBackendStartConfig = {
@@ -177,6 +183,47 @@ describe("getLocalEnvironmentBootstraps", () => {
       assert.deepEqual(result, []);
     }).pipe(Effect.provide(bootstrapsLayer([stoppedInstance])));
   });
+});
+
+describe("toLocalBackendPath", () => {
+  const { runningDistro: _, ...windowsConfig } = readyWslConfig;
+  it.effect("converts paths through wslpath only for backends running in WSL", () =>
+    Effect.gen(function* () {
+      const convert = (backendId: string, path = "C:\\Users\\me\\project") =>
+        toLocalBackendPath.handler({ backendId, path });
+      assert.strictEqual(yield* convert("primary"), "C:\\Users\\me\\project");
+      assert.strictEqual(yield* convert("wsl:default"), "/drives/c/Users/me/project");
+      assert.strictEqual(yield* convert("wsl:missing"), null);
+      assert.strictEqual(
+        yield* convert("wsl:default", "\\\\wsl.localhost\\ubuntu\\home\\me\\repo"),
+        "/home/me/repo",
+      );
+      assert.strictEqual(yield* convert("wsl:default", "\\\\wsl$\\Debian\\home\\me\\repo"), null);
+      assert.strictEqual(
+        yield* convert("primary", "\\\\wsl$\\Debian\\home\\me\\repo"),
+        "\\\\wsl$\\Debian\\home\\me\\repo",
+      );
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(
+          DesktopBackendPool.layerTest([
+            {
+              ...defaultWslInstance,
+              id: DesktopBackendManager.BackendInstanceId("primary"),
+              currentConfig: Effect.succeedSome(windowsConfig),
+            },
+            defaultWslInstance,
+          ]),
+          DesktopWslEnvironment.layerTest({
+            windowsToWslPath: (distro, windowsPath) =>
+              distro === "Ubuntu" && windowsPath === "C:\\Users\\me\\project"
+                ? Option.some("/drives/c/Users/me/project")
+                : Option.none(),
+          }),
+        ),
+      ),
+    ),
+  );
 });
 
 describe("readMedia", () => {
@@ -416,3 +463,102 @@ it.effect.skipIf(HostProcess.Platform.defaultValue() === "win32")(
       assert.include(editors, "webstorm");
     }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
 );
+
+describe("probeRemoteEditors PATH scan", () => {
+  const FIXTURE_MTIME = 1_767_225_600;
+  const platform = HostProcess.Platform.defaultValue();
+  const launcherName = (command: string) => (platform === "win32" ? `${command}.cmd` : command);
+
+  const makeFakePath = Effect.fnUntraced(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
+    const root = yield* fs.makeTempDirectoryScoped({ prefix: "t3-probe-path-" });
+    const dirs = ["a", "b", "c", "d"].map((name) => path.join(root, name));
+    for (const dir of dirs) yield* fs.makeDirectory(dir, { recursive: true });
+    // Launchers in different PATH directories, deliberately not in REMOTE_CAPABLE_EDITOR_IDS order.
+    for (const [dir, command] of [
+      [dirs[2]!, "webstorm"],
+      [dirs[0]!, "cursor"],
+      [dirs[3]!, "code"],
+      [dirs[1]!, "zeditor"],
+    ] as const) {
+      const file = path.join(dir, launcherName(command));
+      yield* fs.writeFileString(file, "#!/bin/sh\n");
+      if (platform !== "win32") yield* fs.chmod(file, 0o755);
+    }
+    // A listing of a directory changed moments ago is not kept, so age them past that window.
+    for (const dir of dirs) yield* fs.utimes(dir, FIXTURE_MTIME, FIXTURE_MTIME);
+    yield* TestClock.setTime((FIXTURE_MTIME + 60) * 1000);
+    return {
+      root,
+      env: {
+        HOME: root,
+        USERPROFILE: root,
+        PATH: dirs.join(platform === "win32" ? ";" : ":"),
+        PATHEXT: ".COM;.EXE;.BAT;.CMD",
+      },
+    };
+  });
+
+  const countingFileSystem = (reads: Map<string, number>) =>
+    Layer.effect(
+      FileSystem.FileSystem,
+      Effect.gen(function* () {
+        const fs = yield* FileSystem.FileSystem;
+        return FileSystem.FileSystem.of({
+          ...fs,
+          readDirectory: (target, options) => {
+            reads.set(target, (reads.get(target) ?? 0) + 1);
+            return fs.readDirectory(target, options);
+          },
+        });
+      }),
+    ).pipe(Layer.provideMerge(NodeServices.layer));
+
+  const serialReference = (env: Record<string, string>) =>
+    Effect.gen(function* () {
+      const available: Array<string> = [];
+      for (const editorId of REMOTE_CAPABLE_EDITOR_IDS) {
+        const editor = EDITORS.find((candidate) => candidate.id === editorId);
+        if (editor && Option.isSome(yield* resolveEditorCommand(editor, env))) {
+          available.push(editorId);
+        }
+      }
+      return available;
+    });
+
+  it.effect("finds the editors a serial scan finds, listing each PATH directory at most once", () =>
+    Effect.gen(function* () {
+      const { env: baseEnv } = yield* makeFakePath();
+      const delimiter = platform === "win32" ? ";" : ":";
+      const reads = new Map<string, number>();
+      // Distinct PATH values keep one scan from answering the other out of the resolution cache.
+      const serialEnv = { ...baseEnv, PATH: `${baseEnv.PATH}${delimiter}${baseEnv.HOME}x1` };
+      const probeEnv = { ...baseEnv, PATH: `${baseEnv.PATH}${delimiter}${baseEnv.HOME}x2` };
+      const serial = yield* serialReference(serialEnv).pipe(
+        Effect.provideServiceEffect(PathDirectoryListings, makePathDirectoryListings),
+      );
+      const probed = yield* probeRemoteEditors
+        .handler(undefined)
+        .pipe(
+          Effect.provideService(HostProcess.Environment, probeEnv),
+          Effect.provideService(HostProcess.Platform, platform),
+          Effect.provide(countingFileSystem(reads)),
+          Effect.provideServiceEffect(PathDirectoryListings, makePathDirectoryListings),
+        );
+      // The host can add editors from app folders the fixture can't redirect (e.g. /Applications).
+      const fixtureEditors = ["cursor", "vscode", "zed", "webstorm"];
+      assert.deepStrictEqual(
+        serial.filter((id) => fixtureEditors.includes(id)),
+        fixtureEditors,
+      );
+      assert.deepStrictEqual(probed, serial);
+      // Only PATH entries count: resolveEditorCommand also reads app folders such as /Applications
+      // on macOS. PATH directories are listed on Windows only, once even for concurrent probes.
+      const pathReads = probeEnv.PATH.split(delimiter)
+        .filter((entry) => entry.length > 0)
+        .map((entry) => reads.get(entry) ?? 0);
+      assert.strictEqual(Math.max(...pathReads), platform === "win32" ? 1 : 0);
+    }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
+  );
+});

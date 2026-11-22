@@ -1,4 +1,5 @@
 import { EnvironmentId } from "@d4research/contracts";
+import type { AtomCommandResult } from "@d4research/client-runtime/state/runtime";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 import { act, createElement, useLayoutEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -12,7 +13,10 @@ type Presentation = {
 };
 const state = vi.hoisted(() => ({
   presentations: undefined as Atom.Writable<ReadonlyMap<EnvironmentId, Presentation>> | undefined,
-  refreshProviders: vi.fn(),
+  refreshProviders:
+    vi.fn<
+      (input: { environmentId: EnvironmentId }) => Promise<AtomCommandResult<unknown, string>>
+    >(),
 }));
 vi.mock("../../state/session", () => ({
   useEnvironmentScope: () => true,
@@ -30,14 +34,24 @@ vi.mock("../../state/presentation", () => ({
     },
   },
 }));
-vi.mock("../../state/server", () => ({
-  serverEnvironment: {
-    refreshProviders: {
-      label: "refresh limits",
-      run: (_registry: unknown, input: unknown) => state.refreshProviders(input),
+vi.mock("../../state/server", async () => {
+  const Effect = await import("effect/Effect");
+  return {
+    serverEnvironment: {
+      refreshProviders: {
+        label: "refresh limits",
+        run: (_registry: unknown, input: { environmentId: EnvironmentId }) =>
+          Effect.promise(() => state.refreshProviders(input)).pipe(
+            Effect.flatMap((result) =>
+              result._tag === "Failure"
+                ? Effect.failCause(result.cause)
+                : Effect.succeed(result.value),
+            ),
+          ),
+      },
     },
-  },
-}));
+  };
+});
 
 import { useRefreshLimits } from "./UsageLimitsSection";
 import { refreshEnvironmentLimits } from "./usageLimitsRefresh";

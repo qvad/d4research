@@ -1,10 +1,9 @@
-import {
-  PRIMARY_LOCAL_ENVIRONMENT_ID,
-  type DesktopEnvironmentBootstrap,
-} from "@d4research/contracts";
+import { PRIMARY_LOCAL_ENVIRONMENT_ID, type DesktopEnvironmentBootstrap } from "@d4research/contracts";
 import * as Schema from "effect/Schema";
 
 import { isLocalEnvironmentDisabled } from "../../localEnvironment";
+import { msg } from "gt-react";
+import { m } from "../../i18n/messages";
 
 const PrimaryEnvironmentTargetSource = Schema.Literals([
   "configured",
@@ -67,7 +66,7 @@ export class PrimaryEnvironmentDisabledError extends Schema.TaggedError<PrimaryE
   {},
 ) {
   override get message(): string {
-    return "The local environment is disabled.";
+    return m(msg("The local environment is disabled."));
   }
 }
 

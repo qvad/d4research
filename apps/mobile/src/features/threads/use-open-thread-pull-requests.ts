@@ -1,6 +1,8 @@
 import type { EnvironmentThreadShell } from "@d4research/client-runtime/state/shell";
 import { useNavigation } from "@react-navigation/native";
 import { useCallback } from "react";
+import { useGT } from "gt-react-native";
+import { changeRequestTermKind } from "../../lib/changeRequestTerm";
 
 import * as Dialog from "../../components/ui/Dialog";
 import { useNavigateToPullRequest } from "../../native/useOpenPullRequest";
@@ -11,6 +13,7 @@ import {
 
 /** Called once per thread list so virtualized rows share one stable handler. */
 export function useOpenThreadPullRequests() {
+  const gt = useGT();
   const navigation = useNavigation();
   const navigateToPullRequest = useNavigateToPullRequest();
   return useCallback(
@@ -26,9 +29,19 @@ export function useOpenThreadPullRequests() {
         environmentId: String(thread.environmentId),
         projectId: String(thread.projectId),
       }).then((opened) => {
-        if (!opened) Dialog.alert("Unable to open PR", "The pull request could not be opened.");
+        if (!opened)
+          Dialog.alert(
+            gt(
+              "{term, select, mr {Unable to open MR} cr {Unable to open change request} other {Unable to open PR}}",
+              { term: changeRequestTermKind(pr.changeRequest) },
+            ),
+            gt(
+              "{term, select, mr {The merge request could not be opened.} cr {The change request could not be opened.} other {The pull request could not be opened.}}",
+              { term: changeRequestTermKind(pr.changeRequest) },
+            ),
+          );
       });
     },
-    [navigation, navigateToPullRequest],
+    [navigation, navigateToPullRequest, gt],
   );
 }

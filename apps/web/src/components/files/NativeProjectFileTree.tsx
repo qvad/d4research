@@ -369,6 +369,10 @@ export function NativeProjectFileTree(props: {
         <button
           key={`directory:${node.path}`}
           type="button"
+          role="treeitem"
+          aria-level={depth + 1}
+          aria-expanded={isExpanded}
+          data-item-path={`${node.path}/`}
           className={cn(
             "flex w-auto items-center gap-1.5 rounded-md pe-2 text-left hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
             node.ignored && "opacity-45",
@@ -424,6 +428,9 @@ export function NativeProjectFileTree(props: {
               type="button"
               draggable
               data-item-path={node.path}
+              role="treeitem"
+              aria-level={depth + 1}
+              aria-selected={selected}
               className={cn(
                 "flex w-auto items-center gap-1.5 rounded-md pe-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                 selected ? "bg-accent text-accent-foreground" : "hover:bg-accent/60",

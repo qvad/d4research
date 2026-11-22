@@ -1,4 +1,4 @@
-import { projectScriptMenuLabel } from "@d4research/shared/projectScripts";
+import { projectScriptMenuLabel } from "@d4research/shared/projectScriptsCopy";
 import { projectScriptIdFromCommand } from "./projectScripts";
 import { buildProjectScript } from "./projectScripts";
 import { shortcutLabelForCommand } from "./keybindings";

@@ -13,7 +13,13 @@ import {
 // Separate keys: a stale window saving ordinary preferences must not restore either grant.
 const AUDIO_KEY = "t3code:voice-audio-grant:v1";
 const CLEANUP_KEY = "t3code:voice-cleanup-grant:v1";
-const Grant = Schema.Struct({ id: Schema.String, destination: VoiceTranscriptionDestination });
+// "device" is Apple Speech in the macOS desktop app. Audio stays on this device, so it stays out of the shared contract.
+const AudioDestination = Schema.Union([
+  VoiceTranscriptionDestination,
+  Schema.Struct({ kind: Schema.Literal("device") }),
+]);
+export type AudioDestination = typeof AudioDestination.Type;
+const Grant = Schema.Struct({ id: Schema.String, destination: AudioDestination });
 const AudioGrant = Schema.NullOr(Grant);
 const sameGrant = Schema.toEquivalence(AudioGrant);
 const SavedChoice = Schema.Union([AudioGrant, Schema.Literal("off")]);
@@ -62,24 +68,8 @@ function replaceChoice(choice: AudioChoice, previous = readChoice()) {
     window.localStorage.removeItem(savedKey(old.id));
 }
 
-export function chooseAudioDestination(destination: VoiceTranscriptionDestination | null) {
+export function chooseAudioDestination(destination: AudioDestination | null) {
   replaceChoice(destination ? { id: randomUUID(), destination } : "off");
-}
-
-export function pendingCloudAudioChoice(
-  destination: Extract<VoiceTranscriptionDestination, { kind: "cloud" }>,
-) {
-  const choice = readChoice();
-  const pending = { id: randomUUID(), destination };
-  replaceChoice(
-    { pending, previous: activeChoice(choice, readSaveMarker(pendingGrant(choice)?.id)) },
-    choice,
-  );
-  // A late response can acknowledge only its own choice, never write the destination another tab picked.
-  return () => {
-    if (pendingGrant(readChoice())?.id === pending.id)
-      writeLocalStorageValue(savedKey(pending.id), true, false, Schema.Boolean);
-  };
 }
 
 // Bind this recording to this act of consent, even if the user later reselects the same destination.

@@ -2,6 +2,7 @@ import { AppActivityIndicator } from "../../components/ui/AppActivityIndicator";
 import { ScreenScrollView as ScrollView } from "../../components/ui/ScreenScrollView";
 import Constants from "expo-constants";
 import * as Updates from "expo-updates";
+import { T, useGT } from "gt-react-native";
 import { useEffect, useState } from "react";
 import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -39,6 +40,7 @@ function appIdentity() {
 
 export function SettingsDiagnosticsRouteScreen() {
   const insets = useSafeAreaInsets();
+  const gt = useGT();
   const [state, setState] = useState<CrashLogState>(() =>
     Updates.isEnabled ? { status: "loading" } : { status: "unavailable" },
   );
@@ -71,31 +73,33 @@ export function SettingsDiagnosticsRouteScreen() {
   };
 
   return (
-    <SettingsScreen title="Diagnostics">
+    <SettingsScreen title={gt("Diagnostics")}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentInset={{ bottom: Math.max(insets.bottom, 18) }}
         showsVerticalScrollIndicator={false}
         className="flex-1"
-        contentContainerClassName="gap-6 px-5 pt-4 pb-[18px]"
+        contentContainerClassName="gap-6 px-5 pt-4"
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 18) + 18 }}
       >
-        <SettingsSection title="Startup crashes">
+        <SettingsSection title={gt("Startup crashes")}>
           {state.status === "loading" ? (
             <View className="items-center gap-3 px-6 py-8">
               <AppActivityIndicator />
-              <Text className="text-center text-sm text-foreground-muted">Reading crash log…</Text>
+              <Text className="text-center text-sm text-foreground-muted">
+                <T>Reading crash log…</T>
+              </Text>
             </View>
           ) : state.status === "unavailable" ? (
             <EmptyState
               icon="exclamationmark.triangle"
-              title="Crash log unavailable"
-              detail="Startup crash records are unavailable in this build."
+              title={gt("Crash log unavailable")}
+              detail={gt("Startup crash records are unavailable in this build.")}
             />
           ) : records.length === 0 ? (
             <EmptyState
               icon="checkmark.circle"
-              title="No startup crashes"
-              detail="No startup crashes recorded in the last 7 days."
+              title={gt("No startup crashes")}
+              detail={gt("No startup crashes recorded in the last 7 days.")}
             />
           ) : (
             records.map((record, index) => (
@@ -105,18 +109,20 @@ export function SettingsDiagnosticsRouteScreen() {
         </SettingsSection>
 
         <View className="gap-3">
-          <SettingsSection title="Actions">
+          <SettingsSection title={gt("Actions")}>
             <SettingsActionRow
               icon={copied ? "checkmark" : "doc.on.doc"}
-              label={copied ? "Copied" : "Copy crash report"}
+              label={copied ? gt("Copied") : gt("Copy crash report")}
               disabled={state.status !== "ready"}
               onPress={() => void copyReport()}
             />
           </SettingsSection>
           <Text className="px-2 text-sm leading-normal text-foreground-muted">
-            Paste the report into a GitHub issue. It contains the app version, the JavaScript error
-            message, and the component stack. Error messages can quote values from the app, so read
-            it over before sharing.
+            <T>
+              Paste the report into a GitHub issue. It contains the app version, the JavaScript
+              error message, and the component stack. Error messages can quote values from the app,
+              so read it over before sharing.
+            </T>
           </Text>
         </View>
       </ScrollView>

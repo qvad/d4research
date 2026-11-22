@@ -3,6 +3,7 @@ import { EnvironmentId, ThreadId, TurnItemId } from "@d4research/contracts";
 import type { EnvironmentThreadShell } from "@d4research/client-runtime/state/shell";
 import { turnItemDetailRevision } from "@d4research/client-runtime/work-log/item-detail";
 import { mcpAppFromToolItem } from "@d4research/shared/toolOutput";
+import { T, useGT } from "gt-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -63,6 +64,45 @@ function descendsFrom(
  * can only open an app that call really produced.
  */
 export function McpAppFullscreenScreen({ route }: McpAppFullscreenScreenProps) {
+  const gt = useGT();
+  const navigation = useNavigation();
+  const { environmentId, threadId, itemId } = route.params;
+  if (!environmentId?.trim() || !threadId?.trim() || !itemId?.trim()) {
+    return (
+      <View className="flex-1 bg-screen">
+        <AppBar
+          title={gt("App")}
+          onClose={() => navigation.goBack()}
+          closeAccessibilityLabel={gt("Exit full screen")}
+        />
+        <Text className="m-6 text-sm text-foreground-muted">
+          <T>This app cannot be shown.</T>
+        </Text>
+      </View>
+    );
+  }
+  return (
+    <McpAppFullscreen
+      params={route.params}
+      environmentId={EnvironmentId.make(environmentId)}
+      threadId={ThreadId.make(threadId)}
+      itemId={TurnItemId.make(itemId)}
+    />
+  );
+}
+
+function McpAppFullscreen({
+  params,
+  environmentId,
+  threadId,
+  itemId,
+}: {
+  readonly params: McpAppFullscreenScreenProps["route"]["params"];
+  readonly environmentId: EnvironmentId;
+  readonly threadId: ThreadId;
+  readonly itemId: TurnItemId;
+}) {
+  const gt = useGT();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   // A plain goBack pops whatever is on top, so it only runs while this modal
@@ -76,10 +116,6 @@ export function McpAppFullscreenScreen({ route }: McpAppFullscreenScreenProps) {
     else setExitRequested(true);
   }, [navigation]);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const params = route.params;
-  const environmentId = EnvironmentId.make(params.environmentId);
-  const threadId = ThreadId.make(params.threadId);
-  const itemId = TurnItemId.make(params.itemId);
   const conversationThreadId = useConversationThreadId(
     environmentId,
     threadId,
@@ -112,9 +148,9 @@ export function McpAppFullscreenScreen({ route }: McpAppFullscreenScreenProps) {
   return (
     <View className="flex-1 bg-screen">
       <AppBar
-        title={app?.server ?? "App"}
+        title={app?.server ?? gt("App")}
         onClose={onClose}
-        closeAccessibilityLabel="Exit full screen"
+        closeAccessibilityLabel={gt("Exit full screen")}
       />
       <View
         className="flex-1"
@@ -127,8 +163,10 @@ export function McpAppFullscreenScreen({ route }: McpAppFullscreenScreenProps) {
         }
       >
         {app === undefined ? (
-          detail.data === undefined ? null : (
-            <Text className="m-6 text-sm text-foreground-muted">This app cannot be shown.</Text>
+          detail.data == null ? null : (
+            <Text className="m-6 text-sm text-foreground-muted">
+              <T>This app cannot be shown.</T>
+            </Text>
           )
         ) : size.width > 0 ? (
           <ThreadMcpApp

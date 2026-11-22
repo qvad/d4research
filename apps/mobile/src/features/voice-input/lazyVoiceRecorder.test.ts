@@ -228,7 +228,6 @@ describe("createLazyVoiceRecorder", () => {
           ownerKey: "thread",
           text: "",
           selection: { start: 0, end: 0 },
-          revision: 0,
         }),
         commitDraft: () => undefined,
         onStateChange: () => undefined,

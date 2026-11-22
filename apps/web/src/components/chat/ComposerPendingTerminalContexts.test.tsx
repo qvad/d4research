@@ -1,5 +1,5 @@
 import { ThreadId } from "@d4research/contracts";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup } from "../../../test/renderToStaticMarkup";
 import { describe, expect, it } from "vite-plus/test";
 
 import { ComposerPendingTerminalContextChip } from "./ComposerPendingTerminalContexts";

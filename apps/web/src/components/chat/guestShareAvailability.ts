@@ -1,4 +1,5 @@
-import { type EnvironmentId, managedCapabilityDenial } from "@d4research/contracts";
+import { managedCapabilityDenial } from "@d4research/client-runtime/contract-labels";
+import type { EnvironmentId } from "@d4research/contracts";
 import { Atom } from "effect/reactivity";
 
 import { environmentPresentations } from "~/state/presentation";

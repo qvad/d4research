@@ -33,6 +33,7 @@ export function observeTimelineRun(
   return { observation, anchorMessageId: input.messageId };
 }
 import type { RunAttemptId } from "@d4research/contracts";
+
 // Match the titlebar fade inset so draft promotion preserves the first row's position.
 export const CHAT_TIMELINE_ANCHOR_OFFSET = 24;
 
@@ -137,6 +138,27 @@ export function getAnchoredTurnMetrics({
     targetScrollToRevealEnd,
     scrollDeltaToRevealEnd,
   };
+}
+
+export function resolveDisclosureRevealScrollDelta({
+  rowTop,
+  rowBottom,
+  viewportTop,
+  viewportBottom,
+  composerOverlayHeight,
+  anchorOffset,
+}: {
+  readonly rowTop: number;
+  readonly rowBottom: number;
+  readonly viewportTop: number;
+  readonly viewportBottom: number;
+  readonly composerOverlayHeight: number;
+  readonly anchorOffset: number;
+}): number {
+  const hiddenBelow = rowBottom - (viewportBottom - composerOverlayHeight);
+  if (!(hiddenBelow > 0)) return 0;
+  const roomAbove = rowTop - (viewportTop + anchorOffset);
+  return Math.max(0, Math.min(hiddenBelow, roomAbove));
 }
 
 export interface RememberedTimelinePosition {

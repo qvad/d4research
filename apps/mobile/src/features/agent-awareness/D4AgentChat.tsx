@@ -220,14 +220,12 @@ export function D4AgentChat({
   const canConfigure = useAtomValue(serverEnvironment.updateSettings.permissionAtom(environmentId));
   const updateSettings = useAtomCommand(serverEnvironment.updateSettings);
   const [text, setTextState] = useState("");
-  // Dictation reads and watches the draft outside render, so it mirrors the text in a ref.
+  // Dictation reads the draft outside render, so it mirrors the text in a ref.
   const textRef = useRef("");
-  const textListeners = useRef(new Set<() => void>());
   const setText = (next: string | ((current: string) => string)) => {
     const value = typeof next === "function" ? next(textRef.current) : next;
     textRef.current = value;
     setTextState(value);
-    for (const listener of textListeners.current) listener();
   };
   const [selection, setSelection] = useState<ComposerEditorSelection>({ start: 0, end: 0 });
   const [picker, setPicker] = useState<"chat" | "task" | null>(null);
@@ -273,10 +271,6 @@ export function D4AgentChat({
     ownerKey: state.threadId === null ? "nia" : `nia:${state.threadId}`,
     label: "Nia",
     readDraftMessage: () => textRef.current,
-    subscribeToDraftChanges: (onChange) => {
-      textListeners.current.add(onChange);
-      return () => textListeners.current.delete(onChange);
-    },
     selection,
     disabled: !enabled || !allowed || sending,
     onChangeDraftMessage: (value) => {
@@ -613,7 +607,6 @@ function NiaThreadFeed({
         anchorMessageId={null}
         contentInsetEndAdjustment={contentInsetEndAdjustment}
         keyboardOffset={0}
-        contentTopInset={24}
         historyControls={
           detail.history.hasMoreHistory || detail.history.error !== null
             ? {
@@ -642,6 +635,14 @@ function NiaThreadRequests({
   threadId: ThreadId;
 }) {
   const requests = useThreadRequests(scopeThreadRef(environmentId, threadId));
+  const thread = useThreadShell(scopeThreadRef(environmentId, threadId));
+  const projects = useProjects();
+  const workspaceRoot =
+    thread?.worktreePath ??
+    projects.find(
+      (project) => project.environmentId === environmentId && project.id === thread?.projectId,
+    )?.workspaceRoot ??
+    null;
   const canOperateThread = useEnvironmentScope(environmentId, AuthOrchestrationOperateScope);
   const { height } = useWindowDimensions();
   const maxHeight = useDerivedValue(() => height * 0.5);
@@ -662,6 +663,8 @@ function NiaThreadRequests({
         <PendingUserInputCard
           key={requests.activePendingUserInput.requestId}
           environmentId={environmentId}
+          threadId={threadId}
+          workspaceRoot={workspaceRoot}
           canOperateThread={canOperateThread}
           pendingUserInput={requests.activePendingUserInput}
           maxHeight={maxHeight}

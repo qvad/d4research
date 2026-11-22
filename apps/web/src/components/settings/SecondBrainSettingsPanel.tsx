@@ -327,17 +327,20 @@ function SourceLink({
 }) {
   const citation =
     messageId && quote?.trim()
-      ? assistantCitationNavigation({
-          version: 1,
-          environmentId,
-          threadId: ThreadId.make(threadId),
-          messageId: MessageId.make(messageId),
-          text: quote,
-          start: 0,
-          end: quote.length,
-          prefix: "",
-          suffix: "",
-        })
+      ? assistantCitationNavigation(
+          {
+            version: 1,
+            environmentId,
+            threadId: ThreadId.make(threadId),
+            messageId: MessageId.make(messageId),
+            text: quote,
+            start: 0,
+            end: quote.length,
+            prefix: "",
+            suffix: "",
+          },
+          null,
+        )
       : null;
   return citation ? (
     <Link {...citation} className="text-primary underline">

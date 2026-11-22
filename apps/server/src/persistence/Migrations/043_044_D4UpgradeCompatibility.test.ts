@@ -10,6 +10,34 @@ import * as NodeSqliteClient from "@d4research/shared/nodeSqliteClient";
 import Migration0041 from "./041_ProjectionThreadTurnUsage.ts";
 import Migration0042 from "./042_ProjectionThreadResumeSchedule.ts";
 
+const upstreamMigrations = [
+  [96, "ProjectionMessageSearchText"],
+  [97, "TurnItemConversationIndex"],
+  [98, "CommandReadIndexes"],
+  [99, "LastExecutedRunIndex"],
+  [100, "TurnItemCounts"],
+  [101, "QueuedTurnInputIndex"],
+  [102, "ProjectionProjectsCustomTitle"],
+  [103, "TurnItemTypeStatusIndex"],
+  [104, "ShellThreadReadIndexes"],
+  [105, "AuthConnectDevices"],
+  [106, "AuthConnectDeniedRequests"],
+  [107, "QueuedTurnInputIndexJsonValid"],
+  [108, "ProviderTurnAttemptIndex"],
+  [109, "TurnItemMessageOrdinalIndex"],
+  [110, "TurnItemInlineWorkOutput"],
+  [111, "RepairStaleTitleRegeneration"],
+  [112, "IssueTrackerBindings"],
+  [113, "ActiveShellIndexIndexes"],
+  [114, "BackgroundRecoveryIndexes"],
+  [115, "TurnStartReadIndexes"],
+  [116, "DelegatedTaskReadIndexes"],
+  [117, "ThreadItemCounts"],
+  [118, "IssueTrackerAdditionalScopes"],
+  [119, "ProjectionProjectsTrackedFolders"],
+  [120, "TaskFolders"],
+] as const;
+
 const upgradeLayer = it.layer(Layer.mergeAll(NodeSqliteClient.layer({ filename: ":memory:" })));
 
 upgradeLayer("043_051_D4UpgradeCompatibility", (it) => {
@@ -110,6 +138,7 @@ upgradeLayer("043_051_D4UpgradeCompatibility", (it) => {
         [93, "DropOrchestrationEventCorrelationIndex"],
         [94, "DelegatedRecoveryIndexes"],
         [95, "ScheduledTaskThreadMode"],
+        ...upstreamMigrations,
       ]);
       assert.deepStrictEqual(yield* sql`PRAGMA table_info(projection_turns)`, []);
     }),
@@ -188,6 +217,7 @@ partialUpgradeLayer("043_051_D4PartialUpgradeCompatibility", (it) => {
           [93, "DropOrchestrationEventCorrelationIndex"],
           [94, "DelegatedRecoveryIndexes"],
           [95, "ScheduledTaskThreadMode"],
+          ...upstreamMigrations,
         ],
       );
 
@@ -256,6 +286,7 @@ partialUpgradeLayer("043_051_D4PartialUpgradeCompatibility", (it) => {
           [93, "DropOrchestrationEventCorrelationIndex"],
           [94, "DelegatedRecoveryIndexes"],
           [95, "ScheduledTaskThreadMode"],
+          ...upstreamMigrations,
         ],
       );
     }),
@@ -295,9 +326,56 @@ queuedHistoryLayer("D4QueuedMessageUpgradeCompatibility", (it) => {
       assert.deepStrictEqual(
         executed.map(([id]) => id),
         [
-          47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68,
-          69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
-          91, 92, 93, 94, 95,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          ...upstreamMigrations.map(([id]) => id),
         ],
       );
       const columns = yield* sql<{ readonly name: string }>`PRAGMA table_info(projection_projects)`;

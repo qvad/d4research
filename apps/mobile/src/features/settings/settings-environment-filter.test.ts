@@ -21,10 +21,13 @@ describe("settings environment filter", () => {
     expect(toggleSettingsEnvironment(onlyFirst, connected, second)).toBeNull();
   });
 
-  it("drops environments that are no longer connected when the selection changes", () => {
+  it("ignores toggles for offline environments and keeps their selection", () => {
     const onlyFirst = new Set([first]);
     expect(toggleSettingsEnvironment(onlyFirst, [{ environmentId: second }], first)).toEqual(
-      new Set(),
+      onlyFirst,
     );
+    expect(
+      toggleSettingsEnvironment(onlyFirst, [{ environmentId: second }], second, connected),
+    ).toBeNull();
   });
 });

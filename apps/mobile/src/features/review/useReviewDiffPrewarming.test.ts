@@ -33,11 +33,11 @@ function prepareSelection(
 ) {
   const section = sections.find((candidate) => candidate.id === selectedSectionId);
   assert.ok(section);
-  const input = { threadKey, sectionId: section.id, diff: section.diff };
+  const input = { threadKey, sectionId: section.id, diff: section.diff, locale: "en" };
   const parsed = getCachedReviewParsedDiff(input);
   const native = getCachedNativeReviewDiffData({ parsedDiff: parsed });
   for (const pending of getReviewDiffPrewarmSections({ threadKey, sections, selectedSectionId })) {
-    prewarmReviewDiffSection({ threadKey: input.threadKey, section: pending });
+    prewarmReviewDiffSection({ threadKey: input.threadKey, section: pending, locale: "en" });
   }
   assert.strictEqual(getCachedReviewParsedDiff(input), parsed);
   assert.strictEqual(getCachedNativeReviewDiffData({ parsedDiff: parsed }), native);
@@ -92,6 +92,7 @@ it("reserves a larger retained source when the selected input loses whitespace",
   const parsed = getCachedReviewParsedDiff({
     threadKey,
     sectionId: "turn:0",
+    locale: "en",
     diff: reviewDiff.padEnd(MAX_CACHED_REVIEW_SOURCE_CHARACTERS, " "),
   });
   const native = getCachedNativeReviewDiffData({ parsedDiff: parsed });
@@ -106,6 +107,7 @@ it("reserves a larger retained source when a neighboring input loses whitespace"
   const parsed = getCachedReviewParsedDiff({
     threadKey,
     sectionId: "turn:1",
+    locale: "en",
     diff: reviewDiff.padEnd(MAX_CACHED_REVIEW_SOURCE_CHARACTERS - reviewDiff.length, " "),
   });
   const native = getCachedNativeReviewDiffData({ parsedDiff: parsed });
@@ -116,6 +118,7 @@ it("reserves a larger retained source when a neighboring input loses whitespace"
     getCachedReviewParsedDiff({
       threadKey,
       sectionId: "turn:1",
+      locale: "en",
       diff: reviewDiff,
     }),
     parsed,
@@ -150,6 +153,7 @@ it("does not parse an oversized direct prewarm that the cache cannot retain", ()
 
   prewarmReviewDiffSection({
     threadKey,
+    locale: "en",
     section: makeSection(0, "x".repeat(MAX_CACHED_REVIEW_SOURCE_CHARACTERS + 1)),
   });
 

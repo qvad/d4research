@@ -2,10 +2,13 @@ import * as Dialog from "../components/ui/Dialog";
 import { useAtomValue } from "@effect/atom-react";
 import type { EnvironmentId } from "@d4research/contracts";
 import * as Cause from "effect/Cause";
+import { msg } from "gt-react-native";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { useCallback } from "react";
 
+import { m } from "../i18n/messages";
 import { useConnectionController } from "../features/connection/useConnectionController";
+import { useRetryEnvironment } from "../features/connection/useRetryEnvironment";
 import { environmentPresentations } from "./presentation";
 import { useWorkspaceConnectionState, useWorkspaceEnvironments } from "./workspace";
 import type { SavedRemoteConnection } from "../lib/connection";
@@ -44,7 +47,7 @@ const EMPTY_RUNTIME_STATE_ATOM = Atom.make<EnvironmentRuntimeState | null>(null)
   Atom.withLabel("mobile:environment-runtime-state:empty"),
 );
 
-const savedConnectionsByIdAtom = Atom.make((get) => {
+export const savedConnectionsByIdAtom = Atom.make((get) => {
   const catalog = get(environmentCatalog.catalogValueAtom);
   return Object.fromEntries(
     [...catalog.entries.keys()].flatMap((environmentId) => {
@@ -134,10 +137,7 @@ export function useRemoteConnections() {
     [connectionPairingUrl, controller],
   );
 
-  const onReconnectEnvironment = useCallback(
-    (environmentId: EnvironmentId) => controller.retryEnvironment(environmentId),
-    [controller],
-  );
+  const onReconnectEnvironment = useRetryEnvironment();
   const onSetEnvironmentEnabled = useCallback(
     (environmentId: EnvironmentId, enabled: boolean) =>
       controller.setEnvironmentEnabled(environmentId, enabled),
@@ -160,12 +160,17 @@ export function useRemoteConnections() {
         return;
       }
       Dialog.alert(
-        "Remove from this device?",
-        `Forget ${environment.environmentLabel} and its cached threads on this device. Switch it off instead to keep it saved.`,
+        m(msg("Remove from this device?")),
+        m(
+          msg(
+            "Forget {name} and its cached threads on this device. Switch it off instead to keep it saved.",
+            { name: environment.environmentLabel },
+          ),
+        ),
         [
-          { text: "Cancel", style: "cancel" },
+          { text: m(msg("Cancel")), style: "cancel" },
           {
-            text: "Remove",
+            text: m(msg("Remove")),
             style: "destructive",
             onPress: () => {
               void controller.removeEnvironment(environmentId);

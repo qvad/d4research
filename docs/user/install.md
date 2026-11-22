@@ -6,7 +6,7 @@ downloads, and mobile-store apps install T3 Code, not d4research.
 ## Requirements
 
 - Git access to `dimaggi-ai/d4research`
-- Node.js `26.12.1`
+- Node.js `26.13.1`
 - At least one supported provider CLI installed and authenticated on the server machine
 
 ## Start d4research
@@ -74,10 +74,13 @@ on the environment's machine. An unlisted version is unverified.
 When a provider CLI is behind its latest release, its provider card shows the
 available version. **Update now** runs the installer that owns the CLI
 (Homebrew, mise, or a global npm, pnpm, Yarn, Bun, Volta, or Vite+ install), or
-the CLI's own update command when d4research cannot tell. d4research runs `mise upgrade`
+the CLI's own update command when d4research cannot tell. Claude, Codex, and
+OpenCode installs d4research cannot identify stay manual: update them through the
+installer you used. d4research runs `mise upgrade`
 only for a tool your mise config requests as `latest` when the provider's binary
 path is a mise shim or under the tool's `installs/<tool>/latest` link; update a
 pinned version, or a path into one version's directory, through mise yourself.
+Update a CLI installed with Nix through Nix.
 Cursor and Antigravity update with d4research. Homebrew and Chocolatey installs
 compare against the version their package manager offers, which can trail the
 npm release; update Claude installed with Chocolatey through Chocolatey.

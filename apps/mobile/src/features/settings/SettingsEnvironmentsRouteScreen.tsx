@@ -1,3 +1,4 @@
+import { useGT } from "gt-react-native";
 import { ScreenScrollView as ScrollView } from "../../components/ui/ScreenScrollView";
 import { NativeHeaderToolbar } from "../../native/NativeHeaderToolbar";
 import { useNavigation } from "@react-navigation/native";
@@ -21,6 +22,7 @@ import {
 const SHOWCASE_ENABLED = process.env.EXPO_PUBLIC_SHOWCASE === "1";
 
 export function SettingsEnvironmentsRouteScreen() {
+  const gt = useGT();
   const {
     connectedEnvironments,
     onReconnectEnvironment,
@@ -65,10 +67,10 @@ export function SettingsEnvironmentsRouteScreen() {
 
   return (
     <SettingsScreen
-      title="Environments"
+      title={gt("Environments")}
       actions={[
         {
-          accessibilityLabel: "Add environment",
+          accessibilityLabel: gt("Add environment"),
           icon: "plus",
           onPress: () => navigation.navigate("SettingsEnvironmentNew"),
         },

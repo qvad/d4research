@@ -1,3 +1,5 @@
+import { useGT } from "gt-react";
+import { workspaceAreaProps } from "../../lib/workspaceFocus";
 import { useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
 import type { ScopedThreadRef } from "@d4research/contracts";
 import { ScrollArea } from "../ui/scroll-area";
@@ -26,6 +28,8 @@ export function ThreadDetailsCard({
   onPresentationChange: (presentation: ThreadPanelPresentation) => void;
   children: (density: "full" | "compact" | "essential") => ReactNode;
 }) {
+  const gt = useGT();
+  const detailsArea = workspaceAreaProps("details", 3, gt("Thread details"));
   const canvas = useChatCanvas();
   const preferredPlacement = canvas
     ? resolveThreadDetailsCardLayout({
@@ -132,6 +136,7 @@ export function ThreadDetailsCard({
           "max-h-[min(calc(100dvh-6.5rem),calc(var(--available-height,100dvh)-1rem))]",
       )}
       style={placement ? { maxHeight: height } : undefined}
+      {...detailsArea}
       data-thread-details-card
     >
       <ScrollArea scrollFade className="min-h-0">
@@ -164,7 +169,7 @@ export function ThreadDetailsCard({
       {placement ? (
         inlineOpen ? (
           <aside
-            aria-label="Thread details"
+            aria-label={gt("Thread details")}
             // Slides down to make room for the find bar, but returns in the same frame
             // the bar closes: a floating preview below moves up at once and would
             // otherwise overlap the card mid-slide.

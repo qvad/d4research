@@ -1,6 +1,7 @@
 import { extendReplacementRangeForTrailingSpace } from "./composer-logic";
 import { describeStagedHandoffBanner } from "./composer-logic";
 import { resolveComposerDispatchMode } from "@d4research/client-runtime/state/composer-dispatch";
+import { threadPullRequestKeyOf } from "@d4research/client-runtime/thread-pull-requests";
 import { filterComposerPullRequestMatches } from "@d4research/shared/composerPullRequestMatches";
 import { EnvironmentId, MessageId, ThreadId, type AssistantCitation } from "@d4research/contracts";
 import {
@@ -68,6 +69,7 @@ describe("shouldSubmitComposerOnEnter", () => {
 describe("composerSubmissionIntentForKey", () => {
   const input = {
     keybindings: DEFAULT_RESOLVED_KEYBINDINGS,
+    context: {},
     platform: "Linux",
     isMobileViewport: false,
     isDraftThread: false,
@@ -232,6 +234,19 @@ describe("composerSubmissionIntentForKey", () => {
     ).toBeNull();
   });
 
+  it("sends on Enter when a binding conditioned on !rightPanelOpen is inactive", () => {
+    const keybindings = mergeWithDefaultKeybindings(
+      compileResolvedKeybindingsConfig([
+        { key: "enter", command: "commandPalette.toggle", when: "!rightPanelOpen" },
+      ]),
+    );
+    const conditioned = { ...input, keybindings, sendShortcut: "enter" as const, event: enter };
+    expect(composerSubmissionIntentForKey(conditioned)).toBeNull();
+    expect(
+      composerSubmissionIntentForKey({ ...conditioned, context: { rightPanelOpen: true } }),
+    ).toBe("foreground");
+  });
+
   it.each([
     { isMobileViewport: true },
     { event: { ...enter, isComposing: true } },
@@ -254,6 +269,7 @@ describe("composerSubmissionIntentForKey", () => {
       composerSubmissionIntentForKey({
         keybindings: DEFAULT_RESOLVED_KEYBINDINGS,
         platform: "Linux",
+        context: { composerFocus: true },
         isMobileViewport: false,
         event: {
           key: "Enter",
@@ -283,6 +299,7 @@ describe("composerSubmissionIntentForKey", () => {
         composerSubmissionIntentForKey({
           keybindings: DEFAULT_RESOLVED_KEYBINDINGS,
           platform: "Linux",
+          context: { composerFocus: true },
           isMobileViewport: false,
           event: { key: "Enter", shiftKey, ctrlKey: true, metaKey: false, altKey: false },
           isDraftThread: false,
@@ -556,30 +573,35 @@ describe("detectComposerTrigger", () => {
 describe("filterComposerPullRequestMatches", () => {
   const entries = [
     {
+      host: "github.com",
       number: 7,
       projectId: "project-1",
       repository: "t3tools/t3code",
       updatedAt: "2026-09-01T12:00:00.000Z",
     },
     {
+      host: "github.com",
       number: 8987,
       projectId: "project-1",
       repository: "T3Tools/T3Code",
       updatedAt: "2026-09-03T12:00:00.000Z",
     },
     {
+      host: "github.com",
       number: 27,
       projectId: "project-1",
       repository: "t3tools/t3code",
       updatedAt: "2026-09-02T12:00:00.000Z",
     },
     {
+      host: "github.com",
       number: 27,
       projectId: "project-1",
       repository: "t3tools/t3code",
       updatedAt: "2026-09-01T13:00:00.000Z",
     },
     {
+      host: "github.com",
       number: 70,
       projectId: "project-2",
       repository: "t3tools/other",
@@ -590,6 +612,7 @@ describe("filterComposerPullRequestMatches", () => {
   it("matches and de-duplicates number fragments within one repository, exact match first", () => {
     expect(
       filterComposerPullRequestMatches({
+        keyOf: threadPullRequestKeyOf,
         entries,
         projectId: "project-1",
         repository: "t3tools/t3code",
@@ -601,18 +624,21 @@ describe("filterComposerPullRequestMatches", () => {
 
   it("keeps an older exact match when newer substring matches would fill the limit", () => {
     const exact = {
+      host: "github.com",
       number: 7,
       projectId: "project-1",
       repository: "t3tools/t3code",
       updatedAt: "2020-01-01T00:00:00.000Z",
     };
     const newerSubstringMatches = Array.from({ length: 12 }, (_unused, index) => ({
+      host: "github.com",
       number: 700 + index,
       projectId: "project-1",
       repository: "t3tools/t3code",
       updatedAt: `2026-09-${String(index + 1).padStart(2, "0")}T12:00:00.000Z`,
     }));
     const matches = filterComposerPullRequestMatches({
+      keyOf: threadPullRequestKeyOf,
       entries: [...newerSubstringMatches, exact],
       projectId: "project-1",
       repository: "t3tools/t3code",
@@ -631,6 +657,7 @@ describe("filterComposerPullRequestMatches", () => {
         repository: "t3tools/t3code",
         query: "",
         limit: 2,
+        keyOf: threadPullRequestKeyOf,
       }).map((entry) => entry.number),
     ).toEqual([8987, 27]);
   });

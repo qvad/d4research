@@ -1,12 +1,30 @@
 import { EnvironmentAuthInvalidError } from "@d4research/contracts";
 import { describe, expect, it } from "@effect/vitest";
 
-import { mapRemoteDpopEnvironmentError, mapRemoteEnvironmentError } from "./errors.ts";
+import {
+  isHostCredentialRefusal,
+  mapRemoteDpopEnvironmentError,
+  mapRemoteEnvironmentError,
+} from "./errors.ts";
 import { DPOP_RETRY_HINT, DPOP_UNKNOWN_HINT } from "../relay/errorPresentation.ts";
 import { NETWORK_BLOCKING_HINT } from "../errors/network.ts";
 import { RemoteEnvironmentAuthFetchError, RemoteEnvironmentAuthTimeoutError } from "../rpc/http.ts";
 
 describe("mapRemoteDpopEnvironmentError", () => {
+  it("keeps a direct host's clock refusal apart from a refused pairing", () => {
+    const mapped = mapRemoteDpopEnvironmentError(
+      new EnvironmentAuthInvalidError({
+        code: "auth_invalid",
+        reason: "invalid_credential",
+        dpopFailureReason: "time_window",
+        traceId: "trace-clock",
+      }),
+      "direct",
+    );
+    expect(mapped).toMatchObject({ via: "direct", failureCause: "clock_skew" });
+    expect(isHostCredentialRefusal(mapped)).toBe(false);
+  });
+
   it("keeps relay descriptor auth failures distinct from DPoP proof failures", () => {
     const error = new EnvironmentAuthInvalidError({
       code: "auth_invalid",

@@ -1,4 +1,5 @@
 import { useAudioPlayerStatus } from "expo-audio";
+import { T, useGT } from "gt-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { AppText as Text } from "../../components/ui/AppText";
@@ -13,6 +14,7 @@ function timestamp(seconds: number) {
 
 export function AudioFilePreview(props: { uri: string; onRetry: () => void }) {
   const player = usePlaybackAudioPlayer(props.uri);
+  const gt = useGT();
   const status = useAudioPlayerStatus(player);
   const [seekError, setSeekError] = useState(false);
   const [playbackRequested, setPlaybackRequested] = useState(false);
@@ -41,7 +43,7 @@ export function AudioFilePreview(props: { uri: string; onRetry: () => void }) {
       <View className="flex-row items-center gap-4">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Back 15 seconds"
+          accessibilityLabel={gt("Back 15 seconds")}
           disabled={!status.isLoaded}
           onPress={() => seek(Math.max(0, status.currentTime - 15))}
           className="p-4"
@@ -67,12 +69,16 @@ export function AudioFilePreview(props: { uri: string; onRetry: () => void }) {
           className="rounded-xl bg-subtle px-6 py-4"
         >
           <Text className="text-foreground">
-            {playbackRequested || status.playing ? "Pause" : !status.isLoaded ? "Loading…" : "Play"}
+            {playbackRequested || status.playing
+              ? gt("Pause")
+              : !status.isLoaded
+                ? gt("Loading…")
+                : gt("Play")}
           </Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Forward 15 seconds"
+          accessibilityLabel={gt("Forward 15 seconds")}
           disabled={!status.isLoaded}
           onPress={() => seek(Math.min(status.duration, status.currentTime + 15))}
           className="p-4"
@@ -83,10 +89,10 @@ export function AudioFilePreview(props: { uri: string; onRetry: () => void }) {
       {status.error || seekError ? (
         <View className="items-center gap-3">
           <Text className="text-center text-foreground">
-            This audio could not be played. Try again or save it to open in another app.
+            <T>This audio could not be played. Try again or save it to open in another app.</T>
           </Text>
           <Pressable accessibilityRole="button" onPress={props.onRetry} className="p-3">
-            <Text className="text-foreground">Try again</Text>
+            <Text className="text-foreground">{gt("Try again")}</Text>
           </Pressable>
         </View>
       ) : null}

@@ -1,0 +1,29 @@
+import { useMemo } from "react";
+import { Platform, useWindowDimensions } from "react-native";
+
+import { resolveComposerTextRole, resolveScaledTextRole } from "../../lib/appearancePreferences";
+import { MOBILE_TYPOGRAPHY } from "../../lib/typography";
+import { useAppearancePreferences } from "../../features/settings/appearance/AppearancePreferencesProvider";
+
+export interface ScaledTextRole {
+  readonly fontSize: number;
+  readonly lineHeight: number;
+}
+
+/**
+ * This deliberately does not subscribe to CSS variables, so palette-only
+ * setTheme calls remain native-only.
+ */
+export function useScaledTextRole(role: keyof typeof MOBILE_TYPOGRAPHY): ScaledTextRole {
+  const { appearance } = useAppearancePreferences();
+  return useMemo(
+    () => resolveScaledTextRole(role, appearance.baseFontSize),
+    [appearance.baseFontSize, role],
+  );
+}
+
+export function useComposerTextRole(): ScaledTextRole {
+  const body = useScaledTextRole("body");
+  const { fontScale } = useWindowDimensions();
+  return resolveComposerTextRole(body, fontScale, Platform.OS);
+}

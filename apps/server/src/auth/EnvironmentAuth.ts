@@ -54,11 +54,16 @@ import { DESKTOP_RENDERER_ORIGINS } from "../httpCors.ts";
 import * as SqlitePersistence from "../persistence/Sqlite.ts";
 import * as ManagedLimits from "../policy/managedLimits.ts";
 import * as ManagedPolicy from "../policy/ManagedPolicy.ts";
-import { MCP_APPROVAL_SUBJECT_PREFIX } from "../persistence/AuthPairingLinks.ts";
+import {
+  MCP_APPROVAL_SUBJECT_PREFIX,
+  PEER_LINK_PAIRING_SUBJECT_PREFIX,
+} from "../persistence/AuthPairingLinks.ts";
 import { requestUrl } from "../requestUrl.ts";
 
 const DEFAULT_SESSION_SUBJECT = "cli-issued-session";
 export const INTERNAL_ADMINISTRATIVE_BOOTSTRAP_SUBJECT = "administrative-bootstrap";
+/** Sessions and pairing links T3 Connect minted for a device signed in to the linked account. */
+export const CLOUD_CONNECT_SUBJECT = "cloud-connect";
 
 export interface IssuedPairingLink {
   readonly id: string;
@@ -83,6 +88,15 @@ export interface IssuedBearerSession {
 // MCP client tokens are restricted to /mcp; HTTP API and WebSocket RPC would bypass their access cap.
 const MCP_CLIENT_SUBJECT = "mcp-client";
 const MCP_CLIENT_SESSION_TTL = Duration.days(30);
+// A peer link's session moves back out to its full lifetime when a call finds it this far
+// short, so a used link never expires and a busy one writes at most once per step.
+const PEER_LINK_RENEWAL_STEP = Duration.days(1);
+
+// A device pairing with its DPoP key renews the session itself, so the token can be short and
+// the device stays signed in while used. One idle for the whole window pairs again.
+const RENEWABLE_ACCESS_TOKEN_TTL = Duration.hours(1);
+const RENEWABLE_SESSION_WINDOW = Duration.days(30);
+const PAIRING_LINK_SUBJECT = "one-time-token";
 
 export interface McpClientSession {
   readonly sessionId: AuthSessionId;
@@ -90,6 +104,8 @@ export interface McpClientSession {
   readonly access: AuthMcpClientAccess;
   /** Another T3 Code environment's link, whose work here stays within it. */
   readonly peerLink: boolean;
+  /** When a peer link's session ends unless it is used again; the linking side keeps this. */
+  readonly linkExpiresAt?: DateTime.Utc;
 }
 
 export interface AuthenticatedSession {
@@ -509,6 +525,14 @@ export class EnvironmentAuth extends Context.Service<
       AuthAccessTokenResult,
       ServerAuthInvalidCredentialError | ServerAuthInvalidRequestError | ServerAuthInternalError
     >;
+    readonly renewAccessToken: (
+      accessToken: string,
+      proofKeyThumbprint: string,
+      consumeProof: Effect.Effect<void, ServerAuthInvalidCredentialError | ServerAuthInternalError>,
+    ) => Effect.Effect<
+      AuthAccessTokenResult,
+      ServerAuthInvalidCredentialError | ServerAuthInternalError
+    >;
     readonly createPairingLink: (input?: {
       readonly ttl?: Duration.Duration;
       readonly label?: string;
@@ -559,6 +583,10 @@ export class EnvironmentAuth extends Context.Service<
       boolean,
       ServerAuthCurrentSessionScopesError | ServerAuthInvalidRequestError | ServerAuthInternalError
     >;
+    /** Revokes a session; one bound to a device key takes the device's trust and sessions with it. */
+    readonly revokeClient: (
+      sessionId: AuthSessionId,
+    ) => Effect.Effect<boolean, ServerAuthInternalError>;
     readonly revokeClientSession: (
       currentSessionId: AuthSessionId,
       targetSessionId: AuthSessionId,
@@ -603,13 +631,11 @@ export class EnvironmentAuth extends Context.Service<
     readonly consumeMcpApprovalCode: (
       code: string,
       access: AuthMcpClientAccess,
+      peerLink?: boolean,
     ) => Effect.Effect<
       AuthMcpClientAccess,
       ServerAuthMcpApprovalCodeError | ServerAuthInternalError
     >;
-    readonly authenticateBrowserSession: (
-      request: HttpServerRequest.HttpServerRequest,
-    ) => Effect.Effect<AuthenticatedSession, ServerAuthCredentialError | ServerAuthInternalError>;
   }
 >()("d4research/auth/EnvironmentAuth") {}
 
@@ -661,16 +687,15 @@ const rejectMcpClientAudience = <S extends { readonly subject: string }>(session
       ).pipe(Effect.tap(() => Effect.logWarning("Rejected an MCP client session outside /mcp.")))
     : Effect.succeed(session);
 
+const toSessionVerificationError = (cause: SessionStore.SessionCredentialError) =>
+  SessionStore.isSessionCredentialInvalidError(cause)
+    ? new ServerAuthInvalidCredentialError({ cause })
+    : new ServerAuthSessionCredentialValidationError({ cause });
+
 const mapSessionVerificationErrors = <A, R>(
   effect: Effect.Effect<A, SessionStore.SessionCredentialError, R>,
 ): Effect.Effect<A, ServerAuthInvalidCredentialError | ServerAuthInternalError, R> =>
-  effect.pipe(
-    Effect.mapError((cause) =>
-      SessionStore.isSessionCredentialInvalidError(cause)
-        ? new ServerAuthInvalidCredentialError({ cause })
-        : new ServerAuthSessionCredentialValidationError({ cause }),
-    ),
-  );
+  effect.pipe(Effect.mapError(toSessionVerificationError));
 
 export function parseBearerToken(request: HttpServerRequest.HttpServerRequest): string | null {
   const header = request.headers["authorization"];
@@ -993,8 +1018,7 @@ export const make = Effect.gen(function* () {
       readonly proofKeyThumbprint?: string;
       readonly requestedScopes?: ReadonlyArray<AuthEnvironmentScope>;
       readonly requiredScopes?: ReadonlyArray<AuthEnvironmentScope>;
-      /** Only an agent sign-in opts in to spending a code issued for it. */
-      readonly mcpApproval?: AuthMcpClientAccess;
+      readonly allowedSubject?: string;
     },
   ): Effect.Effect<
     ResolvedBootstrapGrant,
@@ -1030,6 +1054,43 @@ export const make = Effect.gen(function* () {
     );
   };
 
+  const toAccessTokenResult = (session: SessionStore.IssuedSession) =>
+    DateTime.now.pipe(
+      Effect.map(
+        (now) =>
+          ({
+            access_token: session.token,
+            issued_token_type: AuthAccessTokenType,
+            token_type: session.proofKeyThumbprint ? "DPoP" : "Bearer",
+            expires_in: Math.max(
+              0,
+              Math.floor((session.expiresAt.epochMilliseconds - now.epochMilliseconds) / 1000),
+            ),
+            scope: encodeOAuthScope(session.scopes),
+          }) satisfies AuthAccessTokenResult,
+      ),
+    );
+
+  const renewAccessToken: EnvironmentAuth["Service"]["renewAccessToken"] = Effect.fn(
+    "EnvironmentAuth.renewAccessToken",
+  )(function* (accessToken, proofKeyThumbprint, consumeProof) {
+    const session = yield* sessions
+      .renew(accessToken, {
+        proofKeyThumbprint,
+        ttl: RENEWABLE_ACCESS_TOKEN_TTL,
+        renewalWindow: RENEWABLE_SESSION_WINDOW,
+        consumeProof,
+      })
+      .pipe(
+        Effect.mapError((cause) =>
+          isServerAuthCredentialError(cause) || isServerAuthInternalError(cause)
+            ? cause
+            : toSessionVerificationError(cause),
+        ),
+      );
+    return yield* toAccessTokenResult(session);
+  });
+
   const exchangeBootstrapCredentialForAccessToken: EnvironmentAuth["Service"]["exchangeBootstrapCredentialForAccessToken"] =
     (credential, requestedScopes, requestMetadata, input) => {
       return resolveBootstrapGrant(credential, {
@@ -1047,6 +1108,12 @@ export const make = Effect.gen(function* () {
             if (grantedScopes.length === 0) {
               return yield* new ServerAuthScopeNotGrantedError({});
             }
+            // Only plain pairing links renew. T3 Connect, CLI, desktop and peer sessions keep
+            // their own lifetimes, so unlinking Connect or rotating a credential still cuts off.
+            const renewable =
+              input?.proofKeyThumbprint !== undefined &&
+              grant.method === "one-time-token" &&
+              grant.subject === PAIRING_LINK_SUBJECT;
             return yield* sessions
               .issue({
                 method: input?.proofKeyThumbprint ? "dpop-access-token" : "bearer-access-token",
@@ -1055,9 +1122,10 @@ export const make = Effect.gen(function* () {
                 ...(input?.proofKeyThumbprint
                   ? {
                       proofKeyThumbprint: input.proofKeyThumbprint,
-                      ttl: Duration.hours(1),
+                      ttl: renewable ? RENEWABLE_ACCESS_TOKEN_TTL : Duration.hours(1),
                     }
                   : {}),
+                ...(renewable ? { renewalWindow: RENEWABLE_SESSION_WINDOW } : {}),
                 replaceActiveForSubjectAndMethod: grant.method === "desktop-bootstrap",
                 client: {
                   ...requestMetadata,
@@ -1071,25 +1139,7 @@ export const make = Effect.gen(function* () {
               );
           }),
         ),
-        Effect.flatMap((session) =>
-          DateTime.now.pipe(
-            Effect.map(
-              (now) =>
-                ({
-                  access_token: session.token,
-                  issued_token_type: AuthAccessTokenType,
-                  token_type: input?.proofKeyThumbprint ? "DPoP" : "Bearer",
-                  expires_in: Math.max(
-                    0,
-                    Math.floor(
-                      (session.expiresAt.epochMilliseconds - now.epochMilliseconds) / 1000,
-                    ),
-                  ),
-                  scope: encodeOAuthScope(session.scopes),
-                }) satisfies AuthAccessTokenResult,
-            ),
-          ),
-        ),
+        Effect.flatMap(toAccessTokenResult),
         Effect.withSpan("EnvironmentAuth.exchangeBootstrapCredentialForAccessToken"),
       );
     };
@@ -1219,13 +1269,17 @@ export const make = Effect.gen(function* () {
       scopes: input?.access
         ? mcpClientScopes(input.access)
         : (input?.scopes ?? AuthStandardClientScopes),
-      subject: "one-time-token",
+      subject:
+        input?.purpose === "peer-link" && input.access
+          ? `${PEER_LINK_PAIRING_SUBJECT_PREFIX}${input.access}`
+          : "one-time-token",
       ...(input?.label ? { label: input.label } : {}),
-      ...(input?.access ? { mcpApproval: input.access } : {}),
+      ...(input?.access && input.purpose !== "peer-link" ? { mcpApproval: input.access } : {}),
     }).pipe(
       Effect.map((issued) => ({
         ...toPairingCredential(issued),
         ...(input?.access ? { access: input.access } : {}),
+        ...(input?.access && input.purpose === "peer-link" ? { purpose: input.purpose } : {}),
       })),
       Effect.withSpan("EnvironmentAuth.issuePairingCredential"),
     );
@@ -1292,21 +1346,27 @@ export const make = Effect.gen(function* () {
       .pipe(Effect.mapError((cause) => new ServerAuthClientScopesUpdateError({ cause })));
   });
 
+  const revokeClient: EnvironmentAuth["Service"]["revokeClient"] = revokeSession;
+
   const revokeClientSession: EnvironmentAuth["Service"]["revokeClientSession"] = Effect.fn(
     "EnvironmentAuth.revokeClientSession",
   )(function* (currentSessionId, targetSessionId) {
     if (currentSessionId === targetSessionId) {
       return yield* new ServerAuthForbiddenOperationError({});
     }
-    return yield* revokeSession(targetSessionId);
+    return yield* revokeClient(targetSessionId);
   });
 
-  const revokeOtherClientSessions: EnvironmentAuth["Service"]["revokeOtherClientSessions"] = (
-    currentSessionId,
-  ) =>
-    revokeOtherSessionsExcept(currentSessionId).pipe(
-      Effect.withSpan("EnvironmentAuth.revokeOtherClientSessions"),
-    );
+  const revokeOtherClientSessions: EnvironmentAuth["Service"]["revokeOtherClientSessions"] =
+    Effect.fn("EnvironmentAuth.revokeOtherClientSessions")(function* (currentSessionId) {
+      const links = yield* bootstrapCredentials
+        .listActive()
+        .pipe(Effect.mapError((cause) => new ServerAuthOtherSessionsRevocationError({ cause })));
+      yield* Effect.forEach(links, (link) => bootstrapCredentials.revoke(link.id), {
+        discard: true,
+      }).pipe(Effect.mapError((cause) => new ServerAuthOtherSessionsRevocationError({ cause })));
+      return yield* revokeOtherSessionsExcept(currentSessionId);
+    });
 
   const issueStartupPairingUrl: EnvironmentAuth["Service"]["issueStartupPairingUrl"] = (baseUrl) =>
     issueStartupPairingCredential().pipe(
@@ -1408,26 +1468,56 @@ export const make = Effect.gen(function* () {
       return yield* authenticateRequest(request);
     });
 
+  /** The expiry of a verified peer link session, moved out when this use finds it a step short. */
+  const renewPeerLinkSession = Effect.fnUntraced(function* (
+    sessionId: AuthSessionId,
+    expiresAt: DateTime.DateTime,
+  ) {
+    const now = yield* DateTime.now;
+    const renewed = DateTime.add(now, {
+      milliseconds: Duration.toMillis(MCP_CLIENT_SESSION_TTL),
+    });
+    if (DateTime.distance(expiresAt, renewed).pipe(Duration.isLessThan(PEER_LINK_RENEWAL_STEP))) {
+      return DateTime.toUtc(expiresAt);
+    }
+    const current = yield* sessions
+      .extend(sessionId, renewed, PEER_LINK_RENEWAL_STEP)
+      .pipe(mapSessionVerificationErrors);
+    // A revoke can land between the verification and the update.
+    if (Option.isNone(current)) {
+      return yield* new ServerAuthInvalidCredentialError({
+        diagnostic: "The peer link session ended before it could be renewed.",
+      });
+    }
+    return current.value;
+  });
+
   const authenticateMcpClient: EnvironmentAuth["Service"]["authenticateMcpClient"] = (request) => {
     const token = parseBearerToken(request);
     if (token === null) return Effect.fail(new ServerAuthMissingCredentialError({}));
     return sessions.verify(token).pipe(
       mapSessionVerificationErrors,
-      Effect.flatMap((session) =>
-        session.subject === MCP_CLIENT_SUBJECT && session.method === "bearer-access-token"
-          ? Effect.succeed({
-              sessionId: session.sessionId,
-              label: session.client.label ?? "MCP client",
-              access: session.scopes.includes(AuthOrchestrationOperateScope)
-                ? (session.runtimeModeCeiling ?? "approval-required")
-                : "read-only",
-              peerLink: session.peerLink === true,
-            } satisfies McpClientSession)
-          : Effect.fail(
-              new ServerAuthInvalidCredentialError({
-                diagnostic: "Only MCP client sessions are accepted here.",
-              }),
-            ),
+      Effect.flatMap(
+        Effect.fnUntraced(function* (session) {
+          if (session.subject !== MCP_CLIENT_SUBJECT || session.method !== "bearer-access-token") {
+            return yield* new ServerAuthInvalidCredentialError({
+              diagnostic: "Only MCP client sessions are accepted here.",
+            });
+          }
+          const client = {
+            sessionId: session.sessionId,
+            label: session.client.label ?? "MCP client",
+            access: session.scopes.includes(AuthOrchestrationOperateScope)
+              ? (session.runtimeModeCeiling ?? "approval-required")
+              : "read-only",
+            peerLink: session.peerLink === true,
+          } satisfies McpClientSession;
+          if (session.peerLink !== true || session.expiresAt === undefined) return client;
+          return {
+            ...client,
+            linkExpiresAt: yield* renewPeerLinkSession(session.sessionId, session.expiresAt),
+          } satisfies McpClientSession;
+        }),
       ),
       Effect.withSpan("EnvironmentAuth.authenticateMcpClient"),
     );
@@ -1454,29 +1544,14 @@ export const make = Effect.gen(function* () {
         Effect.withSpan("EnvironmentAuth.issueMcpClientSession"),
       );
 
-  const authenticateBrowserSession: EnvironmentAuth["Service"]["authenticateBrowserSession"] = (
-    request,
-  ) => {
-    const credential = resolveRequestCredential(request);
-    if (!credential || !isBrowserCookieCredential(credential.source)) {
-      return Effect.fail(new ServerAuthMissingCredentialError({}));
-    }
-    return authenticateRequest(request).pipe(
-      Effect.filterOrFail(
-        (session) => session.method === "browser-session-cookie",
-        () => new ServerAuthInvalidCredentialError({ diagnostic: "Not a browser session." }),
-      ),
-      Effect.withSpan("EnvironmentAuth.authenticateBrowserSession"),
-    );
-  };
-
   const consumeMcpApprovalCode: EnvironmentAuth["Service"]["consumeMcpApprovalCode"] = (
     code,
     access,
+    peerLink = false,
   ) =>
     resolveBootstrapGrant(code.trim(), {
       requiredScopes: mcpClientScopes(access),
-      mcpApproval: access,
+      allowedSubject: `${peerLink ? PEER_LINK_PAIRING_SUBJECT_PREFIX : MCP_APPROVAL_SUBJECT_PREFIX}${access}`,
     }).pipe(
       Effect.catchTags({
         ServerAuthInvalidCredentialError: () =>
@@ -1504,6 +1579,7 @@ export const make = Effect.gen(function* () {
     getSessionState,
     createBrowserSession,
     exchangeBootstrapCredentialForAccessToken,
+    renewAccessToken,
     createPairingLink,
     issuePairingCredential,
     issueStartupPairingCredential,
@@ -1514,6 +1590,7 @@ export const make = Effect.gen(function* () {
     revokeSession,
     listClientSessions,
     updateClientScopes,
+    revokeClient,
     revokeClientSession,
     revokeOtherClientSessions,
     authenticateHttpRequest,
@@ -1523,7 +1600,6 @@ export const make = Effect.gen(function* () {
     authenticateMcpClient,
     issueMcpClientSession,
     consumeMcpApprovalCode,
-    authenticateBrowserSession,
   });
 });
 
@@ -1538,7 +1614,7 @@ const mcpApprovalLevel = (subject: string): AuthMcpClientAccess | undefined => {
 };
 
 /** Subjects of sessions and links a pairing link created, keyed by how the client paired. */
-const LINK_PAIRED_SUBJECTS = { link: "one-time-token", connect: "cloud-connect" } as const;
+const LINK_PAIRED_SUBJECTS = { link: "one-time-token", connect: CLOUD_CONNECT_SUBJECT } as const;
 
 /**
  * Revokes sessions and unused links from pairing the policy no longer allows, so a policy rolled
@@ -1591,7 +1667,7 @@ export const layer = Layer.effect(EnvironmentAuth, make).pipe(
   Layer.provideMerge(EnvironmentAuthPolicy.layer),
 );
 
-const layerStorage = Layer.mergeAll(ServerSecretStore.layer, SqlitePersistence.layerConfig);
+const layerStorage = Layer.mergeAll(ServerSecretStore.layer, SqlitePersistence.layerCliConfig);
 
 export const layerRuntime = layer.pipe(
   Layer.provideMerge(ManagedPolicy.layer),

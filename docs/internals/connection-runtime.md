@@ -83,6 +83,53 @@ The supervisor is the only retry owner.
 7. Explicit removal closes the session and deletes the registration,
    credentials, shell cache, and thread cache.
 
+The shell snapshot loads over HTTP, which needs only the prepared connection, so
+the [shell state](../../packages/client-runtime/src/state/shell.ts) can ask for
+it before the socket and the config are ready. Two constraints follow. The live
+config stays the authority: rows loaded early for a build or with omissions that
+it does not confirm are replaced, never resumed. And an HTTP answer must never
+land on rows the socket has moved on: the subscription waits for the answer, and
+when held rows can resume, it ends the request 3 seconds after the socket is
+ready. A proxy that drops `/api` without an answer then does not hold the
+connect for the HTTP timeout.
+
+Each environment synchronizes at its own time, so a thread list that follows every
+snapshot moves once per environment on each cold start and resume. Mobile lists read
+[steady shells](../../packages/client-runtime/src/state/steadyShells.ts): an
+environment's rows stay as shown until its connection's server snapshot arrives,
+it is synchronized, or it disconnects, and environments that get there within two
+seconds of each other show together. Only an environment that is connected or on
+its first attempt, and still owes its snapshot, is waited for; a retry can take
+minutes. A move in a list is refused while its rows wait, because its plan would
+use order keys the server may have replaced. Every other row action looks up the
+live row before it reads thread state, so an undo plan or a guard never uses a held
+row. The hold stops only changes the user
+did not cause: a command that moves or removes a row (settle, snooze, pin, archive,
+delete, and their reverses) makes that environment's rows follow the live snapshot
+until it is live. Point reads (a
+thread's own shell, route checks) keep the live snapshot, where a row the server just
+sent must not look missing. The decision reads the snapshot's own sequence: a second
+atom derived from the same shell state can be one update behind the rows. The mobile
+splash screen also waits, for a bounded time, until every enabled environment has
+read its cached shell and Home's list has laid out those rows, so the first frame
+holds all cached rows.
+
+Shell snapshots can leave rows out when the client asks. Servers that advertise
+`shellThreadFamilies` leave out idle subagent children: a child stays while it
+has a live or queued run, a pending request or background work, or a subagent
+child of its own, so badge and working walks never meet a gap. Servers that also
+advertise `shellOlderSettled` keep only the 25 newest settled top-level threads
+(and any tied with the 25th, pinned, snoozed, live, or above a kept child); the
+snapshot's `olderSettled` names that cut and counts the rest per project. Left-out
+rows load on demand and merge behind shell rows
+([thread families](../../packages/client-runtime/src/state/threadFamilies.ts)):
+the family a thread view or a queued message mounts holds every active thread
+sharing the thread's root, so it also brings back an old settled thread opened by
+link; the Settled shelf reads pages below the cut; searches return the rows of
+older matches. A missing shell row therefore does not prove a thread is gone:
+code that deletes data or a worktree on absence must check the family or the
+server first.
+
 ### Wakeups
 
 Wakeup handling differs by phase, in [supervisor.ts][supervisor]:

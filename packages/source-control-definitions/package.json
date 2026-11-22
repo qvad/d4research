@@ -20,6 +20,7 @@
     "@d4research/source-control-forgejo": "workspace:*",
     "@d4research/source-control-gitcafe": "workspace:*",
     "@d4research/source-control-github": "workspace:*",
-    "@d4research/source-control-gitlab": "workspace:*"
+    "@d4research/source-control-gitlab": "workspace:*",
+    "@d4research/source-control-tanstack-source": "workspace:*"
   }
 }

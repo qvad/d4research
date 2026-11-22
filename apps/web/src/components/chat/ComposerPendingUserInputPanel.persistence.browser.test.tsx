@@ -20,7 +20,7 @@ import { act, fakeTimers, render } from "../../../test/render";
 import { useComposerDraftStore } from "../../composerDraftStore";
 import { makeThreadProjectionFixture } from "../../test-fixtures";
 import { toastManager } from "../ui/toast";
-import { usePendingThreadRequests } from "./usePendingThreadRequests";
+import { usePendingThreadRequests, usePendingUserInputDraft } from "./usePendingThreadRequests";
 
 const threadRef = { environmentId: EnvironmentId.make("env"), threadId: ThreadId.make("thread") };
 
@@ -85,7 +85,7 @@ interface ProbeProps {
 function useProbeRequests({ environmentId, projection, loading = false }: ProbeProps) {
   const promptRef = useRef("");
   const composerRef = useRef(null);
-  return usePendingThreadRequests({
+  const requests = usePendingThreadRequests({
     environmentId,
     activeThreadId: projection.thread.id,
     activeThread: projection.thread,
@@ -98,9 +98,16 @@ function useProbeRequests({ environmentId, projection, loading = false }: ProbeP
     composerRef,
     setThreadError: () => {},
   });
+  const draft = usePendingUserInputDraft({
+    environmentId,
+    activeThreadId: projection.thread.id,
+    activePendingUserInput: requests.activePendingUserInput,
+    supportsQuestionAttachments: false,
+  });
+  return { ...requests, ...draft };
 }
 
-let requests: ReturnType<typeof usePendingThreadRequests>;
+let requests: ReturnType<typeof useProbeRequests>;
 
 function PendingRequestsProbe(props: ProbeProps) {
   const state = useProbeRequests(props);
@@ -266,13 +273,13 @@ it("isolates drafts by environment, thread and request and discards only resolve
     makeThreadRequestsResolvedAnnouncer(
       environmentId,
       threadRef.threadId,
-    )([RuntimeRequestId.make("second")]),
+    )([{ id: RuntimeRequestId.make("second"), status: "resolved" }]),
   );
   for (const [index, scope] of scopes.entries()) {
     await show(scope);
-    expect(requests.activePendingQuestionIndex).toBe(index === 0 ? 0 : 1);
+    expect(requests.activePendingQuestionIndex).toBe(index === 0 || index === 3 ? 0 : 1);
     expect(requests.activePendingDraftAnswers["question-0"]?.customAnswer).toBe(
-      index === 0 ? undefined : `Answer ${index}`,
+      index === 0 || index === 3 ? undefined : `Answer ${index}`,
     );
   }
 });

@@ -16,14 +16,14 @@ import {
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
-import { Tool, Toolkit } from "effect/ai";
+import { McpSchema, Tool, Toolkit } from "effect/ai";
 
 import * as ServerEnvironment from "../../environment/ServerEnvironment.ts";
 import * as ThreadManagementService from "../../orchestration-v2/ThreadManagementService.ts";
 import * as Peers from "../../peers/Peers.ts";
 import * as PeerThreadMessaging from "../../peers/PeerThreadMessaging.ts";
 import * as ProjectService from "../../project/ProjectService.ts";
-import { McpInvocationContext } from "../McpInvocationContext.ts";
+import { McpInvocationContext, hiddenFromOutsideClients } from "../McpInvocationContext.ts";
 import * as McpToolAccess from "../McpToolAccess.ts";
 import { loadCaller, readCaller, unavailable } from "../threadAccess.ts";
 
@@ -165,16 +165,16 @@ const watches = Tool.make("t3_peer_thread_watches", {
   .annotate(Tool.Destructive, false);
 
 export const PeersToolkit = Toolkit.make(
-  list,
-  filesList,
-  fileRead,
+  list.annotate(McpSchema.EnabledWhen, hiddenFromOutsideClients),
+  filesList.annotate(McpSchema.EnabledWhen, hiddenFromOutsideClients),
+  fileRead.annotate(McpSchema.EnabledWhen, hiddenFromOutsideClients),
   copy,
-  threadsList,
-  threadRead,
-  threadSend,
-  threadWatch,
-  threadUnwatch,
-  watches,
+  threadsList.annotate(McpSchema.EnabledWhen, hiddenFromOutsideClients),
+  threadRead.annotate(McpSchema.EnabledWhen, hiddenFromOutsideClients),
+  threadSend.annotate(McpSchema.EnabledWhen, hiddenFromOutsideClients),
+  threadWatch.annotate(McpSchema.EnabledWhen, hiddenFromOutsideClients),
+  threadUnwatch.annotate(McpSchema.EnabledWhen, hiddenFromOutsideClients),
+  watches.annotate(McpSchema.EnabledWhen, hiddenFromOutsideClients),
 );
 
 export const PeersHandlersLive = McpToolAccess.toLayer(

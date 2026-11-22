@@ -1,13 +1,35 @@
 import { useAtomValue } from "@effect/atom-react";
-import { type VcsActionState, type VcsActionTarget } from "@d4research/client-runtime/state/vcs";
+import {
+  vcsActionLabelText,
+  type VcsActionState,
+  type VcsActionTarget,
+} from "@d4research/client-runtime/state/vcs";
+import type { ScopedThreadRef } from "@d4research/contracts";
 import { Atom } from "effect/reactivity";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { msg, useMessages } from "gt-react-native";
 
+import type { MessageResolver } from "../i18n/messages";
 import { appAtomRegistry } from "./atom-registry";
 import { vcsActionManager } from "./vcs";
 
 export function useVcsActionState(target: VcsActionTarget): VcsActionState {
   return useAtomValue(vcsActionManager.stateAtom(target));
+}
+
+interface RepositoryGitAction {
+  readonly threadRef: ScopedThreadRef;
+  readonly cwd: string;
+}
+
+// The tracked repository a thread last ran an action in, so the thread can show its progress.
+const repositoryGitActionAtom = Atom.make<RepositoryGitAction | null>(null).pipe(
+  Atom.keepAlive,
+  Atom.withLabel("mobile:repository-git-action"),
+);
+
+export function noteRepositoryGitAction(action: RepositoryGitAction): void {
+  appAtomRegistry.set(repositoryGitActionAtom, action);
 }
 
 export interface GitActionResultNotification {
@@ -67,16 +89,34 @@ const EMPTY_PROGRESS: GitActionProgress = {
   description: null,
 };
 
-function formatElapsedSeconds(ms: number | null): string | null {
+function formatElapsedSeconds(ms: number | null, resolve: MessageResolver): string | null {
   if (ms === null) return null;
   const elapsed = Math.max(0, Math.floor((Date.now() - ms) / 1000));
   if (elapsed < 2) return null;
-  return `Running for ${elapsed}s`;
+  return resolve(msg("Running for {elapsed}s", { elapsed: String(elapsed) }));
 }
 
-export function useGitActionProgress(target: VcsActionTarget): GitActionProgress {
-  const actionState = useVcsActionState(target);
+/** Progress in the thread's own folder, or in the repository the thread last acted on. */
+export function useGitActionProgress(
+  target: VcsActionTarget,
+  threadRef: ScopedThreadRef | null,
+): GitActionProgress {
+  const threadFolderState = useVcsActionState(target);
+  const repositoryCwd = useAtomValue(repositoryGitActionAtom, (action) =>
+    action !== null &&
+    threadRef !== null &&
+    action.threadRef.environmentId === threadRef.environmentId &&
+    action.threadRef.threadId === threadRef.threadId
+      ? action.cwd
+      : null,
+  );
+  const repositoryState = useVcsActionState({
+    environmentId: threadRef?.environmentId ?? null,
+    cwd: repositoryCwd,
+  });
+  const actionState = repositoryState.isRunning ? repositoryState : threadFolderState;
   const { result } = useGitActionResultNotification();
+  const resolve = useMessages();
 
   const [, forceUpdate] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -106,10 +146,10 @@ export function useGitActionProgress(target: VcsActionTarget): GitActionProgress
   if (actionState.isRunning) {
     const description =
       actionState.lastOutputLine ??
-      formatElapsedSeconds(actionState.hookStartedAtMs ?? actionState.phaseStartedAtMs);
+      formatElapsedSeconds(actionState.hookStartedAtMs ?? actionState.phaseStartedAtMs, resolve);
     return {
       phase: "running",
-      label: actionState.currentLabel,
+      label: vcsActionLabelText(actionState, resolve),
       description,
     };
   }

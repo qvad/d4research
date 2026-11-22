@@ -10,7 +10,14 @@ import { RegistryContext } from "@effect/atom-react";
 import { Atom, AtomRegistry } from "effect/reactivity";
 import { createRoot, type Root } from "react-dom/client";
 
-const refreshProviders = vi.hoisted(() => vi.fn());
+const refreshProviders = vi.hoisted(() =>
+  vi.fn<
+    (input: unknown) => Promise<{
+      _tag: "Success";
+      value: { providers: readonly ServerProvider[] };
+    }>
+  >(),
+);
 const atoms = vi.hoisted(() => ({
   providers: undefined as Atom.Writable<ReadonlyArray<ServerProvider> | null> | undefined,
 }));
@@ -27,15 +34,24 @@ vi.mock("../../state/use-composer-drafts", () => ({
   setComposerDraftContext: vi.fn(),
 }));
 vi.mock("../../lib/uuid", () => ({ uuidv4: () => "context-id" }));
-vi.mock("../../state/server", () => ({
-  serverEnvironment: {
-    providersValueAtom: () => atoms.providers,
-    refreshProviders: {
-      label: "refresh",
-      run: (_registry: unknown, input: unknown) => refreshProviders(input),
+vi.mock("../../state/server", async () => {
+  const Effect = await import("effect/Effect");
+  return {
+    serverEnvironment: {
+      providersValueAtom: () => atoms.providers,
+      refreshProviders: {
+        label: "refresh",
+        run: (registry: AtomRegistry.AtomRegistry, input: unknown) =>
+          Effect.promise(() => refreshProviders(input)).pipe(
+            Effect.map((result) => {
+              registry.set(atoms.providers!, result.value.providers);
+              return result.value;
+            }),
+          ),
+      },
     },
-  },
-}));
+  };
+});
 vi.mock("../../state/use-atom-command", () => ({
   useAtomCommand: () => refreshProviders,
 }));
@@ -249,6 +265,7 @@ describe("workspace command discovery retry", () => {
       hasThread: false,
       hasCompactableConversation: false,
       onChangeDraftMessage: () => {},
+      onOpenModelPicker: () => {},
     });
     return null;
   }
@@ -293,7 +310,10 @@ describe("workspace command discovery retry", () => {
   it("retries partial commands after the cooldown without editing the draft", async () => {
     const recovered = {
       ...provider,
-      workspaceSnapshots: [{ ...provider.workspaceSnapshots[0], slashCommandsPending: false }],
+      workspaceSnapshots: provider.workspaceSnapshots.map((snapshot) => ({
+        ...snapshot,
+        slashCommandsPending: false,
+      })),
     };
     refreshProviders.mockResolvedValueOnce({ _tag: "Success", value: { providers: [provider] } });
     refreshProviders.mockResolvedValue({ _tag: "Success", value: { providers: [recovered] } });

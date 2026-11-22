@@ -129,8 +129,8 @@ cannot enforce, so upgrade d4research before you deploy a policy that uses them.
 ## Settings
 
 Each key under `settings` is a setting's path in the server's `settings.json`, such as
-`storageCleanup.logsAfterDays`. To find a path, change the setting in d4research and look in
-`settings.json` under `~/.t3/userdata`.
+`storageCleanup.logsAfterDays`. Run `d4research policy settings` to list every path a policy can manage,
+with its default.
 
 - `"locked": false` sets a default. It applies wherever the user has not chosen a value of their
   own, and users can change it.
@@ -172,6 +172,7 @@ A few settings need care:
     "connect": false,
     "webhookTasks": false,
     "browserCookieImport": false,
+    "previewTunnel": false,
     "telemetry": false,
     "providers": {
       "allowedDrivers": ["claudeAgent", "codex"],
@@ -251,6 +252,10 @@ so restart d4research after that.
 - `webhookTasks: false`: scheduled tasks cannot use webhook triggers. Existing webhook tasks stay but do not run and cannot be turned back on while the policy is active. Users can still edit or delete them.
 - `browserCookieImport: false`: users cannot import cookies from another browser into d4research's
   browser.
+- `previewTunnel: false`: other devices cannot load this machine's `localhost` pages themselves.
+  Browser tabs stream from it instead, and port forwarding and **Open on this device** are
+  unavailable. This wins over the user's
+  [Preview tunnel setting](./remote-access.md#browser-on-a-remote-environment).
 - `telemetry: false`: disables telemetry where supported. d4research does not include
   the upstream hosted relay or its product usage reporting. A policy cannot enable them.
 

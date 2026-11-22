@@ -1,3 +1,4 @@
+import { useGT } from "gt-react-native";
 import { useState, useLayoutEffect } from "react";
 import { Platform, Pressable, StyleSheet, View, type AccessibilityActionEvent } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -50,6 +51,7 @@ function createResizeGesture(
 }
 
 export function WorkspacePaneDivider(props: WorkspacePaneDividerProps) {
+  const gt = useGT();
   const [dragging, setDragging] = useState(false);
   const [controller] = useState(() => createResizeGesture(props, setDragging));
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep the native resize gesture on the latest committed direction and callbacks.
@@ -70,14 +72,14 @@ export function WorkspacePaneDivider(props: WorkspacePaneDividerProps) {
       <Pressable
         className="relative z-[100] -mx-[22px] w-11 self-stretch justify-center"
         accessibilityActions={[
-          { name: "increment", label: "Make pane wider" },
-          { name: "decrement", label: "Make pane narrower" },
+          { name: "increment", label: gt("Make pane wider") },
+          { name: "decrement", label: gt("Make pane narrower") },
         ]}
         accessibilityLabel={props.accessibilityLabel}
         accessibilityRole="adjustable"
         accessibilityValue={{
           now: Math.round(props.currentWidth),
-          text: `${Math.round(props.currentWidth)} points wide`,
+          text: gt("{width} points wide", { width: Math.round(props.currentWidth) }),
         }}
         onAccessibilityAction={handleAccessibilityAction}
       >

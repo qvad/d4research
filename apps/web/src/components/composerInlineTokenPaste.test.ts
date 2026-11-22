@@ -1,9 +1,5 @@
 import { threadChipCopyTarget } from "@d4research/client-runtime/thread-reference";
-import {
-  type ComposerContextClipboardFragment,
-  EnvironmentId,
-  ThreadId,
-} from "@d4research/contracts";
+import { type ComposerContextClipboardFragment, EnvironmentId, ThreadId } from "@d4research/contracts";
 import {
   COMPOSER_CONTEXT_CLIPBOARD_MIME,
   encodeComposerContextFragment,
@@ -59,5 +55,11 @@ describe("importPastedComposerText", () => {
     expect(importPastedComposerText(clipboard({ "text/plain": pasted }), () => new Map())).toBe(
       pasted,
     );
+  });
+
+  it("imports CRLF and CR clipboard text with LF line breaks", () => {
+    expect(
+      importPastedComposerText(clipboard({ "text/plain": "x\r\n\r\ny\rz" }), () => new Map()),
+    ).toBe("x\n\ny\nz");
   });
 });

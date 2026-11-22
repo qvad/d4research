@@ -15,6 +15,7 @@ import { fromLenientJson } from "@d4research/shared/schemaJson";
 import * as Context from "effect/Context";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";
+import * as Clock from "effect/Clock";
 import * as Base64 from "effect/encoding/Base64";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
@@ -47,6 +48,9 @@ const RuntimeConnectionCatalogDocumentJson = Schema.fromJsonString(
 const encodeRuntimeConnectionCatalogDocumentJson = Schema.encodeEffect(
   RuntimeConnectionCatalogDocumentJson,
 );
+const decodeRuntimeConnectionCatalogDocumentJson = Schema.decodeEffect(
+  RuntimeConnectionCatalogDocumentJson,
+);
 
 const DesktopConnectionCatalogStoreWriteOperation = Schema.Literals([
   "create-temporary-file-name",
@@ -54,6 +58,7 @@ const DesktopConnectionCatalogStoreWriteOperation = Schema.Literals([
   "create-directory",
   "write-temporary-file",
   "replace-catalog-file",
+  "keep-unreadable-catalog",
 ]);
 
 const DesktopConnectionCatalogStoreMigrationOperation = Schema.Literals([
@@ -517,6 +522,69 @@ export const make = Effect.gen(function* () {
     },
   );
 
+  const decryptDocument = (document: EncryptedConnectionCatalogDocument) =>
+    decodeSecretBytes(catalogPath, document.encryptedCatalog).pipe(
+      Effect.flatMap((encryptedCatalog) =>
+        safeStorage.decryptString(encryptedCatalog).pipe(
+          Effect.mapError(
+            (cause) =>
+              new DesktopConnectionCatalogStoreProtectionError({
+                operation: "decrypt-catalog",
+                catalogPath,
+                cause,
+              }),
+          ),
+        ),
+      ),
+    );
+
+  // A catalog this build cannot decrypt or decode may still hold another build's saved
+  // environments and credentials, so a save copies it aside instead of destroying it.
+  const keepUnreadableCatalog = Effect.fn("desktop.connectionCatalogStore.keepUnreadableCatalog")(
+    function* (
+      savedPath: string,
+      decrypt: (
+        document: EncryptedConnectionCatalogDocument,
+      ) => Effect.Effect<
+        string,
+        | DesktopConnectionCatalogStoreDecodeError
+        | DesktopConnectionCatalogStoreDocumentDecodeError
+        | DesktopConnectionCatalogStoreProtectionError
+      >,
+    ) {
+      const readable = yield* readDocument(fileSystem, savedPath).pipe(
+        Effect.flatMap(
+          Option.match({
+            onNone: () => Effect.succeed(true),
+            onSome: (document) =>
+              decrypt(document).pipe(
+                Effect.flatMap(decodeRuntimeConnectionCatalogDocumentJson),
+                Effect.as(true),
+              ),
+          }),
+        ),
+        Effect.orElseSucceed(() => false),
+      );
+      if (readable) {
+        return;
+      }
+      const keptPath = `${savedPath}.unreadable-${yield* Clock.currentTimeMillis}`;
+      yield* fileSystem.copyFile(savedPath, keptPath).pipe(
+        Effect.mapError(
+          (cause) =>
+            new DesktopConnectionCatalogStoreWriteError({
+              operation: "keep-unreadable-catalog",
+              path: keptPath,
+              cause,
+            }),
+        ),
+      );
+      yield* Effect.logWarning("Kept an unreadable connection catalog before replacing it.", {
+        keptPath,
+      });
+    },
+  );
+
   const writeCatalog = Effect.fn("desktop.connectionCatalogStore.writeCatalog")(function* (
     catalog: string,
   ) {
@@ -614,21 +682,7 @@ export const make = Effect.gen(function* () {
       if (!(yield* encryptionAvailable)) {
         return Option.none<string>();
       }
-      const decrypted = yield* decodeSecretBytes(catalogPath, document.value.encryptedCatalog).pipe(
-        Effect.flatMap((encryptedCatalog) =>
-          safeStorage.decryptString(encryptedCatalog).pipe(
-            Effect.mapError(
-              (cause) =>
-                new DesktopConnectionCatalogStoreProtectionError({
-                  operation: "decrypt-catalog",
-                  catalogPath,
-                  cause,
-                }),
-            ),
-          ),
-        ),
-      );
-      return Option.some(decrypted);
+      return Option.some(yield* decryptDocument(document.value));
     }).pipe(Effect.withSpan("desktop.connectionCatalogStore.get")),
     set: Effect.fn("desktop.connectionCatalogStore.set")(function* (catalog) {
       const localExists = yield* fileSystem.exists(localCatalogPath).pipe(
@@ -642,8 +696,30 @@ export const make = Effect.gen(function* () {
         ),
       );
       if (localExists || !(yield* encryptionAvailable)) {
+        yield* keepUnreadableCatalog(localCatalogPath, (document) =>
+          Effect.gen(function* () {
+            if (document.encryption !== "aes-256-gcm") {
+              return yield* new DesktopConnectionCatalogStoreDocumentDecodeError({
+                catalogPath: localCatalogPath,
+                cause: new Error("Unsupported local connection encryption format."),
+              });
+            }
+            const key = yield* readLocalKey;
+            const encrypted = yield* decodeSecretBytes(localCatalogPath, document.encryptedCatalog);
+            return yield* Effect.try({
+              try: () => decryptLocalCatalog(encrypted, key),
+              catch: (cause) =>
+                new DesktopConnectionCatalogStoreProtectionError({
+                  operation: "decrypt-catalog",
+                  catalogPath: localCatalogPath,
+                  cause,
+                }),
+            });
+          }),
+        );
         yield* writeLocalCatalog(catalog);
       } else {
+        yield* keepUnreadableCatalog(catalogPath, decryptDocument);
         yield* writeCatalog(catalog);
       }
       return true;

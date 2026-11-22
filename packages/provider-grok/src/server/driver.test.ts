@@ -174,7 +174,6 @@ it.layer(layerTest)("GrokDriver", (it) => {
             return JSON.stringify({ casks: [{ version: "1.2.4,789" }] });
           }),
         ),
-        Effect.scoped,
       );
     });
   }
@@ -232,7 +231,7 @@ it.layer(layerTest)("GrokDriver", (it) => {
     );
   }
 
-  // An `npx t3` server inherits npm_config_user_agent, which Grok ranks above `[cli] installer`.
+  // An `npx d4research` server inherits npm_config_user_agent, which Grok ranks above `[cli] installer`.
   it.effect.skipIf(windowsHost)("keeps a script install off the npm updater under npx", () =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
@@ -284,9 +283,6 @@ it.layer(layerTest)("GrokDriver", (it) => {
         config: { ...GrokDriver.defaultConfig(), binaryPath: path.join(tempDir, "grok") },
       });
       expect((yield* instance.snapshot.resolveMaintenance()).update).toBeNull();
-    }).pipe(
-      Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, noSpawner),
-      Effect.scoped,
-    ),
+    }).pipe(Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, noSpawner)),
   );
 });

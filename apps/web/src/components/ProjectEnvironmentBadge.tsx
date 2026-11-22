@@ -1,4 +1,5 @@
 import type { EnvironmentId, EnvironmentMachineKind } from "@d4research/contracts";
+import { useGT } from "gt-react";
 
 import type { SidebarProjectSnapshot } from "~/sidebarProjectGrouping";
 import { EnvironmentMachineIcon } from "./EnvironmentMachineIcon";
@@ -9,12 +10,15 @@ export function ProjectEnvironmentBadge(props: {
   readonly primaryEnvironmentId: EnvironmentId | null;
   readonly machineByEnvironmentId: ReadonlyMap<EnvironmentId, EnvironmentMachineKind>;
 }) {
+  const gt = useGT();
   const members = props.group.memberProjects
     .map((member) => ({
       ...member,
       environmentLabel:
         member.environmentLabel ??
-        (member.environmentId === props.primaryEnvironmentId ? "This machine" : "Remote"),
+        (member.environmentId === props.primaryEnvironmentId
+          ? gt("This machine")
+          : gt("Remote", { $context: "machine location" })),
     }))
     .sort((a, b) => a.environmentLabel.localeCompare(b.environmentLabel));
   const first =
@@ -24,7 +28,7 @@ export function ProjectEnvironmentBadge(props: {
     .map((member) => member.environmentLabel)
     .filter((label, index, all) => all.indexOf(label) === index)
     .join(", ");
-  const description = `On ${labels}`;
+  const description = gt("On {labels}", { labels });
   return (
     <Tooltip>
       <TooltipTrigger

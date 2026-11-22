@@ -1,9 +1,12 @@
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
 import * as Dialog from "./Dialog";
 import { useIsFocused } from "@react-navigation/native";
 import { requireNativeModule } from "expo";
+import { msg } from "gt-react-native";
 import { useEffect, useEffectEvent, useId, useState } from "react";
 import { Keyboard } from "react-native";
 
+import { m } from "../../i18n/messages";
 import { loadLocalAttachmentPreview } from "../../lib/localAttachmentPreview";
 import { fullscreenVideoClosed, fullscreenVideoOpened } from "../../lib/videoAudioSession";
 import { mediaVideoPreviewUri, type VideoPreviewSource } from "../../lib/videoPreviewSource";
@@ -97,12 +100,16 @@ function NativeVideoPreview(props: {
       // AVKit gives no retry, so re-mint now; the cached URL may simply have expired.
       if (ready) void refreshAssetUrl();
       Dialog.alert(
-        "Could not open video",
+        m(msg("Could not open video")),
         ready
-          ? "This video couldn't be loaded or played. Check the connection, or touch and hold the video to save or share the original."
+          ? m(
+              msg(
+                "This video couldn't be loaded or played. Check the connection, or touch and hold the video to save or share the original.",
+              ),
+            )
           : error instanceof Error
-            ? error.message
-            : "Could not load this video.",
+            ? (errorDisplayMessage(error, m) ?? error.message)
+            : m(msg("Could not load this video.")),
       );
       onRequestClose();
     });

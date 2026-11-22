@@ -30,5 +30,6 @@ export async function stageShowcaseAgentActivity(
   await Promise.all(getAgentLiveActivities().map((existing) => existing.end("immediate")));
   // ActivityKit only starts activities while the app is foreground, which
   // holds here: the runner locks the device after the scene reports ready.
+  // oxlint-disable-next-line t3code/no-untranslated-copy -- showcase runner failure, read by the screenshot runner
   return startAgentLiveActivity(activity) !== null || "Live Activity did not start";
 }

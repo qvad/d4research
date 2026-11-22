@@ -1,3 +1,4 @@
+import { useGT } from "gt-react";
 import { X } from "lucide-react";
 
 import { isValidHistoryTimestamp, type BrowserHistoryEntry } from "~/browserHistoryStore";
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function PreviewRecentUrlCard({ entry, onOpen, onRemove }: Props) {
+  const gt = useGT();
   const parsed = new URL(entry.url);
   const path = parsed.pathname === "/" ? "" : parsed.pathname;
   const label = `${parsed.host}${path}${parsed.search}${parsed.hash}`;
@@ -38,7 +40,7 @@ export function PreviewRecentUrlCard({ entry, onOpen, onRemove }: Props) {
       </button>
       <button
         type="button"
-        aria-label={`Remove ${label} from history`}
+        aria-label={gt("Remove {url} from history", { url: label })}
         onClick={onRemove}
         className="absolute right-3 rounded p-1 text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring group-hover:opacity-100"
       >

@@ -1,5 +1,6 @@
 import * as Dialog from "../../components/ui/Dialog";
 import { SymbolView } from "../../components/ui/AppSymbol";
+import { useGT } from "gt-react-native";
 import { memo, useEffect, useRef, useState } from "react";
 import { Pressable, type ColorValue } from "react-native";
 
@@ -20,6 +21,7 @@ export const CopyTextButton = memo(function CopyTextButton(props: {
   readonly iconSize?: number;
   readonly buttonSize?: number;
 }) {
+  const gt = useGT();
   const [copied, setCopied] = useState(false);
   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -36,7 +38,7 @@ export const CopyTextButton = memo(function CopyTextButton(props: {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={copied ? "Copied" : props.accessibilityLabel}
+      accessibilityLabel={copied ? gt("Copied") : props.accessibilityLabel}
       disabled={props.text.length === 0}
       hitSlop={8}
       onLongPress={props.onLongPress}
@@ -45,11 +47,11 @@ export const CopyTextButton = memo(function CopyTextButton(props: {
           if (props.onCopy) await props.onCopy();
           else if (!(await tryCopyTextWithHaptic(props.text))) {
             // A refused clipboard write is the common failure, and silence reads as success.
-            Dialog.alert("Could not copy", "Try again.");
+            Dialog.alert(gt("Could not copy"), gt("Try again."));
             return;
           }
         } catch {
-          Dialog.alert("Could not copy", "Try again.");
+          Dialog.alert(gt("Could not copy"), gt("Try again."));
           return;
         }
         setCopied(true);

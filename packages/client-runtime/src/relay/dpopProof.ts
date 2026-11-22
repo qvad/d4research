@@ -1,3 +1,5 @@
+import { msg } from "gt-i18n";
+import { MarkedText, translatableMessage } from "../errors/translatable.ts";
 // RFC 9449 DPoP proofs for relay requests. Platforms supply the key: web keeps a
 // non-extractable WebCrypto key, mobile signs with @noble/curves (Hermes has no SubtleCrypto).
 import { normalizeDpopHtu, type DpopPublicJwk } from "@d4research/shared/dpopCommon";
@@ -10,6 +12,7 @@ import * as Base64Url from "effect/encoding/Base64Url";
 
 export class DpopProofError extends Schema.TaggedError<DpopProofError>()("DpopProofError", {
   message: Schema.String,
+  i18nMessage: Schema.optionalKey(MarkedText),
   cause: Schema.optional(Schema.Defect()),
 }) {}
 
@@ -38,7 +41,8 @@ export const createProof = Effect.fn("DpopProof.createProof")(function* (input: 
   readonly key: DpopProofKey;
 }) {
   const htu = normalizeDpopHtu(input.url);
-  if (htu === null) return yield* new DpopProofError({ message: "DPoP URL is invalid." });
+  if (htu === null)
+    return yield* new DpopProofError(translatableMessage(msg("DPoP URL is invalid.")));
   const random = yield* SecureRandom.SecureRandom;
   const header = encodeSegment({ typ: "dpop+jwt", alg: "ES256", jwk: input.key.publicJwk });
   const payload = encodeSegment({

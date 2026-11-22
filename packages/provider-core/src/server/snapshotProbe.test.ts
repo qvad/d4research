@@ -1,8 +1,11 @@
+import * as NodeServices from "@effect/platform-node/NodeServices";
 import { describe, expect, it } from "@effect/vitest";
 import type { ModelCapabilities } from "@d4research/contracts";
 import * as HostProcess from "@d4research/shared/HostProcess";
 import { createModelCapabilities } from "@d4research/shared/model";
 import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
+import * as Result from "effect/Result";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as ChildProcess from "effect/process/ChildProcess";
@@ -251,5 +254,70 @@ describe("resolveProviderProbeTimeoutMs", () => {
         resolveProviderProbeTimeoutMs("claude", 25000, { T3CODE_CLAUDE_PROBE_TIMEOUT_MS: value }),
       ).toBe(25000);
     },
+  );
+});
+
+describe("spawnAndCollect", () => {
+  it.effect.each(["stdout", "stderr"] as const)(
+    "rejects oversized %s after draining the process streams",
+    (stream) =>
+      Effect.gen(function* () {
+        let drainedChunks = 0;
+        const chunk = new Uint8Array(1024 * 1024).fill(120);
+        const output = Stream.fromIterable(Array.from({ length: 9 }, () => chunk)).pipe(
+          Stream.tap(() =>
+            Effect.sync(() => {
+              drainedChunks += 1;
+            }),
+          ),
+        );
+        const spawner = ChildProcessSpawner.make(() =>
+          Effect.succeed(
+            ChildProcessSpawner.makeHandle({
+              pid: ChildProcessSpawner.ProcessId(1),
+              exitCode: Effect.succeed(ChildProcessSpawner.ExitCode(0)),
+              isRunning: Effect.succeed(false),
+              kill: () => Effect.void,
+              unref: Effect.succeed(Effect.void),
+              stdin: Sink.drain,
+              stdout: stream === "stdout" ? output : Stream.empty,
+              stderr: stream === "stderr" ? output : Stream.empty,
+              all: Stream.empty,
+              getInputFd: () => Sink.drain,
+              getOutputFd: () => Stream.empty,
+            }),
+          ),
+        );
+        const result = yield* spawnAndCollect(
+          "fixture-cli",
+          ChildProcess.make("fixture-cli", ["--version"]),
+        ).pipe(
+          Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, spawner),
+          Effect.result,
+        );
+        expect(Result.isFailure(result)).toBe(true);
+        if (Result.isFailure(result)) {
+          expect(result.failure).toMatchObject({
+            _tag: "ProviderProbeOutputLimitError",
+            stream,
+            maxBytes: 8 * 1024 * 1024,
+          });
+        }
+        expect(drainedChunks).toBe(9);
+      }),
+  );
+
+  // regression: #35262 - without forceKillAfter a timed-out probe whose CLI ignores
+  // SIGTERM waits for it to exit, so the caller's timeout never returns.
+  it.live.skipIf(HostProcess.Platform.defaultValue() === "win32")(
+    "lets a timed-out probe return when the CLI ignores SIGTERM",
+    () =>
+      Effect.gen(function* () {
+        const result = yield* spawnAndCollect(
+          "sh",
+          ChildProcess.make("sh", ["-c", 'trap "" TERM; sleep 30']),
+        ).pipe(Effect.timeoutOption("200 millis"));
+        expect(Option.isNone(result)).toBe(true);
+      }).pipe(Effect.provide(NodeServices.layer)),
   );
 });

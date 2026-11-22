@@ -2,8 +2,11 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("@expo/ui/jetpack-compose", () => ({
   Button: "Button",
+  Box: "Box",
+  Row: "Row",
+  Spacer: "Spacer",
+  Image: "Image",
   Column: "Column",
-  LinearProgressIndicator: "LinearProgressIndicator",
   Text: "Text",
   getMaterialColors: ({ scheme }: { scheme: string }) => ({
     surface: `${scheme}-surface`,
@@ -19,6 +22,10 @@ vi.mock("@expo/ui/jetpack-compose/modifiers", () => ({
   fillMaxSize: () => "fillMaxSize",
   fillMaxWidth: () => "fillMaxWidth",
   height: (value: number) => ({ height: value }),
+  width: (value: number) => ({ width: value }),
+  size: (width: number, height: number) => ({ width, height }),
+  background: (color: string) => ({ background: color }),
+  cornerRadius: (value: number) => ({ cornerRadius: value }),
   padding: (...values: number[]) => ({ padding: values }),
   paddingAll: (value: number) => ({ paddingAll: value }),
 }));
@@ -55,10 +62,11 @@ function render(props: SubscriptionUsageSnapshot, colorScheme: "light" | "dark" 
 describe("SubscriptionUsage Android layout", () => {
   it("renders each window with its remaining share, bar, and reset", () => {
     const tree = render(snapshot);
-    expect(tree).toContain("5 hours · 60% left");
-    expect(tree).toContain('"progress":0.6');
+    expect(tree).toContain("Codex 5 hours");
+    expect(tree).toContain('"children":"60%"');
+    expect(tree).toContain('"width":115.2,"height":20');
     expect(tree).toContain("Next reset Sep 5, 5:00 PM");
-    expect(tree).toContain('"progress":0.08');
+    expect(tree).toContain('"width":15.36,"height":20');
     expect(tree).toContain('"color":"dark-error"');
     expect(tree).toContain("As of ");
   });
@@ -69,7 +77,7 @@ describe("SubscriptionUsage Android layout", () => {
       providers: [{ ...provider, expiresAt: now - 1 }],
     });
     expect(tree).toContain("Open T3 to refresh");
-    expect(tree).not.toContain("LinearProgressIndicator");
+    expect(tree).not.toContain('"background":"dark-surfaceVariant"');
     expect(tree).not.toContain("more in T3");
   });
 
@@ -80,7 +88,8 @@ describe("SubscriptionUsage Android layout", () => {
 
   it("keeps quotas without an expiry deadline visible", () => {
     const tree = render({ ...snapshot, providers: [{ ...provider, expiresAt: 0 }] });
-    expect(tree).toContain("5 hours · 60% left");
+    expect(tree).toContain("Codex 5 hours");
+    expect(tree).toContain('"children":"60%"');
     expect(tree).not.toContain("Open T3 to refresh");
   });
 

@@ -3,9 +3,6 @@ import type { ExecutionEnvironmentPlatformOs } from "@d4research/contracts";
 export type PendingModifier = "ctrl" | "meta";
 export type HostPlatform = "mac" | "linux" | "windows" | "unknown";
 
-/** Upper bound of `TerminalWriteInput.data`; longer writes are rejected by the server. */
-export const TERMINAL_WRITE_MAX_LENGTH = 65_536;
-
 export type ModifiedTerminalInput =
   | { readonly kind: "write"; readonly data: string }
   | { readonly kind: "paste" };
@@ -59,24 +56,7 @@ export function encodeTerminalPaste(text: string): string {
   return text.replace(UNSAFE_PASTE_BYTES, " ").replace(/\r\n|\n/g, "\r");
 }
 
-export function chunkTerminalWrite(data: string): ReadonlyArray<string> {
-  const chunks: string[] = [];
-  let start = 0;
-  while (start < data.length) {
-    let end = Math.min(start + TERMINAL_WRITE_MAX_LENGTH, data.length);
-    const last = data.charCodeAt(end - 1);
-    if (end < data.length && last >= 0xd800 && last <= 0xdbff) {
-      end -= 1;
-    }
-    chunks.push(data.slice(start, end));
-    start = end;
-  }
-  return chunks;
-}
-
-/**
- * Returns null for "unknown" so callers can fall back to a weaker signal.
- */
+/** Returns null for unknown OSes so callers can try weaker signals. */
 export function hostPlatformFromOs(os: ExecutionEnvironmentPlatformOs | null): HostPlatform | null {
   if (os === "darwin") return "mac";
   if (os === "linux") return "linux";

@@ -20,7 +20,7 @@ describe("user message intent badge", () => {
 
   it("explains the intent to steer without claiming delivery", () => {
     expect(resolveUserMessageIntentBadge("steer")).toEqual({
-      label: "steer",
+      label: "Steer",
       accessibilityLabel: "Steered the active turn",
       explanation: "This message was intended to steer the agent while its turn was still running.",
       tone: "steer",

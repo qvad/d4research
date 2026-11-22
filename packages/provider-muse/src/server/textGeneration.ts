@@ -24,6 +24,7 @@ import { museModelCapabilities, resolveMuseReasoningEffort } from "./modelCatalo
 import { isMuseUsageLimitFailure } from "./usageLimits.ts";
 import type { ProviderTextGeneration } from "@d4research/provider-core/server/textGeneration";
 import {
+  generatedThreadTitle,
   investigationUnsupported,
   TranscriptionPostProcessingOutput,
 } from "@d4research/provider-core/server/textGenerationOperations";
@@ -36,7 +37,6 @@ import {
 import {
   sanitizeCommitSubject,
   sanitizePrTitle,
-  sanitizeThreadTitle,
   toJsonSchemaObject,
 } from "@d4research/provider-core/server/textGenerationUtils";
 
@@ -381,7 +381,7 @@ export const makeMuseTextGeneration = Effect.fn("makeMuseTextGeneration")(functi
       ...buildThreadTitlePrompt(input),
       modelSelection: input.modelSelection,
     });
-    return { title: sanitizeThreadTitle(generated.title) };
+    return { title: yield* generatedThreadTitle(generated.title) };
   });
   const generateTranscriptionPostProcessing: ProviderTextGeneration["generateTranscriptionPostProcessing"] =
     Effect.fn("MuseTextGeneration.generateTranscriptionPostProcessing")(function* (input) {

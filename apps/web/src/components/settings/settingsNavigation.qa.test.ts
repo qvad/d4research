@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
-  SETTINGS_NAV_GROUPS,
+  settingsNavGroups,
   SETTINGS_SEARCH_ITEMS,
   SETTINGS_SECTION_LABELS,
   settingsForThisPlatform,
 } from "./settingsSearch";
-import { isSecretsFeatureEnabled } from "../../env";
 
 const D4_SETTINGS_SCREENS = [
   "/settings/research",
@@ -20,7 +19,7 @@ const D4_SETTINGS_SCREENS = [
 const DETAIL_PAGES: ReadonlySet<string> = new Set(["/settings/diagnostics"]);
 
 describe("settings navigation QA", () => {
-  const destinations = SETTINGS_NAV_GROUPS.flatMap((group) => group.paths);
+  const destinations = settingsNavGroups(true).flatMap((group) => group.paths);
 
   it("registers each d4research settings screen once in the sidebar", () => {
     expect(destinations).toEqual(expect.arrayContaining([...D4_SETTINGS_SCREENS]));
@@ -28,9 +27,7 @@ describe("settings navigation QA", () => {
   });
 
   it("gives every labelled screen a sidebar entry", () => {
-    const labelled = Object.keys(SETTINGS_SECTION_LABELS).filter(
-      (to) => !DETAIL_PAGES.has(to) && (to !== "/settings/secrets" || isSecretsFeatureEnabled),
-    );
+    const labelled = Object.keys(SETTINGS_SECTION_LABELS).filter((to) => !DETAIL_PAGES.has(to));
     expect(new Set(destinations)).toEqual(new Set(labelled));
   });
 

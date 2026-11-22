@@ -163,7 +163,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
         expect(yield* fs.exists(upgradedLink)).toBe(false);
         expect((yield* upgraded.install).installedPath).toBe(upgradedLink);
       }
-    }).pipe(Effect.scoped),
+    }),
   );
 
   it.effect("installs beside an upstream t3 command without changing it", () =>
@@ -205,7 +205,9 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       expect(error.message).toContain("Another d4research command is already in");
       yield* command.uninstall;
       expect(yield* fs.readFileString(theirs)).toBe("npm's d4research\n");
-      expect(yield* fs.readLink(path.join(home, "bin", "d4research"))).toBe(path.join(home, "gone"));
+      expect(yield* fs.readLink(path.join(home, "bin", "d4research"))).toBe(
+        path.join(home, "gone"),
+      );
 
       // A fresh install beside someone else's d4research (even off PATH or a dangling link) adds no second
       // d4research in ~/bin.
@@ -227,7 +229,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       expect((yield* Effect.flip(command.install)).message).toContain("Could not set up");
       yield* command.uninstall;
       expect(yield* fs.readFileString(launcher)).toBe("npm's d4research\n");
-    }).pipe(Effect.scoped),
+    }),
   );
 
   it.effect("finds and removes a link left by a previous T3 home", () =>
@@ -276,7 +278,10 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       // An old link of ours is updated where it is, not moved to a folder that may be off PATH.
       yield* fs.writeFileString(path.join(home, "bin", "d4research.staging"), "mine");
       yield* fs.remove(path.join(home, "bin", "d4research"));
-      yield* fs.symlink(path.join(home, "old-t3", "bin", "d4research"), path.join(home, "bin", "d4research"));
+      yield* fs.symlink(
+        path.join(home, "old-t3", "bin", "d4research"),
+        path.join(home, "bin", "d4research"),
+      );
       env.PATH = "";
       expect((yield* after.install).installedPath).toBe(path.join(home, "bin", "d4research"));
       expect(yield* fs.readLink(path.join(home, "bin", "d4research"))).toBe(
@@ -284,7 +289,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       );
       expect(yield* fs.exists(path.join(home, ".local", "bin", "d4research"))).toBe(false);
       expect(yield* fs.readFileString(path.join(home, "bin", "d4research.staging"))).toBe("mine");
-    }).pipe(Effect.scoped),
+    }),
   );
 
   it.effect("refuses to install behind another d4research that runs first", () =>
@@ -334,7 +339,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
         installedPath: path.join(home, ".local", "bin", "d4research"),
       });
       expect(installed.shadowedBy).toBeUndefined();
-    }).pipe(Effect.scoped),
+    }),
   );
 
   it.effect.skipIf(HostProcess.Platform.defaultValue() === "win32")(
@@ -368,36 +373,38 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
           onPath: true,
           installedPath: path.join(home, ".local", "bin", "d4research"),
         });
-      }).pipe(Effect.scoped),
+      }),
   );
 
-  it.effect("does not treat its own launcher as another d4research when its folder is first on PATH", () =>
-    Effect.gen(function* () {
-      const env: NodeJS.ProcessEnv = { PATH: "", SHELL: "/bin/zsh" };
-      const fs = yield* FileSystem.FileSystem;
-      const path = yield* Path.Path;
-      const home = yield* fs.makeTempDirectoryScoped();
-      const launcher = path.join(home, ".t3", "bin", "d4research");
-      env.PATH = [path.dirname(launcher), path.join(home, ".local", "bin")].join(":");
+  it.effect(
+    "does not treat its own launcher as another d4research when its folder is first on PATH",
+    () =>
+      Effect.gen(function* () {
+        const env: NodeJS.ProcessEnv = { PATH: "", SHELL: "/bin/zsh" };
+        const fs = yield* FileSystem.FileSystem;
+        const path = yield* Path.Path;
+        const home = yield* fs.makeTempDirectoryScoped();
+        const launcher = path.join(home, ".t3", "bin", "d4research");
+        env.PATH = [path.dirname(launcher), path.join(home, ".local", "bin")].join(":");
 
-      const command = yield* commandIn({ home, env });
-      const installed = yield* command.install;
+        const command = yield* commandIn({ home, env });
+        const installed = yield* command.install;
 
-      expect(yield* fs.exists(launcher)).toBe(true);
-      expect(installed).toMatchObject({
-        onPath: true,
-        installedPath: path.join(home, ".local", "bin", "d4research"),
-      });
-      expect(installed.shadowedBy).toBeUndefined();
-      expect(yield* command.state).toEqual(installed);
+        expect(yield* fs.exists(launcher)).toBe(true);
+        expect(installed).toMatchObject({
+          onPath: true,
+          installedPath: path.join(home, ".local", "bin", "d4research"),
+        });
+        expect(installed.shadowedBy).toBeUndefined();
+        expect(yield* command.state).toEqual(installed);
 
-      const removed = yield* command.uninstall;
-      expect(removed.installedPath).toBeNull();
-      expect(removed.onPath).toBe(true);
-      expect(yield* command.state).toEqual(removed);
-      expect(yield* fs.exists(installed.installedPath!)).toBe(false);
-      expect(yield* fs.exists(launcher)).toBe(true);
-    }).pipe(Effect.scoped),
+        const removed = yield* command.uninstall;
+        expect(removed.installedPath).toBeNull();
+        expect(removed.onPath).toBe(true);
+        expect(yield* command.state).toEqual(removed);
+        expect(yield* fs.exists(installed.installedPath!)).toBe(false);
+        expect(yield* fs.exists(launcher)).toBe(true);
+      }),
   );
 
   it.effect("leaves the Windows PATH alone when it cannot be read", () =>
@@ -439,7 +446,7 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       const reader = yield* commandIn({ home, platform: "win32" }, inherited.spawner);
       yield* reader.install;
       expect(inherited.registry).toMatchObject({ path: `${userPath};${launcherDir}`, writes: 1 });
-    }).pipe(Effect.scoped),
+    }),
   );
 
   it.effect("does not claim or remove a Windows PATH entry the user added", () =>
@@ -464,11 +471,14 @@ it.layer(NodeServices.layer)("DesktopCliCommand", (it) => {
       // PATH alone.
       const besideHome = yield* fs.makeTempDirectoryScoped();
       yield* fs.makeDirectory(path.join(besideHome, ".local", "bin"), { recursive: true });
-      yield* fs.writeFileString(path.join(besideHome, ".local", "bin", "d4research.cmd"), "@echo off\r\n");
+      yield* fs.writeFileString(
+        path.join(besideHome, ".local", "bin", "d4research.cmd"),
+        "@echo off\r\n",
+      );
       const beside = fakePowerShell("C:\\Tools");
       yield* (yield* commandIn({ home: besideHome, platform: "win32" }, beside.spawner))
         .installOnFirstLaunch;
       expect(beside.registry).toMatchObject({ path: "C:\\Tools", writes: 0 });
-    }).pipe(Effect.scoped),
+    }),
   );
 });

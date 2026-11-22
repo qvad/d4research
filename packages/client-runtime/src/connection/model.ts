@@ -1,6 +1,8 @@
-import { EnvironmentId } from "@d4research/contracts";
+import { EnvironmentId, type ExecutionEnvironmentDescriptor } from "@d4research/contracts";
 import { RelayEnvironmentEndpointFailure } from "@d4research/contracts/relay";
 import * as Schema from "effect/Schema";
+
+import { MarkedText } from "../errors/translatable.ts";
 
 const ConnectionTargetBase = {
   environmentId: EnvironmentId,
@@ -71,6 +73,7 @@ export const ConnectionTransientReason = Schema.Literals([
   "relay-unavailable",
   "remote-unavailable",
   "session-pending",
+  "approval-pending",
 ]);
 export type ConnectionTransientReason = typeof ConnectionTransientReason.Type;
 
@@ -94,6 +97,7 @@ export const ConnectionFailureCause = Schema.Literals([
   "relay_error",
   "tunnel_pending",
   "tunnel_not_enabled",
+  "approval_pending",
 ]);
 export type ConnectionFailureCause = typeof ConnectionFailureCause.Type;
 
@@ -114,7 +118,10 @@ export class ConnectionTransientError extends Schema.TaggedError<ConnectionTrans
   {
     reason: ConnectionTransientReason,
     detail: Schema.String,
+    i18nMessage: Schema.optionalKey(MarkedText),
     traceId: Schema.optionalKey(Schema.String),
+    /** The code this device shows while the host decides whether to trust it. */
+    verificationCode: Schema.optionalKey(Schema.String),
     ...ConnectionFailureFields,
   },
 ) {
@@ -128,6 +135,7 @@ export class ConnectionBlockedError extends Schema.TaggedError<ConnectionBlocked
   {
     reason: ConnectionBlockedReason,
     detail: Schema.String,
+    i18nMessage: Schema.optionalKey(MarkedText),
     traceId: Schema.optionalKey(Schema.String),
     ...ConnectionFailureFields,
 
@@ -150,7 +158,15 @@ export type PreparedHttpAuthorization =
       readonly _tag: "Dpop";
       readonly accessToken: string;
       readonly expiresAtEpochMs: number;
+      /** Set when the token renews directly with the host instead of through T3 Connect. */
+      readonly directConnection?: DirectDpopConnection;
     };
+
+export interface DirectDpopConnection {
+  /** The credential store key. */
+  readonly connectionId: string;
+  readonly httpBaseUrl: string;
+}
 
 export interface PreparedConnection {
   readonly environmentId: EnvironmentId;
@@ -159,6 +175,8 @@ export interface PreparedConnection {
   readonly socketUrl: string;
   readonly httpAuthorization: PreparedHttpAuthorization | null;
   readonly target: ConnectionTarget;
+  /** What the server said about itself while this connection was prepared. */
+  readonly descriptor?: ExecutionEnvironmentDescriptor;
 }
 
 export type SupervisorConnectionPhase =
@@ -180,7 +198,11 @@ export interface SupervisorConnectionState {
   readonly generation: number;
   readonly lastFailure: ConnectionAttemptError | null;
   readonly retryAt: number | null;
+  /** While connected: saved routes whose host refused this device's credential on the way. */
+  readonly refusedRouteIds: ReadonlyArray<string>;
 }
+
+export const NO_REFUSED_ROUTES: ReadonlyArray<string> = Object.freeze([]);
 
 export type ConnectionProjectionPhase = "disconnected" | "synchronizing" | "ready";
 
@@ -209,4 +231,5 @@ export const AVAILABLE_CONNECTION_STATE: SupervisorConnectionState = Object.free
   generation: 0,
   lastFailure: null,
   retryAt: null,
+  refusedRouteIds: NO_REFUSED_ROUTES,
 });

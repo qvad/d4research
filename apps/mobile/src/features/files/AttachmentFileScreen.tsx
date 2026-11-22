@@ -5,6 +5,7 @@ import {
   clampFileAttachmentUploadBytes,
   formatAttachmentSize,
 } from "@d4research/client-runtime/state/attachments";
+import { msg, useGT } from "gt-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 
@@ -18,6 +19,7 @@ import {
   isZipFile,
   ZipArchiveView,
 } from "./ZipArchiveView";
+import { m } from "../../i18n/messages";
 import { FilePreviewModal, type FilePreviewSource } from "../../components/ui/FilePreviewModal";
 import { useAttachmentDocument } from "../../lib/attachmentDocument";
 import { nativeViewerErrorMessage } from "../../lib/attachmentDownload";
@@ -41,6 +43,7 @@ type AttachmentFileScreenProps = StaticScreenProps<AttachmentFileRouteParams>;
 
 export function AttachmentFileScreen(props: AttachmentFileScreenProps) {
   const navigation = useNavigation();
+  const gt = useGT();
   const { appearance, setCodeWordBreak } = useAppearancePreferences();
   const params = props.route.params;
   const environmentId = params.environmentId?.trim()
@@ -88,8 +91,7 @@ export function AttachmentFileScreen(props: AttachmentFileScreenProps) {
     const message = pendingNativeError.current;
     pendingNativeError.current = null;
     if (nativeViewer === null) {
-      // A file this screen renders itself: an explicit viewer failure is worth a word.
-      if (message) Dialog.alert("Could not open document", message);
+      if (message) Dialog.alert(m(msg("Could not open document")), message);
       return;
     }
     if (message) {
@@ -106,96 +108,81 @@ export function AttachmentFileScreen(props: AttachmentFileScreenProps) {
   }, [draftKey, handleBack, params.attachmentId]);
 
   const { content, renderedMode, activeMode, setRendered, share, sharing } = document;
-  const menuActions = useMemo(
-    () =>
-      [
-        renderedMode
-          ? ({
-              id: "preview",
-              title: renderedMode === "table" ? "Table" : "Preview",
-              icon: renderedMode === "table" ? "tablecells" : "eye",
-              inline: true,
-              onPress: () => setRendered(true),
-            } as const)
-          : null,
-        renderedMode
-          ? ({
-              id: "source",
-              title: "Source",
-              icon: "doc.text",
-              inline: true,
-              onPress: () => setRendered(false),
-            } as const)
-          : null,
-        content && activeMode === "source"
-          ? ({
-              id: "word-wrap",
-              title: appearance.codeWordBreak ? "Disable word wrap" : "Enable word wrap",
-              icon: "text.alignleft",
-              inline: false,
-              onPress: () => setCodeWordBreak(!appearance.codeWordBreak),
-            } as const)
-          : null,
-        content
-          ? ({
-              id: "copy",
-              title: content.truncated ? "Copy preview" : "Copy contents",
-              icon: "doc.on.doc",
-              inline: false,
-              onPress: () => copyTextWithHaptic(content.text),
-            } as const)
-          : null,
-        uri
-          ? ({
-              id: "share",
-              title: sharing ? "Opening share sheet…" : "Save or share",
-              icon: "square.and.arrow.up",
-              inline: false,
-              onPress: () => void share(),
-            } as const)
-          : null,
-        uri
-          ? ({
-              id: "open-viewer",
-              title: "Open in file viewer",
-              icon: "arrow.up.left.and.arrow.down.right",
-              inline: false,
-              onPress: () => {
-                setNativeViewer((current) => (current === null ? null : "open"));
-                setNativeOpen(true);
-              },
-            } as const)
-          : null,
-        draftKey
-          ? ({
-              id: "remove",
-              title: "Remove from draft",
-              icon: "trash",
-              inline: false,
-              destructive: true,
-              onPress: removeFromDraft,
-            } as const)
-          : null,
-      ].filter((action) => action !== null),
-    [
-      appearance.codeWordBreak,
-      setCodeWordBreak,
-      content,
-      draftKey,
-      removeFromDraft,
-      activeMode,
-      renderedMode,
-      setRendered,
-      share,
-      sharing,
-      setNativeViewer,
-      setNativeOpen,
-      uri,
-    ],
-  );
+  const menuActions = [
+    renderedMode
+      ? ({
+          id: "preview",
+          title:
+            renderedMode === "table"
+              ? gt("Table", { $context: "file view mode" })
+              : gt("Preview", { $context: "file view mode" }),
+          icon: renderedMode === "table" ? "tablecells" : "eye",
+          inline: true,
+          onPress: () => setRendered(true),
+        } as const)
+      : null,
+    renderedMode
+      ? ({
+          id: "source",
+          title: gt("Source", { $context: "file view mode, raw source text" }),
+          icon: "doc.text",
+          inline: true,
+          onPress: () => setRendered(false),
+        } as const)
+      : null,
+    content && activeMode === "source"
+      ? ({
+          id: "word-wrap",
+          title: appearance.codeWordBreak ? gt("Disable word wrap") : gt("Enable word wrap"),
+          icon: "text.alignleft",
+          inline: false,
+          onPress: () => setCodeWordBreak(!appearance.codeWordBreak),
+        } as const)
+      : null,
+    content
+      ? ({
+          id: "copy",
+          title: content.truncated ? gt("Copy preview") : gt("Copy contents"),
+          icon: "doc.on.doc",
+          inline: false,
+          onPress: () => copyTextWithHaptic(content.text),
+        } as const)
+      : null,
+    uri
+      ? ({
+          id: "share",
+          title: sharing ? gt("Opening share sheet…") : gt("Save or share"),
+          icon: "square.and.arrow.up",
+          inline: false,
+          onPress: () => void share(),
+        } as const)
+      : null,
+    uri
+      ? ({
+          id: "open-viewer",
+          title: gt("Open in file viewer"),
+          icon: "arrow.up.left.and.arrow.down.right",
+          inline: false,
+          onPress: () => {
+            setNativeViewer((current) => (current === null ? null : "open"));
+            setNativeOpen(true);
+          },
+        } as const)
+      : null,
+    draftKey
+      ? ({
+          id: "remove",
+          title: gt("Remove from draft"),
+          icon: "trash",
+          inline: false,
+          destructive: true,
+          onPress: removeFromDraft,
+        } as const)
+      : null,
+  ].filter((action) => action !== null);
   const selectedAction = activeMode === "source" ? "source" : "preview";
   const fileMenu: AppBarMenu = {
-    title: "File actions",
+    title: gt("File actions"),
     icon: "ellipsis",
     items: [
       ...(renderedMode
@@ -226,7 +213,14 @@ export function AttachmentFileScreen(props: AttachmentFileScreenProps) {
         })),
     ],
   };
-  const subtitle = `${draftKey ? "Draft attachment" : "Attachment"}${sizeBytes > 0 ? ` · ${formatAttachmentSize(sizeBytes)}` : ""}`;
+  const subtitle =
+    sizeBytes > 0
+      ? draftKey
+        ? gt("Draft attachment · {size}", { size: formatAttachmentSize(sizeBytes) })
+        : gt("Attachment · {size}", { size: formatAttachmentSize(sizeBytes) })
+      : draftKey
+        ? gt("Draft attachment")
+        : gt("Attachment");
   const refresh = useRefreshAssetUrl(environmentId, resource);
   const capabilities = useEnvironmentServerConfig(environmentId)?.environment.capabilities;
 

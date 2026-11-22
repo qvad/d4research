@@ -123,11 +123,38 @@ layer("064_CanonicalizeThreadPullRequestLinks", (it) => {
           'user', ${v1Payload}, '{}', 1)
       `;
 
+      yield* sql`
+        INSERT INTO orchestration_v2_projection_threads (
+          thread_id, project_id, title, default_provider, runtime_mode, interaction_mode,
+          created_at, updated_at, payload_json
+        ) VALUES (
+          'damaged', 'project-1', 'damaged', 'codex', 'full-access', 'default',
+          ${updatedAt}, ${updatedAt}, ''
+        )
+      `;
+      yield* sql`
+        INSERT INTO orchestration_events (
+          event_id, aggregate_kind, stream_id, stream_version, event_type, occurred_at,
+          actor_kind, payload_json, metadata_json, application_event_version
+        ) VALUES ('event:damaged', 'thread', 'damaged', 0, 'thread.created', ${updatedAt},
+          'user', '', '{}', 2)
+      `;
+
       // d4research's own migrations 71-78 run before the canonicalization.
       assert.deepEqual((yield* runMigrations({ toMigrationInclusive: 79 })).at(-1), [
         79,
         "CanonicalizeThreadPullRequestLinks",
       ]);
+      const [damagedThread] = yield* sql<{ readonly payload_json: string }>`
+        SELECT payload_json FROM orchestration_v2_projection_threads WHERE thread_id = 'damaged'
+      `;
+      const [damagedEvent] = yield* sql<{ readonly payload_json: string }>`
+        SELECT payload_json FROM orchestration_events WHERE event_id = 'event:damaged'
+      `;
+      assert.equal(damagedThread?.payload_json, "");
+      assert.equal(damagedEvent?.payload_json, "");
+      yield* sql`DELETE FROM orchestration_v2_projection_threads WHERE thread_id = 'damaged'`;
+      yield* sql`DELETE FROM orchestration_events WHERE event_id = 'event:damaged'`;
       assert.deepEqual(yield* runMigrations({ toMigrationInclusive: 79 }), []);
       const rows = yield* sql<{ readonly thread_id: string; readonly payload_json: string }>`
         SELECT thread_id, payload_json FROM orchestration_v2_projection_threads

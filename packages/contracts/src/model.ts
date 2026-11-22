@@ -162,6 +162,7 @@ export const DEFAULT_MODEL_BY_PROVIDER: Partial<Record<ProviderDriverKind, strin
   [PI_DRIVER_KIND]: "default",
   [OPENCODE_DRIVER_KIND]: "openai/gpt-5",
   [AGY_DRIVER_KIND]: "gemini-3.6-flash-medium",
+  [ProviderDriverKind.make("antigravity")]: ANTIGRAVITY_DEFAULT_MODEL,
 };
 
 export const DEFAULT_TEXT_GENERATION_MODEL_BY_PROVIDER: Partial<

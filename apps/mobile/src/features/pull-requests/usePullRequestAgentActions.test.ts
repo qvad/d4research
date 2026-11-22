@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { PullRequestDetail } from "@d4research/contracts";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { usePullRequestAgentActions } from "./usePullRequestAgentActions";
 
 vi.mock("react-native", () => ({ Platform: { OS: "ios" } }));
@@ -30,6 +32,17 @@ const params = {
 };
 const pr = { state: "open", mergeability: "conflicting" } as PullRequestDetail;
 
+function renderActions() {
+  let actions: ReturnType<typeof usePullRequestAgentActions> | undefined;
+  function Probe() {
+    actions = usePullRequestAgentActions(params, pr);
+    return null;
+  }
+  renderToStaticMarkup(createElement(Probe));
+  if (!actions) throw new Error("Actions were not rendered");
+  return actions;
+}
+
 beforeEach(() => {
   state.connected = false;
   state.canAsk = true;
@@ -38,7 +51,7 @@ beforeEach(() => {
 
 describe("PR agent drafts", () => {
   it("opens offline drafts without waiting for linked-thread discovery", () => {
-    const actions = usePullRequestAgentActions(params, pr);
+    const actions = renderActions();
     expect(actions.disabled).toBe(false);
     actions.start("ask");
     actions.start("explain");
@@ -51,7 +64,7 @@ describe("PR agent drafts", () => {
   it("does not open drafts when the connection denies task access", () => {
     state.connected = true;
     state.canAsk = false;
-    usePullRequestAgentActions(params, pr).start("explain");
+    renderActions().start("explain");
     expect(state.ask).not.toHaveBeenCalled();
   });
 });

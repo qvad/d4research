@@ -39,16 +39,12 @@ const clientMetadataTokenExchangeFields = (
   };
 };
 
-/** Hashes of who is connecting. Only hashes leave the client. */
+/** Compatibility shape for callers; owner identifiers are never sent. */
 export interface ClientOwnerParams {
   readonly connect?: string;
   readonly device?: string;
 }
 
-/**
- * Tells the environment, for analytics, which T3 Connect account and device
- * are connecting, so it can count the environment as theirs.
- */
 // Fork policy: connecting never reads or announces analytics account/device identifiers.
 export const readClientOwnerParams = Effect.succeed({} satisfies ClientOwnerParams);
 
@@ -56,7 +52,7 @@ export const appendClientConnectionParams = (
   url: URL,
   clientMetadata: AuthClientPresentationMetadata | undefined,
   connectionMethod?: ClientConnectionMethod,
-  owners?: ClientOwnerParams,
+  _owners?: ClientOwnerParams,
 ): void => {
   if (clientMetadata?.surface) {
     url.searchParams.set("clientSurface", clientMetadata.surface);
@@ -94,12 +90,6 @@ export const appendClientConnectionParams = (
   }
   if (connectionMethod) {
     url.searchParams.set("connectionMethod", connectionMethod);
-  }
-  if (owners?.connect) {
-    url.searchParams.set("clientOwner", owners.connect);
-  }
-  if (owners?.device) {
-    url.searchParams.set("clientDevice", owners.device);
   }
 };
 

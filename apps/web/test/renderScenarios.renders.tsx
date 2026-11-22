@@ -81,41 +81,47 @@ function history(thread: string): Entry[] {
 
 // Props that some trees under comparison have dropped. A JSX spread is not checked for
 // excess properties, so this file type-checks on trees with and without them.
-const versionedProps = { onManualNavigation: () => {} };
+const versionedProps = {
+  onManualNavigation: () => {},
+  activeTurnInProgress: false,
+  onRollbackCheckpoint: () => {},
+};
 
 // One list handle per mounted timeline, as ChatView keeps one: the timeline compares the
 // handle across renders, and a new one per render would skip its scroll-to-end and settle work.
+// The callbacks and lists stay the same across renders too, as ChatView's do: new ones change
+// the rows' shared context, which re-renders every row and hides a row that re-renders alone.
 function timelineFor() {
-  const listRef = createRef<LegendListRef | null>();
+  const props: Omit<TimelineProps, "timelineEntries" | "routeThreadKey"> = {
+    isWorking: false,
+    listRef: createRef<LegendListRef | null>(),
+    latestRun: null,
+    turnDiffSummaries: [],
+    runs: [],
+    onOpenTurnDiff: () => {},
+    onOpenThread: () => {},
+    onForkFromRun: async () => {},
+    supportsConversationRollback: false,
+    onRevertToTurnCount: () => {},
+    isRevertingCheckpoint: false,
+    onImageExpand: () => {},
+    activeThreadEnvironmentId: ENVIRONMENT_ID,
+    markdownCwd: undefined,
+    resolvedTheme: "light",
+    timestampFormat: "locale",
+    workspaceRoot: undefined,
+    anchorMessageId: null,
+    onAnchorReady: () => {},
+    onAnchorSizeChanged: () => {},
+    contentInsetEndAdjustment: 0,
+    liveFollowEnabled: true,
+    onIsAtEndChange: () => {},
+  };
   return (thread: string, entries: Entry[]) => (
     <MessagesTimeline
+      {...props}
       timelineEntries={entries}
-      isWorking={false}
-      activeTurnInProgress={false}
-      onRollbackCheckpoint={() => {}}
-      listRef={listRef}
-      latestRun={null}
-      turnDiffSummaries={[]}
-      runs={[]}
       routeThreadKey={`environment-local:${thread}`}
-      onOpenTurnDiff={() => {}}
-      onOpenThread={() => {}}
-      onForkFromRun={async () => {}}
-      supportsConversationRollback={false}
-      onRevertToTurnCount={() => {}}
-      isRevertingCheckpoint={false}
-      onImageExpand={() => {}}
-      activeThreadEnvironmentId={ENVIRONMENT_ID}
-      markdownCwd={undefined}
-      resolvedTheme="light"
-      timestampFormat="locale"
-      workspaceRoot={undefined}
-      anchorMessageId={null}
-      onAnchorReady={() => {}}
-      onAnchorSizeChanged={() => {}}
-      contentInsetEndAdjustment={0}
-      liveFollowEnabled
-      onIsAtEndChange={() => {}}
       {...versionedProps}
     />
   );

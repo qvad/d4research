@@ -44,6 +44,14 @@ In Settings, open your Claude provider and set **Auto-compact after** to a token
 reaches about 300,000 tokens, without changing the model's context window. Leave the field
 empty to keep Claude Code's default behavior.
 
+File paths in the `--settings` and `--append-system-prompt-file` launch arguments
+can start with `~` for the home directory of the machine running d4research. Any
+other relative path is read from the thread's project folder, or its worktree.
+
+Claude Code's verbose mode can stay enabled when you use Claude for text generation, including
+thread titles, branch names, commit messages, and pull request descriptions. On a remote connection,
+d4research uses the Claude configuration on the connected server.
+
 On web and desktop, when you return to an older Claude thread with a large context, T3 Code
 offers to compact the conversation before you continue. You can also select **Compact context**
 from the context meter. On every client, you can enter `/compact` in the message composer, and
@@ -75,6 +83,10 @@ In **Settings → Providers → Advanced**, **Compact idle threads** controls wh
 
 ## Where Claude Skills Are Loaded
 
+Use `$` in the composer to select a skill. Enabled installed Claude plugins,
+and plugins synced from your claude.ai account, also contribute skills under
+names such as `plugin:review`.
+
 If the same skill name exists in more than one folder, the one in the Claude config directory
 wins, the same way Claude Code resolves it.
 
@@ -83,6 +95,15 @@ marked `disable-model-invocation` still appears, because you start it yourself w
 Claude Code runs one skill per message; when a message names several, the last one runs directly and
 Claude starts the others through its Skill tool, which refuses skills marked
 `disable-model-invocation`.
+
+## Steering
+
+A steer waits until Claude finishes the tool calls it is running, then Claude reads it
+in the same turn. The message shows as unread until then. If Claude drops it before
+reading it, the message is sent as the next turn, after any messages queued before it.
+If Claude exits or the server restarts first, the message waits in the queue in that
+same place until you resume it. If you press Stop, d4research shows a notice with the text
+of any steer Claude had not read.
 
 ## I Want Work And Personal Claude Accounts
 
@@ -256,6 +277,28 @@ To show Claude task lists in the web and desktop apps, add
 `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` under **Variables** in the Claude instance's
 **Environment** section in **Settings > Providers**. Each update shows as a Tasks
 row in the thread; open it to see every step.
+
+## Sign in to an MCP server
+
+When an MCP server you added to Claude needs you to sign in, the thread shows a notice with
+**Sign in**, once per session; on mobile, tap the notice. Approve access on the page it opens. Your
+browser then goes to a page that may not load, especially when Claude runs on another machine:
+copy that page's address, paste it into d4research, and choose **Finish sign-in**. Claude keeps the
+sign-in and reconnects the server. Connectors you added on claude.ai are signed in on claude.ai,
+so d4research doesn't ask about them. Signing in needs permission to manage providers.
+
+## Claude in Chrome
+
+Claude threads can use the Claude in Chrome extension, which works in your own
+Chrome with its sign-ins. d4research sessions load it only when asked: add `--chrome`
+to **Launch arguments** in the Claude instance's settings in **Settings > Providers**.
+It applies to sessions that start after you save. Set up the extension as you would
+for Claude Code first; see Claude Code's [Chrome guide](https://code.claude.com/docs/en/chrome).
+
+The instance must be signed in with `/login` on a direct Anthropic plan. Instances
+that use an API key or a `claude setup-token` token don't get it, even with
+`--chrome`, and neither do third-party providers such as Amazon Bedrock. Claude Code
+doesn't support it in WSL.
 
 ## I Want Different Claude Settings, Not A Different Account
 

@@ -3,13 +3,19 @@ import {
   type ProviderSubagentStatus,
 } from "@d4research/client-runtime/state/thread-execution";
 import { isOrchestrationV2WorkActive } from "@d4research/contracts";
+import { T, useGT, useMessages } from "gt-react";
 import { ArrowUpLeftIcon } from "lucide-react";
-import { useLayoutEffect, useRef } from "react";
+import { tickTextContent } from "~/lib/tickTextContent";
 import type { ReactNode } from "react";
 
 import type { ProviderInstanceEntry } from "../../providerInstances";
 import { Button } from "../ui/button";
 import { ProviderInstanceIcon } from "./ProviderInstanceIcon";
+import {
+  ReadOnlyComposerBar,
+  ReadOnlyComposerLead,
+  ReadOnlyComposerStatus,
+} from "./ReadOnlyComposerBar";
 
 export function ProviderSubagentBar(props: {
   readonly provider: ProviderInstanceEntry | null;
@@ -20,34 +26,41 @@ export function ProviderSubagentBar(props: {
   readonly onOpenParent: (() => void) | null;
   readonly actions?: ReactNode;
 }) {
-  const statusRef = useRef<HTMLSpanElement>(null);
   const { status } = props;
+  const gt = useGT();
+  const messages = useMessages();
   const live = status !== null && isOrchestrationV2WorkActive(status.status);
   const modelDescription =
     props.effortLabel === null ? props.modelLabel : `${props.modelLabel}, ${props.effortLabel}`;
   const announcement = formatProviderSubagentStatus(
     status === null ? null : { ...status, startedAt: null },
     0,
+    messages,
   );
 
-  // The label is written from an effect, and live bars tick through DOM
-  // writes, so a running timer never re-renders the chat view.
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Updates native status text from the wall clock while a subagent is live.
-  useLayoutEffect(() => {
-    const update = () => {
-      if (statusRef.current) {
-        statusRef.current.textContent = formatProviderSubagentStatus(status, Date.now());
-      }
-    };
-    update();
-    if (!live) return;
-    const id = setInterval(update, 1_000);
-    return () => clearInterval(id);
-  }, [live, status]);
-
   return (
-    <div className="flex min-h-12 items-center gap-3 rounded-3xl py-2 ps-5 pe-2 text-sm">
-      <span className="flex min-w-0 items-center gap-2">
+    <ReadOnlyComposerBar
+      actions={
+        <>
+          <span role="status" className="sr-only">
+            {gt("{model} subagent: {status}", { model: modelDescription, status: announcement })}
+          </span>
+          <span className="shrink-0 text-muted-foreground @max-[640px]/composer-surface:sr-only">
+            <T>Runs on its own</T>
+          </span>
+          {props.actions}
+          {props.onOpenParent ? (
+            <Button size="sm" variant="ghost" onClick={props.onOpenParent}>
+              <ArrowUpLeftIcon />
+              <span className="@max-[320px]/composer-surface:sr-only">
+                <T>Open parent</T>
+              </span>
+            </Button>
+          ) : null}
+        </>
+      }
+    >
+      <ReadOnlyComposerLead>
         {props.provider ? (
           <ProviderInstanceIcon
             instanceId={props.provider.instanceId}
@@ -66,23 +79,14 @@ export function ProviderSubagentBar(props: {
         {props.effortLabel === null ? null : (
           <span className="shrink-0 text-muted-foreground">{props.effortLabel}</span>
         )}
-      </span>
-      <span
-        ref={statusRef}
+      </ReadOnlyComposerLead>
+      <ReadOnlyComposerStatus
+        ref={tickTextContent(
+          (nowMs) => formatProviderSubagentStatus(status, nowMs, messages),
+          live,
+        )}
         aria-hidden
-        className="min-w-0 truncate text-muted-foreground tabular-nums"
       />
-      <span role="status" className="sr-only">
-        {`${modelDescription} subagent: ${announcement}`}
-      </span>
-      <span className="ms-auto shrink-0 text-muted-foreground max-sm:hidden">Runs on its own</span>
-      {props.actions}
-      {props.onOpenParent ? (
-        <Button size="sm" variant="ghost" onClick={props.onOpenParent}>
-          <ArrowUpLeftIcon />
-          Open parent
-        </Button>
-      ) : null}
-    </div>
+    </ReadOnlyComposerBar>
   );
 }

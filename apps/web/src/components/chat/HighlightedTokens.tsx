@@ -1,19 +1,15 @@
 import { use, type CSSProperties } from "react";
 
+import {
+  type EmbeddedScript,
+  type SyntaxToken,
+} from "@d4research/client-runtime/work-log/embedded-scripts";
+
 import { resolveDiffThemeName } from "../../lib/diffRendering";
-import type { EmbeddedScript } from "../../lib/embeddedScripts";
 import { getSyntaxHighlighterPromise } from "../../lib/syntaxHighlighting";
 
-interface SyntaxToken {
-  readonly content: string;
-  readonly offset: number;
-  readonly color?: string;
-  readonly fontStyle?: number;
-}
-
-type TokenLines = ReadonlyArray<ReadonlyArray<SyntaxToken>>;
-
 const NO_EMBEDDED_SCRIPTS: ReadonlyArray<EmbeddedScript> = [];
+type TokenLines = ReadonlyArray<ReadonlyArray<SyntaxToken>>;
 
 function syntaxTokenStyle(token: SyntaxToken): CSSProperties {
   const fontStyle = token.fontStyle ?? 0;
@@ -84,7 +80,7 @@ export function HighlightedTokens({
   );
 }
 
-export function withEmbeddedScripts(
+function withEmbeddedScripts(
   code: string,
   lines: TokenLines,
   embedded: ReadonlyArray<EmbeddedScript>,
@@ -144,10 +140,7 @@ function restyledLines(
   return lines;
 }
 
-/**
- * Shiki drops `\n` and `\r\n` from tokens alike, so CRLF has to come back from
- * the source.
- */
+/** Restore CRLF from source; Shiki strips both line-ending forms. */
 export function keyedLines<Token extends SyntaxToken>(
   code: string,
   lines: ReadonlyArray<ReadonlyArray<Token>>,

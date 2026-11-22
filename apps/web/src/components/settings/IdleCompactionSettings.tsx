@@ -67,7 +67,7 @@ export function IdleCompactionSettings() {
         resetAction={
           settings.idleCompactionEnabled ? (
             <SettingResetButton
-              label="idle compaction"
+              ariaLabel="idle compaction"
               onClick={() => update({ idleCompactionEnabled: false })}
             />
           ) : null
@@ -90,7 +90,7 @@ export function IdleCompactionSettings() {
         resetAction={
           !settings.idleCompactionAllowBackgroundWork ? (
             <SettingResetButton
-              label="compaction with background work"
+              ariaLabel="compaction with background work"
               onClick={() => update({ idleCompactionAllowBackgroundWork: true })}
             />
           ) : null
@@ -115,7 +115,7 @@ export function IdleCompactionSettings() {
         resetAction={
           settings.idleCompactionMinutes !== DEFAULT_SERVER_SETTINGS.idleCompactionMinutes ? (
             <SettingResetButton
-              label="idle compaction timeout"
+              ariaLabel="idle compaction timeout"
               onClick={() =>
                 update({ idleCompactionMinutes: DEFAULT_SERVER_SETTINGS.idleCompactionMinutes })
               }
@@ -142,7 +142,7 @@ export function IdleCompactionSettings() {
         resetAction={
           settings.idleCompactionTokens !== DEFAULT_SERVER_SETTINGS.idleCompactionTokens ? (
             <SettingResetButton
-              label="idle compaction token threshold"
+              ariaLabel="idle compaction token threshold"
               onClick={() =>
                 update({ idleCompactionTokens: DEFAULT_SERVER_SETTINGS.idleCompactionTokens })
               }

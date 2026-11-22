@@ -75,6 +75,16 @@ views; recycled or compact composer thumbnails can register the same identifier.
 Identifiers must distinguish simultaneously visible attachments. Source registration
 does not own the preview. Android uses a regular view.
 
+iOS delegates full-screen video to [AVKit](../../apps/mobile/modules/t3-native-controls/ios/T3NativeVideoPresentation.swift)
+and documents to [Quick Look](../../apps/mobile/modules/t3-native-controls/ios/T3NativeFilePresentation.swift).
+Each framework owns its controls and transition. Images open in our own
+[viewer](../../apps/mobile/modules/t3-native-controls/ios/T3NativeImageViewer.swift), because Quick Look
+dragged its image when a swipe or a dismiss started. The viewer keeps its controls in a
+navigation controller's bars, so UIKit can move them into an unfolded iPhone Duo's side bar. A separate UIKit zoom transition
+prevents AVKit's native Close action from exiting full screen and interferes with
+Quick Look's interactive return to its thumbnail. The AVKit entry selector is
+guarded, with standard modal presentation as the fallback.
+
 On iOS, video previews mount `AVPlayerViewController` temporarily inside the
 registered source and enter full screen through AVKit. AVKit
 owns that zoom, its playback controls, Close button, and interactive dismissal.
@@ -85,13 +95,13 @@ guarded `enterFullScreenAnimated:completionHandler:` selector as Expo Video;
 if that selector is unavailable, the player also falls back to a standard modal.
 
 `FilePreviewModal` resolves image and PDF sources from a URI, a signed environment asset,
-or a retained composer file. On iOS, Quick Look owns image and document layout, controls,
-zooming, sharing, and interactive dismissal. Its delegate supplies the registered thumbnail
-and its bounds for Quick Look's source-view zoom. Do not layer `preferredTransition` or
-another image scroll view over that presentation: Quick Look coordinates its image gestures
-with the return to the thumbnail. Missing sources use the standard transition, and Reduce
-Motion disables animation. A pending programmatic Close waits until the current presentation
-or cancelled dismissal has settled before starting another transition.
+or a retained composer file. On iOS, images use `T3NativeImageViewer`; Quick Look owns
+PDF and document layout, controls, sharing, and interactive dismissal. Its delegate
+supplies the registered thumbnail and its bounds for Quick Look's source-view zoom.
+Do not layer `preferredTransition` over that presentation. Missing sources use the
+standard transition, and Reduce Motion disables animation. A pending programmatic
+Close waits until the current presentation or cancelled dismissal has settled before
+starting another transition.
 
 The shared native presenter copies original bytes into its own temporary directory and
 removes that copy after dismissal. Network downloads write to disk, and sharing never edits

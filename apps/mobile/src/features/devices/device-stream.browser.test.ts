@@ -50,6 +50,10 @@ async function setup() {
   const configuration = {
     platform: "ios" as const,
     deviceId: "fixture-device",
+    labels: {
+      screen: "iOS Simulator screen",
+      reconnectingControls: "Reconnecting device controls...",
+    },
     access: {
       httpBase: "https://device.test",
       wsBase: "wss://device.test",
@@ -206,6 +210,10 @@ function viewerFixture(supported: boolean) {
       buttonBackground: "black",
       buttonForeground: "white",
       buttonBorder: "gray",
+    },
+    labels: {
+      screen: "iOS Simulator screen",
+      reconnectingControls: "Reconnecting device controls...",
     },
   });
   return { configured, requested, videoBodies };

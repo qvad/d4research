@@ -4,6 +4,7 @@ import { Menu } from "../../../components/ui/Menu";
 import { SymbolView } from "../../../components/ui/AppSymbol";
 import { NativeStackScreenOptions } from "../../../native/StackHeader";
 import { withNativeGlassHeaderItem } from "../../layout/native-glass-header-items";
+import { useGT } from "gt-react-native";
 import { resolveEnvironmentMachineKind } from "@d4research/contracts";
 
 import type { AppBarMenu } from "../../../components/ui/AppBar.types";
@@ -12,6 +13,7 @@ import { useSettingsEnvironmentFilter } from "../settings-environment-filter";
 
 /** The settings scope filter, as an `AppBar` menu. */
 export function useSettingsEnvironmentMenu(): AppBarMenu {
+  const gt = useGT();
   const {
     availableTargets,
     selectedTargets,
@@ -23,7 +25,7 @@ export function useSettingsEnvironmentMenu(): AppBarMenu {
     selectProject,
   } = useSettingsEnvironmentFilter();
   return {
-    title: "Filter settings environments and projects",
+    title: gt("Filter settings environments and projects"),
     icon:
       selectedIds === null && selectedProjectKey === null
         ? "line.3.horizontal.decrease"
@@ -33,12 +35,14 @@ export function useSettingsEnvironmentMenu(): AppBarMenu {
         id: "environments",
         title:
           selectedIds === null
-            ? "All environments"
-            : `${selectedTargets.length} ${selectedTargets.length === 1 ? "environment" : "environments"}`,
+            ? gt("All environments")
+            : gt("{count, plural, one {{count} environment} other {{count} environments}}", {
+                count: selectedTargets.length,
+              }),
         items: [
           {
             id: "all",
-            title: "All connected environments",
+            title: gt("All connected environments"),
             selected: selectedIds === null,
             onPress: selectAll,
           },
@@ -56,17 +60,19 @@ export function useSettingsEnvironmentMenu(): AppBarMenu {
         id: "projects",
         title:
           selectableProjectGroups.find((group) => group.key === selectedProjectKey)?.label ??
-          (selectedProjectKey === null ? "All projects" : "Unavailable project"),
+          (selectedProjectKey === null ? gt("All projects") : gt("Unavailable project")),
         items: [
           {
             id: "project:all",
-            title: "All projects",
+            title: gt("All projects"),
             selected: selectedProjectKey === null,
             onPress: () => selectProject(null),
           },
           ...selectableProjectGroups.map((group) => ({
             id: `project:${group.key}`,
-            title: projectMenuLabel(group),
+            title: group.archived
+              ? gt("{project} · Archived", { project: group.label })
+              : group.label,
             selected: selectedProjectKey === group.key,
             onPress: () => selectProject(group.key),
           })),

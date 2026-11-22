@@ -1,4 +1,5 @@
 import { runAtomCommand, squashAtomCommandFailure } from "@d4research/client-runtime/state/runtime";
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
 import {
   AuthOrchestrationOperateScope,
   DEFAULT_PROVIDER_INTERACTION_MODE,
@@ -9,6 +10,8 @@ import {
 
 import { scopedThreadKey } from "../lib/scopedEntities";
 import * as Dialog from "../components/ui/Dialog";
+import { msg } from "gt-react-native";
+import { m } from "../i18n/messages";
 import { appAtomRegistry } from "./atom-registry";
 import { serverEnvironment } from "./server";
 import { readEnvironmentScope } from "./session";
@@ -56,8 +59,12 @@ export function selectThreadModel(
     } else {
       const error = squashAtomCommandFailure(result);
       Dialog.alert(
-        "Could not apply model selection",
-        `This model pick was not saved. ${error instanceof Error ? error.message : "Try again."}`,
+        m(msg("Could not apply model selection")),
+        m(
+          msg("This model pick was not saved. {detail}", {
+            detail: errorDisplayMessage(error, m) ?? m(msg("Try again.")),
+          }),
+        ),
       );
     }
   });

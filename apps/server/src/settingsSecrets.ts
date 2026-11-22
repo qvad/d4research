@@ -1,7 +1,6 @@
 import {
   AntigravitySettings,
   ClaudeSettings,
-  CloudSpeechCredentials,
   CodexSettings,
   type D4AgentMcpSecretPair,
   EasDeviceHostConfig,
@@ -49,7 +48,6 @@ const providerSecretFields = new Map([
 ]);
 const usageLimitSecretFields = secretSettingsFields(UsageLimitSourceConfig);
 const textGeneratorSecretFields = secretSettingsFields(TextGeneratorConfig);
-const voiceSecretFields = secretSettingsFields(CloudSpeechCredentials);
 const easDeviceHostSecretFields = secretSettingsFields(EasDeviceHostConfig);
 const simlockDeviceHostSecretFields = secretSettingsFields(SimlockDeviceHostConfig);
 const encode = (value: string) => Buffer.from(value, "utf8").toString("base64url");
@@ -285,7 +283,7 @@ function mapSecretFieldGroups(
       ) as EasDeviceHostConfig,
   );
 
-  // Its own prefix: an EAS and a Simlock host may share an id.
+  // Its own prefix: an Expo and a Simlock host may share an id.
   const simlockDeviceHosts = settings.simlockDeviceHosts.map(
     (host) =>
       mapFields(
@@ -299,11 +297,6 @@ function mapSecretFieldGroups(
 
   return {
     ...settings,
-    cloudSpeechCredentials: mapFields(
-      settings.cloudSpeechCredentials,
-      voiceSecretFields,
-      (provider) => `voice-cloud-${provider}`,
-    ) as ServerSettings["cloudSpeechCredentials"],
     providers,
     providerInstances,
     sourceControlHosts,
@@ -364,5 +357,35 @@ export function withoutRemovedSecretProviderReferences(
           : instance,
       ]),
     ),
+  };
+}
+
+const gatewayOrigin = (url: string) => (URL.canParse(url) ? new URL(url).origin : url);
+
+/**
+ * `next` with a Simlock host's kept token cleared when its gateway moved to another origin: a
+ * saved token goes only to the gateway it was saved for. A newly entered token stays.
+ */
+export function withoutRedirectedSimlockTokens(
+  current: ServerSettings,
+  next: ServerSettings,
+): ServerSettings {
+  const saved = new Map(current.simlockDeviceHosts.map((host) => [host.id, host]));
+  const kept = (token: SettingsSecretValue, savedToken: SettingsSecretValue) =>
+    token === SECRET_REDACTED ||
+    (isSecretReference(token) &&
+      isSecretReference(savedToken) &&
+      token.provider === savedToken.provider &&
+      token.reference === savedToken.reference);
+  return {
+    ...next,
+    simlockDeviceHosts: next.simlockDeviceHosts.map((host) => {
+      const previous = saved.get(host.id);
+      return previous &&
+        gatewayOrigin(previous.gatewayUrl) !== gatewayOrigin(host.gatewayUrl) &&
+        kept(host.agentToken, previous.agentToken)
+        ? { ...host, agentToken: "" }
+        : host;
+    }),
   };
 }

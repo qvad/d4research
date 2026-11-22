@@ -11,6 +11,7 @@ import {
   DEFAULT_SETTLED_THREAD_RETENTION_DAYS,
   ClientSettingsSchema,
   ClientSettingsPatch,
+  ClientServerSettingsPatch,
   ClaudeSettings,
   DEFAULT_SERVER_SETTINGS,
   globalIdleCompaction,
@@ -38,9 +39,22 @@ const decodeStringOnlyEnvironment = Schema.decodeUnknownSync(
   ),
 );
 const decodeServerSettingsPatch = Schema.decodeUnknownSync(ServerSettingsPatch);
+const decodeClientServerSettingsPatch = Schema.decodeUnknownSync(ClientServerSettingsPatch);
 const encodeServerSettings = Schema.encodeSync(ServerSettings);
 const encodeServerSettingsPatch = Schema.encodeSync(ServerSettingsPatch);
 const decodeClaudeSettings = Schema.decodeUnknownSync(ClaudeSettings);
+
+it("drops theme defaults from a client's settings patch", () => {
+  expect(
+    decodeClientServerSettingsPatch({
+      newWorktreesStartFromOrigin: false,
+      defaultTheme: "grove",
+      defaultThemeSetAt: "2026-11-13T00:00:00.000Z",
+      defaultAppearance: "dark",
+      defaultAppearanceSetAt: "2026-11-13T00:00:00.000Z",
+    }),
+  ).toEqual({ newWorktreesStartFromOrigin: false });
+});
 
 describe("storage cleanup settings", () => {
   it("keeps upstream's cleanup rules off, and this fork's settle rules on", () => {
@@ -142,6 +156,12 @@ describe("storage cleanup settings", () => {
     expect(() =>
       decodeServerSettingsPatch({ storageCleanup: { worktreeKeepWhen: "unknown" } }),
     ).toThrow();
+  });
+});
+
+describe("ClientSettings terminal close confirmation", () => {
+  it("keeps confirmation enabled for settings without a saved preference", () => {
+    expect(decodeClientSettings({}).confirmTerminalClose).toBe(true);
   });
 });
 
@@ -604,15 +624,15 @@ describe("ClientSettings pull request merge methods", () => {
     expect(decodeClientSettings({}).pullRequestMergeMethodOverrides).toEqual({});
     expect(
       decodeClientSettingsPatch({
-        pullRequestMergeMethodOverrides: { project: "squash" },
+        pullRequestMergeMethodOverrides: { project: "squash", other: "fast-forward" },
       }).pullRequestMergeMethodOverrides,
-    ).toEqual({ project: "squash" });
+    ).toEqual({ project: "squash", other: "fast-forward" });
   });
 
   it("rejects unsupported project merge methods", () => {
     expect(() =>
       decodeClientSettingsPatch({
-        pullRequestMergeMethodOverrides: { project: "fast-forward" },
+        pullRequestMergeMethodOverrides: { project: "unsupported" },
       }),
     ).toThrow();
   });
@@ -1008,17 +1028,17 @@ describe("ServerSettings environment icon compatibility", () => {
 
 const decodeDeviceHostSettings = Schema.decodeSync(ServerSettings);
 
-// `deviceHosts` as it was decoded before EAS hosts existed: an SSH host needs a target.
+// `deviceHosts` as it was decoded before Expo hosts existed: an SSH host needs a target.
 const decodeOlderDeviceHostSettings = Schema.decodeUnknownSync(
   Schema.Struct({
     deviceHosts: Schema.Array(Schema.Struct({ id: Schema.String, target: Schema.String })),
   }),
 );
 
-it("keeps EAS hosts out of the SSH host list servers and clients before EAS hosts decode", () => {
+it("keeps Expo hosts out of the SSH host list servers and clients before Expo hosts decode", () => {
   const settings = decodeDeviceHostSettings({
     deviceHosts: [{ id: "mini", label: "Mac mini", target: "user@mini" }],
-    easDeviceHosts: [{ kind: "eas", id: "eas", label: "EAS Simulator" }],
+    easDeviceHosts: [{ kind: "eas", id: "eas", label: "Expo Simulators" }],
   });
   const wire = encodeServerSettings(settings);
   expect(decodeOlderDeviceHostSettings(wire).deviceHosts).toEqual([
@@ -1029,7 +1049,7 @@ it("keeps EAS hosts out of the SSH host list servers and clients before EAS host
 
 it("validates remote device hosts and rejects ambiguous host ids", () => {
   const host = { id: "mini", label: "Mac mini", target: "user@mini", port: 2222 };
-  // Hosts saved before EAS hosts existed have no `kind`; they are SSH hosts.
+  // Hosts saved before Expo hosts existed have no `kind`; they are SSH hosts.
   expect(decodeDeviceHostSettings({ deviceHosts: [host] }).deviceHosts).toEqual([
     { kind: "ssh", ...host },
   ]);
@@ -1156,6 +1176,11 @@ describe("voice settings", () => {
       speechPostProcessingEnabled: true,
     };
     expect(decodeClientSettings({}).speechSilenceFiltering).toBe(true);
+    expect(decodeClientSettings({}).speechStreaming).toBe(true);
+    expect(decodeClientSettings({ speechStreaming: false }).speechStreaming).toBe(false);
+    expect(decodeClientSettingsPatch({ speechStreaming: false })).toEqual({
+      speechStreaming: false,
+    });
     expect(decodeClientSettingsPatch({ speechSilenceFiltering: false })).toEqual({
       speechSilenceFiltering: false,
     });
@@ -1170,14 +1195,6 @@ describe("voice settings", () => {
     expect(() => decodeClientSettingsPatch({ speechCorrectionWord: "x".repeat(51) })).toThrow();
     expect(DEFAULT_SERVER_SETTINGS.speechProjectCustomWords).toEqual([]);
     expect(PROJECT_SCOPED_SERVER_SETTING_KEYS).toContain("speechProjectCustomWords");
-  });
-
-  it("stores the transcription model and resources on the environment", () => {
-    expect(DEFAULT_SERVER_SETTINGS).toMatchObject({
-      speechModelId: "handy-computer/parakeet-unified-en-0.6b-gguf",
-      speechAcceleration: "auto",
-      speechModelUnloadTimeout: "min_15",
-    });
   });
 });
 

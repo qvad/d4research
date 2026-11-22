@@ -3,9 +3,12 @@ import {
   ProviderInteractionMode,
   RuntimeMode,
 } from "@d4research/contracts";
-import { memo, type ReactNode, useState } from "react";
+import { useGT } from "gt-react";
+import { memo, type ReactNode, useRef } from "react";
+import { ComposerControl } from "./ComposerControl";
+import { useComposerMenuProps } from "./composerEventScope";
+import { useComposerMenuState } from "./useComposerMenuState";
 import { EllipsisIcon } from "lucide-react";
-import { Button } from "../ui/button";
 import { shouldExitPlanForDevPipelineSelection } from "../../devPipeline";
 import {
   Menu,
@@ -65,8 +68,12 @@ export const CompactComposerControlsMenu = memo(function CompactComposerControls
   onSelectResearchScenario: (scenarioName: string | null) => void;
   onSelectDevPipeline: (scenarioName: string | null) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  if ((props.disabled || props.hidden) && open) setOpen(false);
+  const gt = useGT();
+  const composerFloatingLayerProps = useComposerMenuProps();
+  const size = props.size ?? "sm";
+  const [open, setOpen] = useComposerMenuState(props.hidden || props.disabled);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
   return (
     <Menu
       open={open}
@@ -76,11 +83,11 @@ export const CompactComposerControlsMenu = memo(function CompactComposerControls
     >
       <MenuTrigger
         render={
-          <Button
-            size="sm"
-            variant="ghost"
-            className="shrink-0 gap-1.5 px-2 text-muted-foreground/70 hover:text-foreground/80"
-            aria-label="Workflows and agent controls"
+          <ComposerControl
+            ref={triggerRef}
+            size={size}
+            className="shrink-0"
+            aria-label={gt("More composer controls")}
             data-composer-shortcut={
               props.traitsMenuContent ? "composer.mode composer.effort" : "composer.mode"
             }
@@ -91,7 +98,7 @@ export const CompactComposerControlsMenu = memo(function CompactComposerControls
         <EllipsisIcon aria-hidden="true" className="size-4" />
         {props.compact ? null : <span>Workflows</span>}
       </MenuTrigger>
-      <MenuPopup align="start">
+      <MenuPopup align="start" {...composerFloatingLayerProps}>
         {props.traitsMenuContent ? (
           <>
             {props.traitsMenuContent}

@@ -79,12 +79,18 @@ describe("runMigrations", () => {
     }).pipe(Effect.provide(NodeSqliteClient.layer({ filename: ":memory:" }))),
   );
 
-  it.effect("upgrades a database at exactly 61", () =>
+  it.effect("upgrades a database at exactly 61, then rechecks it without a write lock", () =>
     Effect.gen(function* () {
+      const sql = yield* SqlClient.SqlClient;
       yield* runMigrations({ toMigrationInclusive: 61 });
       assert.deepStrictEqual(yield* runMigrations(), v2Migrations);
       assert.deepStrictEqual(yield* history, migrationManifest);
       assert.isAbove(yield* v2TableCount, 0);
+
+      // query_only rejects BEGIN IMMEDIATE, which CLI startup would otherwise take on the live database.
+      yield* sql`PRAGMA query_only = ON`;
+      assert.deepStrictEqual(yield* runMigrations(), []);
+      assert.deepStrictEqual(yield* history, migrationManifest);
     }).pipe(Effect.provide(NodeSqliteClient.layer({ filename: ":memory:" }))),
   );
 
@@ -200,7 +206,62 @@ describe("runMigrations", () => {
         [93, "DropOrchestrationEventCorrelationIndex"],
         [94, "DelegatedRecoveryIndexes"],
         [95, "ScheduledTaskThreadMode"],
+        [96, "ProjectionMessageSearchText"],
+        [97, "TurnItemConversationIndex"],
+        [98, "CommandReadIndexes"],
+        [99, "LastExecutedRunIndex"],
+        [100, "TurnItemCounts"],
+        [101, "QueuedTurnInputIndex"],
+        [102, "ProjectionProjectsCustomTitle"],
+        [103, "TurnItemTypeStatusIndex"],
+        [104, "ShellThreadReadIndexes"],
+        [105, "AuthConnectDevices"],
+        [106, "AuthConnectDeniedRequests"],
+        [107, "QueuedTurnInputIndexJsonValid"],
+        [108, "ProviderTurnAttemptIndex"],
+        [109, "TurnItemMessageOrdinalIndex"],
+        [110, "TurnItemInlineWorkOutput"],
+        [111, "RepairStaleTitleRegeneration"],
+        [112, "IssueTrackerBindings"],
+        [113, "ActiveShellIndexIndexes"],
+        [114, "BackgroundRecoveryIndexes"],
+        [115, "TurnStartReadIndexes"],
+        [116, "DelegatedTaskReadIndexes"],
+        [117, "ThreadItemCounts"],
+        [118, "IssueTrackerAdditionalScopes"],
+        [119, "ProjectionProjectsTrackedFolders"],
+        [120, "TaskFolders"],
       ]);
+      assert.deepStrictEqual(yield* history, migrationManifest);
+    }).pipe(Effect.provide(NodeSqliteClient.layer({ filename: ":memory:" }))),
+  );
+
+  it.effect("keeps the migrations that finished before a later one failed", () =>
+    Effect.gen(function* () {
+      const sql = yield* SqlClient.SqlClient;
+      yield* runMigrations({ toMigrationInclusive: 96 });
+      yield* sql`CREATE TABLE orchestration_v2_projection_turn_item_counts (thread_id TEXT)`;
+
+      const exit = yield* Effect.exit(runMigrations());
+
+      assert.isTrue(Exit.isFailure(exit));
+      assert.deepStrictEqual(
+        yield* history,
+        migrationManifest.filter(([id]) => id <= 99),
+      );
+    }).pipe(Effect.provide(NodeSqliteClient.layer({ filename: ":memory:" }))),
+  );
+
+  it.effect("reapplies peer link migrations whose ledger rows are missing", () =>
+    Effect.gen(function* () {
+      const sql = yield* SqlClient.SqlClient;
+      yield* runMigrations({ toMigrationInclusive: 87 });
+      yield* sql`DELETE FROM effect_sql_migrations WHERE migration_id BETWEEN 85 AND 87`;
+
+      assert.deepStrictEqual(
+        yield* runMigrations(),
+        migrationManifest.filter(([id]) => id >= 85),
+      );
       assert.deepStrictEqual(yield* history, migrationManifest);
     }).pipe(Effect.provide(NodeSqliteClient.layer({ filename: ":memory:" }))),
   );

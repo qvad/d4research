@@ -94,8 +94,8 @@ export function CommitFileDiffView({
 
   return (
     <AnnotatableCodeView
+      onFileCollapsedChange={() => undefined}
       pendingFiles={[]}
-      onRevealSearchMatch={() => undefined}
       codeViewKey={`commit-diff:${environmentId}:${cwd}:${path}:${workspaceMutationId ?? "initial"}`}
       className="diff-render-surface min-h-0 flex-1 overflow-auto"
       files={files}

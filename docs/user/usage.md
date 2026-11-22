@@ -32,6 +32,13 @@ record are missing from the totals.
 Text generation (thread titles, commit messages, PR text, branch names and review guides) is not in
 the totals for Codex or Claude Code 2.0.63 and newer, because those runs save no session history.
 
+The server keeps scanned usage history for 92 days by default. Claude Code deletes its own
+transcripts after 30 days, so for older Claude usage this history is the only record left. To keep
+it longer, set `usageHistoryRetentionDays` in `<T3 home>/userdata/settings.json` to a number of days
+such as `365`, or to `"unlimited"`. Usage views still show at most 90 days. Lowering the value
+prunes older history on the next refresh, and raising it again does not bring pruned history back.
+While `settings.json` cannot be read, nothing is pruned.
+
 OpenCode reads its SQLite database and older JSON history. Antigravity reads local conversation
 databases, including d4research-managed profiles. Set `OPENCODE_DATA_DIR` or `ANTIGRAVITY_DATA_DIR` on the
 server to read a different data directory; comma-separated paths read multiple directories.
@@ -194,8 +201,7 @@ Grok reports the remaining subscription allowance and reset time for its current
 after signing in with `grok login`. Explicit `XAI_API_KEY` connections and custom authentication
 or endpoint configurations do not report subscription limits.
 
-Muse Code reports its session and weekly limits and its tier when a Muse turn runs. After the
-server starts, Limits shows no Muse reading until the first Muse turn. The reading does not update
+Muse Code reports its session and weekly limits and its tier when a Muse turn runs. Readings are not kept across a server restart; Limits shows no Muse reading until the first Muse turn. The reading does not update
 between Muse turns, and a window disappears once its reset time passes.
 
 Ollama cloud reports limits for Claude instances that use the Ollama preset. Create an API key in
@@ -217,8 +223,10 @@ accounts for other providers are not read. Codex accounts show banked reset cred
 account and choose **Use reset** to redeem one. No hub plugin is required.
 
 This connection supplies usage information; configure
-the provider separately to send agent requests through the hub. Remove the hub from the same
-settings section when you no longer need it.
+the provider separately to send agent requests through the hub. A thread uses the hub's limits and
+reset times only when its provider's endpoint has the same address as the hub, for example
+`http://127.0.0.1:8317` for both. Remove the hub from the same settings section when you no longer
+need it.
 
 ## Subscription usage widget
 

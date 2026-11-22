@@ -1,6 +1,14 @@
-import { act, render as renderComponent, fakeTimers, type Screen } from "../../../test/render";
-import { EnvironmentId, RuntimeRequestId, ThreadId } from "@d4research/contracts";
-import { useState } from "react";
+import {
+  EnvironmentId,
+  NodeId,
+  RuntimeRequestId,
+  ThreadId,
+  TurnItemId,
+  type OrchestrationV2ThreadProjection,
+} from "@d4research/contracts";
+import { makeThreadRequestsResolvedAnnouncer } from "@d4research/client-runtime/state/thread-requests";
+import { useLayoutEffect, useRef, useState, type ComponentProps } from "react";
+import { userEvent } from "vite-plus/test/browser";
 import { expect, it, vi } from "vite-plus/test";
 
 import {
@@ -14,6 +22,17 @@ vi.mock(import("../ChatMarkdown"), async (importOriginal) => ({
 }));
 
 import { ComposerPendingUserInputPanel } from "./ComposerPendingUserInputPanel";
+import {
+  act,
+  fakeTimers,
+  render,
+  render as renderComponent,
+  type Screen,
+} from "../../../test/render";
+import { DraftId, useComposerDraftStore } from "../../composerDraftStore";
+import { makeThreadProjectionFixture } from "../../test-fixtures";
+import { toastManager } from "../ui/toast";
+import { usePendingThreadRequests, usePendingUserInputDraft } from "./usePendingThreadRequests";
 
 const threadRef = { environmentId: EnvironmentId.make("env"), threadId: ThreadId.make("thread") };
 
@@ -97,6 +116,85 @@ async function chooseOption() {
 async function navigate(label: string) {
   await act(async () => buttonWithText(label).click());
 }
+interface ProbeProps {
+  environmentId: EnvironmentId;
+  projection: OrchestrationV2ThreadProjection;
+  loading?: boolean;
+  draftTarget?: DraftId;
+}
+
+function useProbeRequests({ environmentId, projection, loading = false, draftTarget }: ProbeProps) {
+  const promptRef = useRef("");
+  const composerRef = useRef(null);
+  const requests = usePendingThreadRequests({
+    environmentId,
+    activeThreadId: projection.thread.id,
+    activeThread: projection.thread,
+    serverProjection: loading ? null : projection,
+    supportsQuestionAttachments: false,
+    composerDraftTarget: draftTarget ?? { environmentId, threadId: projection.thread.id },
+    setComposerDraftPrompt: (target, prompt) =>
+      useComposerDraftStore.getState().setPrompt(target, prompt),
+    promptRef,
+    composerRef,
+    setThreadError: () => {},
+  });
+  const draft = usePendingUserInputDraft({
+    environmentId,
+    activeThreadId: projection.thread.id,
+    activePendingUserInput: requests.activePendingUserInput,
+    supportsQuestionAttachments: false,
+  });
+  return { ...requests, ...draft };
+}
+
+let requests: ReturnType<typeof useProbeRequests>;
+
+function questionProjection(threadId: ThreadId, requestIds = ["first", "second"]) {
+  const projection = makeThreadProjectionFixture();
+  return {
+    ...projection,
+    thread: { ...projection.thread, id: threadId },
+    runtimeRequests: requestIds.map((id) => ({
+      id: RuntimeRequestId.make(id),
+      nodeId: NodeId.make(id),
+      providerTurnId: null,
+      nativeRequestRef: null,
+      kind: "user_input" as const,
+      status: "pending" as const,
+      responseCapability: { type: "message" as const },
+      createdAt: projection.updatedAt,
+      resolvedAt: null,
+    })),
+    turnItems: requestIds.map((id, ordinal) => ({
+      id: TurnItemId.make(id),
+      threadId,
+      runId: null,
+      nodeId: NodeId.make(id),
+      providerThreadId: null,
+      providerTurnId: null,
+      nativeItemRef: null,
+      parentItemId: null,
+      ordinal,
+      status: "completed" as const,
+      title: null,
+      startedAt: projection.updatedAt,
+      completedAt: projection.updatedAt,
+      updatedAt: projection.updatedAt,
+      type: "user_input_request" as const,
+      requestId: RuntimeRequestId.make(id),
+      questions: prompt.questions,
+    })),
+  } satisfies OrchestrationV2ThreadProjection;
+}
+
+function PendingRequestsProbe(props: ProbeProps) {
+  const state = useProbeRequests(props);
+  useLayoutEffect(() => {
+    requests = state;
+  });
+  return null;
+}
 
 function activeIndex() {
   return container.querySelector("output")!.textContent;
@@ -127,6 +225,99 @@ it("does not undo previous-question navigation with a stale timer", async () => 
   expect(activeIndex()).toBe("0");
 });
 
+it("restores displaced answers without retaining a duplicate draft", async () => {
+  const environmentId = EnvironmentId.make("displaced-environment");
+  const draftTarget = { environmentId, threadId: threadRef.threadId };
+  const draftPrompt = () => useComposerDraftStore.getState().getComposerDraft(draftTarget)?.prompt;
+  using toast = vi.spyOn(toastManager, "add");
+  const probe = (threadId: ThreadId) => (
+    <PendingRequestsProbe environmentId={environmentId} projection={questionProjection(threadId)} />
+  );
+  await using screen = await render(probe(threadRef.threadId));
+
+  await act(() => requests.onSelectActivePendingUserInputOption("question-0", "Incremental"));
+  expect(toast).not.toHaveBeenCalled();
+
+  await act(() => requests.onChangeActivePendingUserInputCustomAnswer("question-0", "first try"));
+  await act(() => requests.onSelectActivePendingUserInputOption("question-0", "Incremental"));
+  expect(draftPrompt()).toBe("first try");
+  expect(toast).toHaveBeenCalledTimes(1);
+  expect(toast).toHaveBeenCalledWith(
+    expect.objectContaining({
+      type: "info",
+      title: "Your typed text was set aside",
+      description: "It will be back in the composer once the question is answered.",
+      data: { threadRef: draftTarget },
+    }),
+  );
+
+  await act(() => requests.onChangeActivePendingUserInputCustomAnswer("question-0", "second try"));
+  expect(draftPrompt()).toBe("first try");
+  expect(requests.activePendingDraftAnswers["question-0"]).toMatchObject({
+    customAnswer: "second try",
+  });
+  expect(toast).toHaveBeenCalledTimes(1);
+
+  // The hook outlives a thread switch; text set aside in another thread is in another draft.
+  await screen.rerender(probe(ThreadId.make("other-thread")));
+  await act(() => requests.onChangeActivePendingUserInputCustomAnswer("question-0", "elsewhere"));
+  await act(() => requests.onSelectActivePendingUserInputOption("question-0", "Incremental"));
+  await screen.rerender(probe(threadRef.threadId));
+
+  // regression: #35205 undo puts the set-aside text back, so the draft must not keep a copy to resend
+  await act(() => requests.onChangeActivePendingUserInputCustomAnswer("question-0", "first try"));
+  expect(draftPrompt() ?? "").toBe("");
+
+  // Text set aside into a queued-message edit draft never withdraws from the thread draft.
+  await screen.rerender(
+    <PendingRequestsProbe
+      environmentId={environmentId}
+      projection={questionProjection(threadRef.threadId)}
+      draftTarget={DraftId.make("queued-edit")}
+    />,
+  );
+  await act(() => requests.onChangeActivePendingUserInputCustomAnswer("question-0", "foo"));
+  await act(() => requests.onSelectActivePendingUserInputOption("question-0", "Incremental"));
+  await screen.rerender(probe(threadRef.threadId));
+  useComposerDraftStore.getState().setPrompt(draftTarget, "foo");
+  await act(() => requests.onChangeActivePendingUserInputCustomAnswer("question-0", "foo"));
+  expect(draftPrompt()).toBe("foo");
+});
+
+function QuestionPositionProbe(props: ProbeProps) {
+  const state = useProbeRequests(props);
+  return (
+    <>
+      <output>Question {state.activePendingQuestionIndex + 1}</output>
+      <button
+        type="button"
+        onClick={() => state.onSelectActivePendingUserInputOption("question-0", "Incremental")}
+      >
+        Choose Incremental
+      </button>
+      <button type="button" onClick={() => state.onAdvanceActivePendingUserInput()}>
+        Submit
+      </button>
+    </>
+  );
+}
+
+it("stays on an unanswered question when the composer submits", async () => {
+  await using screen = await render(
+    <QuestionPositionProbe
+      environmentId={EnvironmentId.make("unanswered-environment")}
+      projection={questionProjection(threadRef.threadId)}
+    />,
+  );
+  const submit = screen.getByRole("button", { name: "Submit" });
+  await userEvent.click(submit);
+  await expect.element(screen.getByRole("status")).toHaveTextContent("Question 1");
+
+  await userEvent.click(screen.getByRole("button", { name: "Choose Incremental" }));
+  await userEvent.click(submit);
+  await expect.element(screen.getByRole("status")).toHaveTextContent("Question 2");
+});
+
 it("still auto-advances once after the answer draft rerenders the same question", async () => {
   using _timers = fakeTimers();
   await using _fixture = await setupFixture();
@@ -136,4 +327,57 @@ it("still auto-advances once after the answer draft rerenders the same question"
   expect(activeIndex()).toBe("1");
   await act(async () => vi.advanceTimersByTime(200));
   expect(activeIndex()).toBe("1");
+});
+
+it("isolates drafts by environment, thread and request and discards only resolved requests", async () => {
+  const environmentId = EnvironmentId.make("scope-environment");
+  const projection = questionProjection(threadRef.threadId);
+  const scopes = [
+    { environmentId, projection },
+    { environmentId: EnvironmentId.make("other-environment"), projection },
+    { environmentId, projection: questionProjection(ThreadId.make("other-thread")) },
+    { environmentId, projection: questionProjection(threadRef.threadId, ["second", "first"]) },
+  ];
+  await using screen = await render(null);
+  const show = (scope: ComponentProps<typeof PendingRequestsProbe>) =>
+    screen.rerender(<PendingRequestsProbe {...scope} />);
+  for (const [index, scope] of scopes.entries()) {
+    await show(scope);
+    expect(requests.activePendingQuestionIndex).toBe(0);
+    expect(requests.activePendingDraftAnswers["question-0"]?.customAnswer).toBeUndefined();
+    await act(() =>
+      requests.onChangeActivePendingUserInputCustomAnswer("question-0", `Answer ${index}`),
+    );
+    await act(() => requests.onAdvanceActivePendingUserInput());
+  }
+
+  // "first" was answered on another device.
+  await show({
+    environmentId,
+    projection: {
+      ...projection,
+      runtimeRequests: projection.runtimeRequests.map((request) =>
+        request.id === "first"
+          ? { ...request, status: "resolved", resolvedAt: projection.updatedAt }
+          : request,
+      ),
+    },
+  });
+  expect(requests.activePendingUserInput?.requestId).toBe("second");
+  await act(() =>
+    makeThreadRequestsResolvedAnnouncer(
+      environmentId,
+      threadRef.threadId,
+    )([
+      { id: RuntimeRequestId.make("first"), status: "resolved" },
+      { id: RuntimeRequestId.make("second"), status: "pending" },
+    ]),
+  );
+  for (const [index, scope] of scopes.entries()) {
+    await show(scope);
+    expect(requests.activePendingQuestionIndex).toBe(index === 0 ? 0 : 1);
+    expect(requests.activePendingDraftAnswers["question-0"]?.customAnswer).toBe(
+      index === 0 ? undefined : `Answer ${index}`,
+    );
+  }
 });

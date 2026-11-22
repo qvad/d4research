@@ -116,10 +116,12 @@ Endpoint identifiers are synthesized in `apps/desktop/src/backend/tailscaleEndpo
 
 ### Hosted pairing request
 
-A hosted pairing request is a bootstrap URL for the static web app, not a transport:
+A hosted pairing request is a bootstrap URL for a compatible d4research static web app,
+not a transport. `VITE_HOSTED_APP_URL` selects the web client origin; this example uses
+`https://client.example.com`. The upstream T3 Code hosted app is a separate distribution:
 
 ```text
-https://app.t3.codes/pair?host=https://backend.example.com:3773#token=PAIRCODE
+https://client.example.com/pair?host=https://backend.example.com:3773#token=PAIRCODE
 ```
 
 The hosted app reads `host`, takes the token from the URL hash, exchanges it directly with that
@@ -154,15 +156,38 @@ Unlinking on the linking side only forgets the token.
   `T3-Mode-Limit`, which the receiving `/mcp` only ever narrows the client's
   approved access with. A plan-mode agent therefore cannot start full-access
   work through a full-access link.
-- **The token goes only to an address that proves it is the linked
-  environment**: its descriptor must report the linked environment id. A LAN
-  address that now belongs to another machine never receives it.
+- **A descriptor's environment id filters addresses; it does not prove
+  identity.** The token goes only to an address that reports the linked id, so
+  a LAN address that now reports another machine's never receives it. Anything can
+  report any id, though, so only addresses from the user's client count as a
+  machine's, and never a loopback one, which names whichever machine opens
+  it. An address an agent gives is recorded alone, and
+  [`linkRequestTarget`](../../packages/client-runtime/src/linkRequest.ts) names
+  a machine for it only when the client already reaches exactly one machine
+  there. An address alone never moves an unexpired link to another address.
+- **The receiving side owns a link's expiry.** It renews the session when the
+  link is used and answers each call with `T3-Link-Expires-At`; the linking
+  side stores that and never extends a link on its own. A receiving side that
+  predates renewal sends no header, so the link keeps its original 30 days on
+  both sides.
 - **All callers on one side share the link's single session on the other**,
   so idempotency keys are hashed with the caller's namespace before they
   leave. Without that, two agents reusing a key would collide on the far side.
 - **A forwarded wait is split into calls of at most 50 s**, because the
   receiving `/mcp` sends nothing while a wait is open, and proxies or tunnels
   between the two environments can drop requests that stay idle for about 100 s.
+
+**A client reads a linked thread as the thread's own stream.** A client connected
+only to the linking environment subscribes to `peerLinks.subscribeThread`;
+[`PeerThreadRelay`](../../apps/server/src/peer/PeerThreadRelay.ts) opens the
+receiving environment's
+[link thread routes](../../apps/server/src/peer/linkThreadHttp.ts) with the
+link's token and passes on the same stream items, history pages and item detail
+the owner's client gets. Clients reduce and draw it like any thread, read-only,
+so there is no second transcript format to keep in step. The relay holds one
+upstream per subscription and nothing once the client stops listening. The
+routes accept only a peer link's session, refuse browser origins as `/mcp` does,
+and serve any access level, since each already reads threads through `/mcp`.
 
 **Work a link paired below full access starts stays within that link.** The
 receiving environment knows a session is a peer link because the linking side
@@ -208,6 +233,35 @@ Constraints:
 - HTTPS pages can only reach HTTPS/WSS backends;
 - HTTP LAN endpoints keep using direct desktop or CLI pairing URLs;
 - the token belongs in the hash so it is never sent to the hosted app origin.
+
+## Desktop previews tunnel loopback
+
+A desktop webview for another environment keeps `localhost` URLs and reaches the environment's
+loopback through `/api/preview/tunnel`, one WebSocket per TCP connection, on the same origin as
+every other request. That is why it works over any connection method. Four choices are easy to
+undo by accident:
+
+- **Fixed proxy, not PAC.** Chromium never consults a PAC script for loopback hosts, even with
+  `<-loopback>`. The partition uses a fixed SOCKS5 proxy with the bypass list
+  `*,<-loopback>,169.254.0.0/16,fe80::/10`, in that order, since the last matching rule wins:
+  everything is direct except loopback. `<-loopback>` also takes link-local addresses, so the last
+  two rules hand them back to the direct route. A fixed proxy also has no
+  direct retry, so a failed tunnel is a connection error and never the reviewer's own localhost.
+  The rule matches hostnames, not resolved addresses, so a custom name that resolves to loopback
+  still goes direct.
+- **Media tickets.** Desktop main opens the tunnel but holds no environment credentials. The renderer can hand media
+  tickets to main. Main asks it for a tunnel URL per
+  connection, which also makes the tunnel follow a route switch.
+- **Owner check, not auth.** Chromium can't authenticate to a SOCKS proxy, so any local process
+  can connect to the listener and ride this user's tunnel. On Linux the listener looks the client
+  up in `/proc/net/tcp` and refuses other users. macOS and Windows have no such check yet. The
+  mobile app's device preview has the same listener while it is open: iOS suspends other apps, but
+  Android lets any app reach it, and apps cannot see another app's socket owner there.
+- **Off stays routed.** `allowsPreviewTunnel` (setting plus policy) gates the route and, from
+  server config, the clients, which then stream. The partition keeps its tunnel proxy anyway, so a
+  desktop tab left open fails instead of loading the reviewer's own localhost.
+- **System browser links** have no tunnel. They keep the private-network rewrite in
+  [`browserTargetResolver.ts`](../../apps/web/src/browser/browserTargetResolver.ts).
 
 ### RepositoryIdentity and Project
 
@@ -273,7 +327,7 @@ explicit authentication, tunnel exposure never relies on obscurity, and saved en
 auth metadata to reconnect safely.
 
 WebSocket authentication is a dedicated short-lived ticket, not a token in a query string. The client
-presents its long-lived bearer or DPoP credential in HTTP headers to
+presents its long-lived bearer credential in HTTP headers to
 `POST /api/auth/websocket-ticket` ([authorization/remote.ts][authremote]), and appends only the
 returned ticket as `wsTicket` on the socket URL. The server issues it through
 `EnvironmentAuth.issueWebSocketTicket`; tickets are tagged `kind: "websocket"` and default to a

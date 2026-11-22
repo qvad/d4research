@@ -4,11 +4,11 @@ import {
   squashAtomCommandFailure,
 } from "@d4research/client-runtime/state/runtime";
 import { type ScopedThreadRef, type ThreadGuestShare } from "@d4research/contracts";
+import { msg, T, useGT } from "gt-react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useState } from "react";
 
 import { useCopyToClipboard } from "~/hooks/useCopyToClipboard";
-
 import { appAtomRegistry } from "~/rpc/atomRegistry";
 import { useQuietThreadProjection } from "~/state/entities";
 import { serverEnvironment } from "~/state/server";
@@ -58,6 +58,7 @@ function GuestShareDialog({
   readonly threadRef: ScopedThreadRef;
   readonly onClose: () => void;
 }) {
+  const gt = useGT();
   const activeShare = useThreadGuestShare(threadRef);
   const canCreate = useAtomValue(
     serverEnvironment.createGuestShare.permissionAtom(threadRef.environmentId),
@@ -65,7 +66,13 @@ function GuestShareDialog({
   const createGuestShare = useAtomCommand(serverEnvironment.createGuestShare, {
     reportFailure: false,
   });
-  const { copyToClipboard, isCopied } = useCopyToClipboard({ target: "guest link" });
+  const { copyToClipboard, isCopied } = useCopyToClipboard({
+    target: {
+      target: "guest link",
+      unavailableMessage: msg("Clipboard API is unavailable while copying guest link."),
+      failureMessage: msg("Failed to copy guest link to the clipboard."),
+    },
+  });
   const [state, setState] = useState<CreateState>({ status: "idle" });
 
   const create = async () => {
@@ -85,7 +92,7 @@ function GuestShareDialog({
     const error = squashAtomCommandFailure(result);
     setState({
       status: "failed",
-      message: error instanceof Error ? error.message : "Could not create a guest link.",
+      message: error instanceof Error ? error.message : gt("Could not create a guest link."),
     });
   };
 
@@ -98,10 +105,14 @@ function GuestShareDialog({
     >
       <DialogPopup className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Share with guest</DialogTitle>
+          <DialogTitle>
+            <T>Share with guest</T>
+          </DialogTitle>
           <DialogDescription>
-            The guest sees the thread as you do, including command output and the agent&apos;s
-            reasoning. Each message they send waits for you.
+            <T>
+              The guest sees the thread as you do, including command output and the agent&apos;s
+              reasoning. Each message they send waits for you.
+            </T>
           </DialogDescription>
         </DialogHeader>
         <DialogPanel>
@@ -109,20 +120,20 @@ function GuestShareDialog({
             <div className="flex items-center gap-2">
               <Input
                 readOnly
-                aria-label="Guest link"
+                aria-label={gt("Guest link")}
                 value={state.url}
                 onFocus={(event) => event.currentTarget.select()}
               />
               <Button size="sm" variant="outline" onClick={() => copyToClipboard(state.url)}>
                 {isCopied ? <CheckIcon /> : <CopyIcon />}
-                {isCopied ? "Copied" : "Copy"}
+                {isCopied ? gt("Copied") : gt("Copy", { $context: "verb, copy the link" })}
               </Button>
             </div>
           ) : (
             <p className="text-muted-foreground text-sm">
               {activeShare !== null
-                ? "A new link ends the current one."
-                : "The link works once and expires in 24 hours."}
+                ? gt("A new link ends the current one.")
+                : gt("The link works once and expires in 24 hours.")}
             </p>
           )}
           {state.status === "failed" ? (
@@ -134,7 +145,7 @@ function GuestShareDialog({
         <DialogFooter>
           {state.status === "created" ? (
             <Button size="sm" onClick={onClose}>
-              Done
+              <T context="button that closes the dialog">Done</T>
             </Button>
           ) : (
             <>
@@ -144,14 +155,14 @@ function GuestShareDialog({
                 onClick={onClose}
                 disabled={state.status === "creating"}
               >
-                Cancel
+                <T>Cancel</T>
               </Button>
               <Button
                 size="sm"
                 onClick={() => void create()}
                 disabled={!canCreate || state.status === "creating"}
               >
-                {state.status === "creating" ? "Creating..." : "Create link"}
+                {state.status === "creating" ? gt("Creating...") : gt("Create link")}
               </Button>
             </>
           )}

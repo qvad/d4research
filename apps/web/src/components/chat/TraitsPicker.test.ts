@@ -6,6 +6,7 @@ import {
 } from "@d4research/contracts";
 import { buildTraitsTriggerDisplay } from "@d4research/client-runtime/model-traits";
 import { buildUnavailableModelOptionDescriptors } from "./TraitsPicker";
+import { m } from "../../i18n/messages";
 
 function selectDescriptor(
   id: string,
@@ -247,11 +248,14 @@ describe("buildTraitsTriggerDisplay", () => {
 describe("buildUnavailableModelOptionDescriptors", () => {
   it("shows only saved values without inventing alternatives", () => {
     expect(
-      buildUnavailableModelOptionDescriptors([
-        { id: "variant", value: "max" },
-        { id: "agent", value: "build" },
-        { id: "fastMode", value: true },
-      ]),
+      buildUnavailableModelOptionDescriptors(
+        [
+          { id: "variant", value: "max" },
+          { id: "agent", value: "build" },
+          { id: "fastMode", value: true },
+        ],
+        m,
+      ),
     ).toMatchObject([
       {
         id: "variant",

@@ -2,8 +2,10 @@ import { MessageId, ProjectId, ThreadId } from "@d4research/contracts";
 import { isMacPlatform } from "@d4research/shared/keybindings";
 import { type CxOptions, cx } from "class-variance-authority";
 import * as Hex from "effect/encoding/Hex";
+import { msg } from "gt-react";
 import { extendTailwindMerge } from "tailwind-merge";
 import { DraftId } from "../composerDraftStore";
+import { m, type MessageResolver } from "../i18n/messages";
 
 // Register extra font sizes and background images so tailwind-merge does not
 // treat text-2xs or bg-composer-seam-below as colors.
@@ -24,6 +26,20 @@ export function isWindowsPlatform(platform: string): boolean {
   return /^win(dows)?/i.test(platform);
 }
 
+export function normalizeSearchText(value: string): string {
+  return value.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+export function getLocalFileManagerName(platform: string, resolve: MessageResolver = m): string {
+  if (isMacPlatform(platform)) {
+    return "Finder";
+  }
+  if (isWindowsPlatform(platform)) {
+    return resolve(msg("File Explorer", { $context: "the Windows file manager app" }));
+  }
+  return resolve(msg("Files", { $context: "the Linux file manager app" }));
+}
+
 export function randomUUID(): string {
   const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
   bytes[6] = (bytes[6]! & 0x0f) | 0x40;
@@ -39,17 +55,3 @@ export const newThreadId = (): ThreadId => ThreadId.make(randomUUID());
 export const newDraftId = (): DraftId => DraftId.make(randomUUID());
 
 export const newMessageId = (): MessageId => MessageId.make(randomUUID());
-
-export function getLocalFileManagerName(platform: string): string {
-  if (isMacPlatform(platform)) {
-    return "Finder";
-  }
-  if (isWindowsPlatform(platform)) {
-    return "File Explorer";
-  }
-  return "Files";
-}
-
-export function normalizeSearchText(value: string): string {
-  return value.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
-}

@@ -1,3 +1,4 @@
+import { msg, useGT, useMessages } from "gt-react-native";
 import * as Dialog from "../../components/ui/Dialog";
 import { useAtomValue } from "@effect/atom-react";
 import {
@@ -20,20 +21,28 @@ const options: ReadonlyArray<{
   label: string;
   description: string;
 }> = [
-  { value: "off", label: "Off", description: "Keep GitHub requests on this environment." },
+  {
+    value: "off",
+    label: msg("Off", { $context: "pull request routing permission" }),
+    description: msg("Keep source control requests on this environment."),
+  },
   {
     value: "read",
-    label: "Read PRs",
-    description: "Share PR data with other enabled environments.",
+    label: msg("Read PRs"),
+    description: msg("Share PR data with other enabled environments."),
   },
   {
     value: "read-write",
-    label: "Read and act",
-    description: "Actions may use broader GitHub permissions than the original environment.",
+    label: msg("Read and act"),
+    description: msg(
+      "Actions may use broader source control permissions than the original environment.",
+    ),
   },
 ];
 
 export function GitHubRoutingSettings() {
+  const gt = useGT();
+  const m = useMessages();
   const catalog = useAtomValue(environmentCatalog.catalogValueAtom);
   const permissions = useAtomValue(environmentCatalog.pullRequestRoutingPermissionsValueAtom);
   const update = useAtomCommand(environmentCatalog.setPullRequestRoutingPermission);
@@ -43,7 +52,7 @@ export function GitHubRoutingSettings() {
 
   return (
     <View className="mt-5 gap-3">
-      <SettingsSection title="GitHub routing">
+      <SettingsSection title={gt("Pull request routing")}>
         {[...catalog.entries.values()].map((entry) => {
           const environmentId = entry.target.environmentId;
           const selected = pullRequestRoutingPermissionFor(entry, permissions);
@@ -53,7 +62,9 @@ export function GitHubRoutingSettings() {
             <View key={environmentId}>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`${entry.target.label} GitHub routing`}
+                accessibilityLabel={gt("{environment} pull request routing", {
+                  environment: entry.target.label,
+                })}
                 accessibilityState={{ expanded: expanded === environmentId }}
                 className="flex-row items-center gap-3 p-4"
                 onPress={() => setExpanded(expanded === environmentId ? null : environmentId)}
@@ -63,11 +74,11 @@ export function GitHubRoutingSettings() {
                     {entry.target.label}
                   </Text>
                   <Text className="text-xs text-foreground-muted" numberOfLines={1}>
-                    {connectionCatalogDisplayUrl(entry) ?? "T3 Connect"}
+                    {connectionCatalogDisplayUrl(entry) ?? entry.target.label}
                   </Text>
                 </View>
                 <Text className="text-sm text-foreground-muted">
-                  {options.find((option) => option.value === selected)?.label}
+                  {m(options.find((option) => option.value === selected)?.label ?? "")}
                 </Text>
                 <SymbolView
                   name={expanded === environmentId ? "chevron.up" : "chevron.down"}
@@ -89,16 +100,16 @@ export function GitHubRoutingSettings() {
                           setSaving(false);
                           if (result._tag === "Failure")
                             Dialog.alert(
-                              "Could not save GitHub routing permission",
-                              "Try again before leaving this screen.",
+                              gt("Could not save pull request routing permission"),
+                              gt("Try again before leaving this screen."),
                             );
                         });
                       }}
                     >
                       <View className="min-w-0 flex-1 gap-1">
-                        <Text className="text-base text-foreground">{option.label}</Text>
+                        <Text className="text-base text-foreground">{m(option.label)}</Text>
                         <Text className="text-sm leading-normal text-foreground-muted">
-                          {option.description}
+                          {m(option.description)}
                         </Text>
                       </View>
                       {selected === option.value ? (
@@ -117,8 +128,9 @@ export function GitHubRoutingSettings() {
         })}
       </SettingsSection>
       <Text className="px-2 text-sm text-foreground-muted">
-        Choose environments you trust to share PR data and use each other's GitHub access. Enable
-        both environments. This applies only to this client.
+        {gt(
+          "Choose environments you trust to share PR data and use each other's source control access. Enable both environments. This applies only to this client.",
+        )}
       </Text>
     </View>
   );

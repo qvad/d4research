@@ -11,6 +11,7 @@ function workspaceState(overrides: Partial<WorkspaceState> = {}): WorkspaceState
     hasPendingShellSnapshot: false,
     hasReadyEnvironment: true,
     hasConnectingEnvironment: false,
+    hasSyncingConnectedEnvironment: false,
     connectingEnvironments: [],
     connectionState: "connected",
     connectionError: null,

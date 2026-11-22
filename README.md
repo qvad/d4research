@@ -4,7 +4,7 @@ A multi-provider coding agent workspace for structured research built on the [T3
 
 Licensed under the MIT License (see [LICENSE](LICENSE)). d4research is a fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code) (MIT, Copyright (c) 2026 T3 Tools Inc.); the fork's changes are listed in [FORK_CHANGES.md](FORK_CHANGES.md).
 
-## Installation
+It works with Claude Code, Codex, Cursor, OpenCode, Grok Build, Antigravity, Kiro, Pi, Muse Code, fx, and any [ACP](./docs/user/providers-acp.md) agent. If an agent is set up on your computer, d4research can control it.
 
 **Run this fork from source** — see [Setup](#setup) below. The `v0.1.0` GitHub release is
 source-only; no d4research binaries, npm package, or Docker image are published yet. The upstream
@@ -15,7 +15,7 @@ Desktop artifacts are cut on a maintainer machine rather than in CI, so when the
 ### Requirements
 
 - Git clone access to [dimaggi-ai/d4research](https://github.com/dimaggi-ai/d4research)
-- Node.js `^22.16 || ^23.11 || >=24.10`
+- Node.js `26.13.1` (see `package.json` engines)
 - At least one provider CLI installed and authenticated (see [Providers](#supported-providers))
 
 ### Setup
@@ -77,10 +77,10 @@ vp run dev
 
 ## T3 Code Base Features
 
-Everything from the upstream T3 Code platform is available:
+The fork retains these parts of the upstream T3 Code platform:
 
 - **Multi-surface clients** -- Web app, Electron desktop (macOS/Windows/Linux), and React Native mobile (iOS/Android)
-- **8 provider adapters** -- Codex, Claude, Cursor, Grok, Junie, Muse, OpenCode, Agy. Each runs in its own process with native auth
+- **Provider adapters** -- Codex, Claude, Cursor, Grok, Junie, Muse, OpenCode, Agy, Kiro, Pi, fx, and ACP Registry. Each runs in its own process with native auth
 - **Integrated terminals** -- Full PTY terminals alongside the chat, with provider tool access
 - **Source control** -- Git integration, diffs, checkpoints, branch management, commit message generation
 - **File previews** -- Syntax-highlighted code, images, PDFs, and Jupyter notebooks
@@ -243,12 +243,14 @@ docs/           User guides, internals, and runbooks
 - [Docker QA stack](./docs/operations/docker-qa.md)
 - [Keyboard shortcuts](./docs/user/keybindings.md)
 - [Customize a project icon](./docs/user/project-settings.md)
+- [Install and first run](./docs/user/install.md)
 - [Remote access from a phone or another machine](./docs/user/remote-access.md)
 - [Connect Claude Code, Codex, ChatGPT and other agents over MCP](./docs/user/outside-agents.md)
 - [Keeping app and server in sync](./docs/user/updating.md)
 - [Source control integrations](./docs/user/source-control.md)
 - Multiple accounts: [Codex](./docs/user/providers-codex.md) · [Claude](./docs/user/providers-claude.md)
 - Linux: [run T3 Code as a background service](./docs/user/background-service.md)
+- [FAQ](./docs/user/faq.md)
 
 ## Contributing
 

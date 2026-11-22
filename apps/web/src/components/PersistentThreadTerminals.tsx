@@ -1,8 +1,9 @@
 import { type ResolvedKeybindingsConfig, type ScopedThreadRef } from "@d4research/contracts";
 import { scopeProjectRef } from "@d4research/client-runtime/environment";
 import { projectScriptCwd, projectScriptRuntimeEnv } from "@d4research/shared/projectScripts";
-import { resolveTerminalSessionLabel } from "@d4research/shared/terminalLabels";
+import { resolveTerminalSessionLabel } from "@d4research/shared/terminalLabelsCopy";
 import { memo } from "react";
+import { useMessages } from "gt-react";
 import { useComposerDraftStore } from "../composerDraftStore";
 
 import type { TerminalContextSelection } from "../lib/terminalContext";
@@ -62,6 +63,7 @@ export const PersistentThreadTerminalPanel = memo(function PersistentThreadTermi
   newShortcutLabel,
   closeShortcutLabel,
 }: PersistentThreadTerminalPanelProps) {
+  const messages = useMessages();
   const serverThread = useQuietThreadShell(threadRef);
   const draftThread = useComposerDraftStore((store) => store.getDraftThreadByRef(threadRef));
   const projectRef = serverThread
@@ -96,7 +98,7 @@ export const PersistentThreadTerminalPanel = memo(function PersistentThreadTermi
     const summary =
       knownTerminalSessions?.find((session) => session.target.terminalId === terminalId)?.state
         .summary ?? null;
-    terminalLabelsById.set(terminalId, resolveTerminalSessionLabel(terminalId, summary));
+    terminalLabelsById.set(terminalId, resolveTerminalSessionLabel(terminalId, summary, messages));
     if (!project) continue;
     const terminalWorktreePath = resolveTerminalWorktreePath({
       launchContext,

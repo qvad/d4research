@@ -14,15 +14,7 @@ import {
   squashAtomCommandFailure,
 } from "@d4research/client-runtime/state/runtime";
 import { createModelSelection } from "@d4research/shared/model";
-import {
-  Check,
-  PanelLeft,
-  PanelRight,
-  RefreshCw,
-  RotateCcw,
-  Sparkles,
-  WandSparkles,
-} from "lucide-react";
+import { Check, PanelLeft, PanelRight, RefreshCw, RotateCcw, FileText, Bot } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 import { ProviderModelPicker } from "~/components/chat/ProviderModelPicker";
@@ -655,7 +647,7 @@ export default function GitChangesPanel({
                   {startingConflictResolution ? (
                     <RefreshCw className="size-3 animate-spin" />
                   ) : (
-                    <WandSparkles className="size-3" />
+                    <Bot className="size-3" />
                   )}
                   Resolve with AI
                 </TooltipTrigger>
@@ -779,7 +771,7 @@ export default function GitChangesPanel({
                   {generating ? (
                     <RefreshCw className="size-3.5 animate-spin" />
                   ) : (
-                    <Sparkles className="size-3.5" />
+                    <FileText className="size-3.5" />
                   )}
                 </TooltipTrigger>
                 <TooltipPopup>{"Generate commit message"}</TooltipPopup>

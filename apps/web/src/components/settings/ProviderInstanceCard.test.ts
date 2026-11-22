@@ -5,7 +5,7 @@ import { ProviderInstanceCard } from "./ProviderInstanceCard";
 import { vi } from "vite-plus/test";
 import { ProviderDetailsButton } from "./ProviderInstanceCard";
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup } from "../../../test/renderToStaticMarkup";
 import { describe, expect, it } from "vite-plus/test";
 import { SecretProviderId, type ServerProviderModel } from "@d4research/contracts";
 
@@ -93,7 +93,7 @@ describe("ProviderInstanceCard status", () => {
         driverOption: undefined,
         liveProvider,
         mode: "editor",
-        onUpdate: () => undefined,
+        onUpdate: async () => true,
         hiddenModels: [],
         favoriteModels: [],
         modelOrder: [],
@@ -133,7 +133,7 @@ describe("ProviderInstanceCard status", () => {
       instance: { driver },
       driverOption: undefined,
       liveProvider,
-      onUpdate: () => undefined,
+      onUpdate: async () => true,
       hiddenModels: [],
       favoriteModels: [],
       modelOrder: [],

@@ -4,6 +4,7 @@ import type {
   NativeStackHeaderItem,
   NativeStackNavigationOptions,
 } from "@react-navigation/native-stack";
+import { useGT } from "gt-react-native";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 
@@ -42,6 +43,7 @@ export function CompactBrandTitle(
     readonly fit?: boolean;
   } = {},
 ) {
+  const gt = useGT();
   const stageLabel = resolveMobileStageLabel(Constants.expoConfig?.extra?.appVariant);
   const titleOffset = brandTitleOffset(props.nativeLeadingItem === true);
   const { scale } = useAndroidControlSizing();
@@ -57,7 +59,7 @@ export function CompactBrandTitle(
         props.fit && showStage ? (event) => setFullWidth(event.nativeEvent.layout.width) : undefined
       }
       aria-level={1}
-      accessibilityLabel={props.accessibilityLabel ?? "d4research, Threads"}
+      accessibilityLabel={props.accessibilityLabel ?? gt("d4research, Threads")}
       accessible
       role="heading"
       className="flex-row items-center gap-1.5"

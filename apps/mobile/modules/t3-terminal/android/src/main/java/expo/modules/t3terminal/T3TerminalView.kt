@@ -67,6 +67,7 @@ class T3TerminalView(context: Context, appContext: AppContext) : ExpoView(contex
   private var streamedOutput: TerminalOutputBuffer? = null
   private var cols = 0
   private var rows = 0
+  private var cellSize = 0 to 0
   private var clearingInput = false
   private var isCleanedUp = false
   private var backgroundColorValue = Color.parseColor("#24292E")
@@ -332,20 +333,16 @@ class T3TerminalView(context: Context, appContext: AppContext) : ExpoView(contex
     val nextRows = (terminalCanvas.usableHeight() / terminalCanvas.cellHeightPx)
       .toInt()
       .coerceIn(2, 200)
-    if (nextCols == cols && nextRows == rows && terminalHandle != 0L) return
+    val nextCellSize = terminalCanvas.cellWidthPx.toInt() to terminalCanvas.cellHeightPx.toInt()
+    if (nextCols == cols && nextRows == rows && nextCellSize == cellSize && terminalHandle != 0L) return
     cols = nextCols
     rows = nextRows
+    cellSize = nextCellSize
     val response = if (terminalHandle == 0L) {
       createTerminal()
       ByteArray(0)
     } else {
-      GhosttyBridge.nativeResize(
-        terminalHandle,
-        cols,
-        rows,
-        terminalCanvas.cellWidthPx.toInt(),
-        terminalCanvas.cellHeightPx.toInt(),
-      )
+      GhosttyBridge.nativeResize(terminalHandle, cols, rows, cellSize.first, cellSize.second)
     }
     emitResponse(response)
     onResize(mapOf("cols" to cols, "rows" to rows))
@@ -359,8 +356,8 @@ class T3TerminalView(context: Context, appContext: AppContext) : ExpoView(contex
     terminalHandle = GhosttyBridge.nativeCreate(
       cols,
       rows,
-      terminalCanvas.cellWidthPx.toInt(),
-      terminalCanvas.cellHeightPx.toInt(),
+      cellSize.first,
+      cellSize.second,
       foregroundColorValue,
       backgroundColorValue,
       cursorColorValue,

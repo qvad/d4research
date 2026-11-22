@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 
+import { useGT } from "gt-react-native";
 import {
   MAX_TERMINAL_FONT_SIZE,
   MIN_TERMINAL_FONT_SIZE,
@@ -15,6 +16,7 @@ import {
 import { FontSizeSliderRow } from "../components/FontSizeSliderRow";
 
 export function TerminalAppearanceSection() {
+  const gt = useGT();
   const { isReady, appearance, setTerminalFontSize } = useAppearancePreferences();
   const custom = appearance.isTerminalFontSizeCustom;
 
@@ -26,13 +28,13 @@ export function TerminalAppearanceSection() {
   );
 
   return (
-    <SettingsSection title="Terminal">
+    <SettingsSection title={gt("Terminal", { $context: "settings section for the terminal" })}>
       <TerminalAppearancePreview fontSize={appearance.terminalFontSize} />
       <AppearancePreviewSeparator />
       <SettingsSwitchRow
         disabled={!isReady}
         icon="terminal"
-        label="Custom font size"
+        label={gt("Custom font size")}
         onValueChange={handleToggleCustom}
         value={custom}
       />
@@ -40,13 +42,13 @@ export function TerminalAppearanceSection() {
         <FontSizeSliderRow
           disabled={!isReady}
           icon="textformat.size"
-          label="Font size"
+          label={gt("Font size")}
           max={MAX_TERMINAL_FONT_SIZE}
           min={MIN_TERMINAL_FONT_SIZE}
           onChange={setTerminalFontSize}
           step={TERMINAL_FONT_SIZE_STEP}
           value={appearance.terminalFontSize}
-          valueLabel={`${appearance.terminalFontSize.toFixed(1)} pt`}
+          valueLabel={gt("{size} pt", { size: appearance.terminalFontSize.toFixed(1) })}
         />
       ) : null}
     </SettingsSection>

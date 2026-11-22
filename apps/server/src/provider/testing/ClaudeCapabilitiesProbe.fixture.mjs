@@ -54,6 +54,9 @@ lines.on("line", (line) => {
       behaviors: null,
     });
   }
+  if (message.request?.subtype === "get_settings") {
+    reply({});
+  }
 });
 // Stay alive for follow-up control requests, but never outlive the
 // parent: the probe aborts the SDK without awaiting the child, so an

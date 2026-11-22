@@ -19,6 +19,7 @@ import {
   buildBooleanOptionDescriptor,
   buildSelectOptionDescriptor,
   buildServerProvider,
+  COMPACT_SLASH_COMMAND,
   providerModelsFromSettings,
   type ServerProviderDraft,
 } from "@d4research/provider-core/server/snapshotProbe";
@@ -26,7 +27,7 @@ import * as CursorSdkCatalog from "./CursorSdkCatalog.ts";
 
 const CURSOR_PRESENTATION = {
   displayName: "Cursor",
-  supportsConversationRollback: false,
+  supportsConversationRollback: true,
   showInteractionModeToggle: true,
 } as const;
 const EMPTY_CAPABILITIES: ModelCapabilities = createModelCapabilities({
@@ -62,6 +63,7 @@ export const buildInitialCursorProviderSnapshot = Effect.fn(
     enabled: true,
     checkedAt,
     models,
+    slashCommands: [COMPACT_SLASH_COMMAND],
     probe: {
       installed: true,
       version: null,
@@ -172,10 +174,12 @@ export function buildCursorDiscoveredModelsFromSdk(
       return [];
     }
     seen.add(slug);
+    const aliases = model.aliases?.map((alias) => alias.trim()).filter(Boolean) ?? [];
     return [
       {
         slug,
         name,
+        ...(aliases.length > 0 ? { aliases } : {}),
         isCustom: false,
         capabilities: buildCursorCapabilitiesFromSdkModel(model),
       } satisfies ServerProviderModel,
@@ -234,6 +238,7 @@ export function buildCursorProviderSnapshot(input: {
       input.cursorSettings.customModels,
       EMPTY_CAPABILITIES,
     ),
+    slashCommands: [COMPACT_SLASH_COMMAND],
     probe: {
       installed: true,
       version: input.parsed.version,
@@ -292,9 +297,14 @@ export const checkCursorProviderStatus = Effect.fn("checkCursorProviderStatus")(
     CURSOR_SDK_CATALOG_TIMEOUT_MS,
     environment,
   );
-  const catalogResult = yield* sdkCatalog
-    .read(sdkApiKey)
-    .pipe(Effect.timeoutOption(timeoutMs), Effect.result);
+  const readCatalog = Effect.suspend(() => sdkCatalog.read(sdkApiKey)).pipe(
+    Effect.timeoutOption(timeoutMs),
+  );
+  // api.cursor.com latency is intermittent; one slow read should not flip the provider to error.
+  const catalogResult = yield* readCatalog.pipe(
+    Effect.filterOrElse(Option.isSome, () => readCatalog),
+    Effect.result,
+  );
 
   if (Result.isFailure(catalogResult)) {
     yield* Effect.logWarning("Cursor SDK catalog probe failed", {

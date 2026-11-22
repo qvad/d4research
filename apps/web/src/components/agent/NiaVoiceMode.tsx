@@ -8,7 +8,6 @@ import {
   FileTextIcon,
   MessagesSquareIcon,
   PaperclipIcon,
-  SparklesIcon,
   SquareIcon,
   Volume2Icon,
   XIcon,
@@ -329,7 +328,7 @@ function VoiceArtifactCard({
           className={ARTIFACT_CARD_CLASS}
         >
           <ArtifactCardBody
-            icon={artifact.kind === "artifact" ? SparklesIcon : ExternalLinkIcon}
+            icon={artifact.kind === "artifact" ? FileTextIcon : ExternalLinkIcon}
             kind={artifact.kind === "artifact" ? "Artifact" : "Link"}
             label={artifact.label}
           />

@@ -44,9 +44,9 @@ data to the destination you configure. See [local data](./install.md#local-data)
 
 ## Is there voice input?
 
-Yes. Mobile offers supported on-device recognition; web and desktop use a transcription
-destination you choose. Sending audio to an environment or external speech provider requires
-an explicit choice. Transcripts enter your draft for review. See [voice input](./voice-input.md).
+Yes. On iPhone and Android, dictation uses on-device speech by default, with the option to use a paired environment. On macOS 26 or later, desktop users can choose Apple Speech directly under **On this Mac** or choose an environment. Web and other desktop users can enable dictation by choosing an environment. The transcript goes into your draft for review. See [Voice input](./voice-input.md).
+
+Sending audio to an environment or external speech provider requires an explicit choice.
 
 ## Why is my provider unavailable?
 

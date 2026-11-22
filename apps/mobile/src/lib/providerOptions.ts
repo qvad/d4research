@@ -1,12 +1,16 @@
 import type {
   ModelCapabilities,
+  ModelSelection,
+  ProviderInstanceId,
   ProviderOptionDescriptor,
   ProviderOptionSelection,
+  ServerProviderModel,
 } from "@d4research/contracts";
 import {
   buildProviderOptionSelectionsFromDescriptors,
   getProviderOptionCurrentLabel,
   getProviderOptionDescriptors,
+  withImplicitFastModeDefault,
 } from "@d4research/shared/model";
 
 export function resolveProviderOptionDescriptors(input: {
@@ -18,7 +22,7 @@ export function resolveProviderOptionDescriptors(input: {
   }
   return getProviderOptionDescriptors({
     caps: input.capabilities,
-    selections: input.selections,
+    selections: withImplicitFastModeDefault(input.capabilities, input.selections),
   });
 }
 
@@ -35,6 +39,23 @@ export function providerOptionValueLabels(
     const label = getProviderOptionCurrentLabel(descriptor);
     return label ? [label] : [];
   });
+}
+
+/** Spells out the Fast off the picker shows, or a provider such as Cursor applies its own default. */
+export function withImplicitFastModeSelection(
+  selection: ModelSelection,
+  providers: ReadonlyArray<{
+    readonly instanceId: ProviderInstanceId;
+    readonly models: ReadonlyArray<Pick<ServerProviderModel, "slug" | "capabilities">>;
+  }>,
+): ModelSelection {
+  const capabilities = providers
+    .find((provider) => provider.instanceId === selection.instanceId)
+    ?.models.find((model) => model.slug === selection.model)?.capabilities;
+  const options = capabilities
+    ? withImplicitFastModeDefault(capabilities, selection.options)
+    : selection.options;
+  return options === selection.options ? selection : { ...selection, options };
 }
 
 export function applyProviderOptionSelection(

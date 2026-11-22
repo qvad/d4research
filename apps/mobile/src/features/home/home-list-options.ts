@@ -1,14 +1,12 @@
 import type { EnvironmentId, SidebarProjectGroupingMode } from "@d4research/contracts";
 import { DEFAULT_SIDEBAR_PROJECT_SORT_ORDER } from "@d4research/contracts";
-import { useAtomSet } from "@effect/atom-react";
+import { RegistryContext, useAtomValue } from "@effect/atom-react";
+import { Atom } from "effect/reactivity";
 import {
   createContext,
   createElement,
   useCallback,
   useContext,
-  useEffect,
-  useMemo,
-  useRef,
   useState,
   type PropsWithChildren,
   type Dispatch,
@@ -16,7 +14,8 @@ import {
 } from "react";
 
 import type { ThreadListFilters } from "../../persistence/mobile-preferences";
-import { updateMobilePreferencesAtom } from "../../state/preferences";
+import { saveMobilePreferences } from "../../state/preferences";
+import { useAtomCommand } from "../../state/use-atom-command";
 import type { HomeProjectSortOrder } from "./homeThreadList";
 
 export interface HomeListOptions {
@@ -56,24 +55,33 @@ export function HomeListOptionsProvider({
   readonly projectGroupingMode: SidebarProjectGroupingMode;
   readonly savedFilters?: ThreadListFilters | undefined;
 }>) {
-  const [options, setOptions] = useState(() => defaultHomeListOptions(savedFilters));
-  const savePreferences = useAtomSet(updateMobilePreferencesAtom);
-  const saved = useRef(savedFilters);
-  const { selectedEnvironmentId: environmentId, selectedProjectKey: projectKey } = options;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Persists the selected list filters to the external mobile preferences store.
-  useEffect(() => {
+  const registry = useContext(RegistryContext);
+  const [optionsAtom] = useState(() => Atom.make(defaultHomeListOptions(savedFilters)));
+  const options = useAtomValue(optionsAtom);
+  const savePreferences = useAtomCommand(saveMobilePreferences);
+  // Only the scope persists; the sort order is per session. Updates read the
+  // registry, so several in one event each build on the last and save it.
+  const updateOptions = (patch: Partial<HomeListOptions>) => {
+    const current = registry.get(optionsAtom);
+    const next = { ...current, ...patch };
+    registry.set(optionsAtom, next);
     if (
-      (saved.current?.environmentId ?? null) === environmentId &&
-      (saved.current?.projectKey ?? null) === projectKey
-    )
-      return;
-    saved.current = { environmentId, projectKey };
-    savePreferences({ threadListFilters: saved.current });
-  }, [environmentId, projectKey, savePreferences]);
-  const value = useMemo(
-    () => ({ options, setOptions, projectGroupingMode }),
-    [options, projectGroupingMode, setOptions],
-  );
+      next.selectedEnvironmentId !== current.selectedEnvironmentId ||
+      next.selectedProjectKey !== current.selectedProjectKey
+    ) {
+      void savePreferences({
+        threadListFilters: {
+          environmentId: next.selectedEnvironmentId,
+          projectKey: next.selectedProjectKey,
+        },
+      });
+    }
+  };
+  const setOptions: Dispatch<SetStateAction<HomeListOptions>> = (update) => {
+    const current = registry.get(optionsAtom);
+    updateOptions(typeof update === "function" ? update(current) : update);
+  };
+  const value = { options, setOptions, projectGroupingMode };
   return createElement(HomeListOptionsContext, { value }, children);
 }
 

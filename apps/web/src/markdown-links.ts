@@ -1,4 +1,5 @@
 import { isLocalEditorFileUrl } from "@d4research/contracts";
+import { resolveMarkdownFileLink } from "@d4research/shared/markdownLinks";
 import { formatWorkspaceRelativePath } from "./filePathDisplay";
 import {
   isTerminalLinkActivation,
@@ -14,7 +15,7 @@ const RELATIVE_FILE_PATH_PATTERN =
   /^(?:[A-Za-z0-9._-]+(?: +[A-Za-z0-9._-]+)*\/)+[A-Za-z0-9._-]+(?: +[A-Za-z0-9._-]+)*(?::\d+){0,2}$/;
 const RELATIVE_FILE_NAME_PATTERN =
   /^[A-Za-z0-9._-]+(?: +[A-Za-z0-9._-]+)*\.[A-Za-z0-9_-]+(?::\d+){0,2}$/;
-const POSITION_SUFFIX_PATTERN = /:\d+(?::\d+)?$/;
+const POSITION_SUFFIX_PATTERN = /:\d+(?:-\d+|:\d+)?$/;
 const POSITION_ONLY_PATTERN = /^\d+(?::\d+)?$/;
 // Standard OS and dev-container roots; deliberately excludes app-route-ish
 // prefixes like /app/ or /chat/ so SPA routes never read as files.
@@ -58,6 +59,7 @@ export interface MarkdownFileLinkMeta {
   basename: string;
   line?: number;
   column?: number;
+  endLine?: number;
 }
 
 export interface MarkdownWorkspaceRootCandidate {
@@ -249,6 +251,10 @@ export function resolveMarkdownFileLinkTarget(
     !WINDOWS_UNC_PATH_PATTERN.test(decodedPath) &&
     hasExternalScheme(decodedPath)
   ) {
+    return null;
+  }
+
+  if (WINDOWS_UNC_PATH_PATTERN.test(decodedPath) && !pathIsWithin(decodedPath, cwd ?? "")) {
     return null;
   }
 
@@ -583,9 +589,11 @@ export function resolveMarkdownFileLinkMeta(
   alternateDirectory: string | undefined = cwd,
 ): MarkdownFileLinkMeta | null {
   const { baseDir, workspaceRoot } = resolveMarkdownLinkDirectories(cwd, alternateDirectory);
-  const targetPath = resolveMarkdownFileLinkTarget(href, cwd, baseDir);
+  const resolved = resolveMarkdownFileLink(href, workspaceRoot, baseDir);
+  const targetPath = resolved?.targetPath ?? resolveMarkdownFileLinkTarget(href, cwd, baseDir);
   if (!targetPath) return null;
   const meta = buildFileLinkMetaFromTarget(targetPath, workspaceRoot);
+  if (resolved?.position.endLine !== undefined) meta.endLine = resolved.position.endLine;
   const source = safeDecode(normalizeMarkdownLinkDestination(href ?? ""));
   meta.workspaceLookupPath =
     isRelativePath(source) &&

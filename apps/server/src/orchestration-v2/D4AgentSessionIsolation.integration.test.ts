@@ -1,4 +1,5 @@
 import * as DocumentText from "../provider/DocumentText.ts";
+import * as HostProcess from "@d4research/shared/HostProcess";
 import { expect, vi } from "vite-plus/test";
 import { it } from "@effect/vitest";
 import * as NodeServices from "@effect/platform-node/NodeServices";
@@ -145,6 +146,21 @@ const makeRecordingAdapter = (
             const completedAt = yield* DateTime.now;
             const providerTurnId = ProviderTurnId.make(`turn:${turn.attemptId}`);
             yield* Queue.offer(events, {
+              type: "provider_turn.updated",
+              driver,
+              providerTurn: {
+                id: providerTurnId,
+                providerThreadId: turn.providerThread.id,
+                nodeId: turn.rootNodeId,
+                runAttemptId: turn.attemptId,
+                nativeTurnRef: { driver, nativeId: `native:${providerTurnId}`, strength: "strong" },
+                ordinal: turn.providerTurnOrdinal,
+                status: "running",
+                startedAt: completedAt,
+                completedAt: null,
+              },
+            });
+            yield* Queue.offer(events, {
               type: "message.updated",
               driver,
               message: {
@@ -199,7 +215,7 @@ const makeRecordingAdapter = (
 });
 
 // oxlint-disable-next-line t3code/no-test-timeout-or-unreasoned-skip -- Full SQLite orchestration scenarios drain committed effects and retain the existing 60-second integration deadline.
-it.effect.each([
+it.live.each([
   {
     operation: "switch-context",
     name: "switch-context runs two real d4 turns in one database without carrying prior context into provider input",
@@ -252,6 +268,7 @@ it.effect.each([
             ...DEFAULT_D4_AGENT_SETTINGS,
             enabled: true,
             modelSelection: selection,
+            taskModelSelection: selection,
             projectContexts: { [ybProject]: "YB", [dimaggiProject]: "Dimaggi" },
           },
           secondBrain: { path: "/synthetic-memory", injection: { enabled: true } },
@@ -260,6 +277,7 @@ it.effect.each([
         const database = Sqlite.layerMemory;
         const config = Config.layerTest(directory, directory);
         const common = Layer.mergeAll(
+          Layer.succeed(HostProcess.HomeDirectory, directory),
           settings,
           database,
           config,
@@ -306,6 +324,7 @@ it.effect.each([
           ProviderAdapterRegistry.layerSingle(makeRecordingAdapter(opened, started, resumed)),
           {
             databaseLayer: database,
+            runEffectWorker: false,
             layerServerSettings: settings,
             layerProjectService: projects,
             layerSecondBrain: Layer.mock(SecondBrain.SecondBrainService)({ buildTurnContext }),
@@ -361,7 +380,7 @@ it.effect.each([
                 Stream.filter(
                   (stored) =>
                     stored.event.type === "run.updated" &&
-                    ["completed", "failed"].includes(stored.event.payload.status),
+                    ["waiting", "failed"].includes(stored.event.payload.status),
                 ),
                 Stream.take(1),
                 Stream.runDrain,
@@ -375,6 +394,8 @@ it.effect.each([
                 expectedThreadId: shown.threadId,
               })
               .pipe(Effect.provideService(AgentAccess.DispatchOrigin, "authenticated-user"));
+            yield* worker.drain();
+            expect(started.at(-1)?.threadId).toBe(threadId);
             yield* Fiber.join(completed);
             yield* worker.drain();
             const projection = yield* orchestrator.getThreadProjection(threadId);
@@ -445,11 +466,12 @@ it.effect.each([
                 ),
               }),
             ).not.toBe(first.threadId);
+            yield* worker.drain();
             yield* sink.stream({ threadId: fresh, afterSequence: 0 }).pipe(
               Stream.filter(
                 (stored) =>
                   stored.event.type === "run.updated" &&
-                  ["completed", "failed"].includes(stored.event.payload.status),
+                  ["waiting", "failed"].includes(stored.event.payload.status),
               ),
               Stream.take(1),
               Stream.runDrain,

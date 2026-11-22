@@ -1,4 +1,7 @@
 import type { ScopedThreadRef } from "@d4research/contracts";
+import { msg, useMessages } from "gt-react";
+
+import type { MessageResolver } from "../../i18n/messages";
 import { DiscoveryListRow } from "../ui/discovery-list";
 
 import { PreviewFaviconIcon } from "./PreviewFaviconIcon";
@@ -11,7 +14,8 @@ interface Props {
 }
 
 export function PreviewLocalServerCard({ threadRef, server, onOpen }: Props) {
-  const subtitle = describeServer(server);
+  const m = useMessages();
+  const subtitle = describeServer(server, m);
   return (
     <DiscoveryListRow
       onClick={onOpen}
@@ -22,9 +26,10 @@ export function PreviewLocalServerCard({ threadRef, server, onOpen }: Props) {
   );
 }
 
-function describeServer(server: PreviewableServer): string {
+function describeServer(server: PreviewableServer, resolve: MessageResolver): string {
   if (server.processName) return server.processName;
-  if (server.listening) return "Listening";
-  if (server.source === "configured") return "Configured";
-  return "Recently seen";
+  if (server.listening)
+    return resolve(msg("Listening", { $context: "a local server is listening on a port" }));
+  if (server.source === "configured") return resolve(msg("Configured"));
+  return resolve(msg("Recently seen"));
 }

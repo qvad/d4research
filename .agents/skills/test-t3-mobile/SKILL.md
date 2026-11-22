@@ -30,9 +30,28 @@ node scripts/mobile-native-client.ts ensure ios <simulator-udid>
 node scripts/mobile-native-client.ts ensure android <emulator-serial>
 ```
 
-`ensure` compares the checkout's local Expo development fingerprint and the installed app's binary contents against the last successful build record. It reuses a matching client; otherwise it runs a clean prebuild, builds and installs the development app, and records the successful result. It does not start Metro. Start Metro below after it succeeds. On hosts with an `agent-job` requirement, run the entire `ensure` command through that queue.
+This installs the dev client for the checkout's native fingerprint: from the
+device, the local cache, or the shared cache in seconds, building once only
+when no machine has that fingerprint yet: in the `Mobile Dev Client` workflow
+on Blacksmith when HEAD is pushed and `gh` may dispatch it (the command waits),
+otherwise here (5-15 minutes, logged to the file it names). The device id may be omitted when exactly one device is booted. It
+prints one JSON line; on failure it names the next command. Mobile verification
+includes that step unless the user prohibits it.
+
+It does not start Metro. Start Metro after it succeeds. On hosts with an `agent-job` requirement, run the entire `ensure` command through that queue.
 
 For a read-only decision, use `check` in place of `ensure`. Exit 0 means compatible, 2 means build required, and 1 means an operational error. An app installed outside this helper is initially unknown and gets rebuilt once. Records are local to the simulator host under `~/.cache/t3code/native-clients` and work across checkouts. Do not copy records between machines or write them manually.
+
+For a device you opened in an agent-device session elsewhere (a device pool,
+cloud, or remote host), run `vp run mobile:install <ios|android> --session <s>
+--config <file>` from the directory you opened the session in, passing the
+`--config` file from `device_open`'s `targetArgs`. Without it, a device pool's
+gateway refuses the install, wrongly saying agent-device is too old. It installs
+the cached build into that session (`--abi arm64-v8a` for an ARM Android device;
+pool Android emulators are x86_64, the default; `--metro <url>` also opens it
+against Metro). Without a cached build for this checkout it builds first, which can
+outlast the lease, so run `vp run mobile:install <ios|android> --prepare` (with
+the same `--abi`) before you open the device.
 
 Start `vp run dev:client` from `apps/mobile`, or reuse a healthy Metro belonging
 to this checkout. Open the printed development-client URL with AgentDevice
@@ -196,3 +215,27 @@ Keep local verification focused. Do not turn this workflow into a full repositor
 - **iOS semantic actions fail:** set explicit XcodeBuildMCP defaults and refresh with `snapshot_ui`.
 - **Android cannot reach Metro:** verify `adb reverse` for the exact Metro port and relaunch the development-client URL.
 - **Android cannot reach the backend:** use `10.0.2.2`, not `127.0.0.1`, for the Android Emulator.
+
+## Accessibility audit
+
+For mobile UI changes, run the local `mobile:audit` CLI on the touched screens
+with the session's AgentDevice launcher:
+
+```bash
+vp run mobile:audit capture --platform <ios|android> --screen <name> \
+  --out /tmp/mobile-audit/after --agent-device "$agent_device_command" \
+  -- "${agent_device_target_args[@]}"
+
+# Compare against a base capture (exits non-zero on regressions):
+vp run mobile:audit compare --before /tmp/mobile-audit/before \
+  --after /tmp/mobile-audit/after --out /tmp/mobile-audit/diff \
+  --fail-on-regression
+
+# Or annotate a single capture when there is no baseline:
+vp run mobile:audit report --dir /tmp/mobile-audit/after \
+  --out /tmp/mobile-audit/report
+```
+
+Attach the generated `report.md` summary and annotated PNG(s) to your response
+to the user (embedded by absolute file path) and to the PR description (uploaded
+via `ghdrop` or forge assets; never commit generated audit artifacts).

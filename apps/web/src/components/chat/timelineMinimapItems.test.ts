@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
-import { MessageId } from "@d4research/contracts";
+import { EnvironmentId, MessageId, ThreadId } from "@d4research/contracts";
+import { serializeAssistantCitation } from "@d4research/shared/assistantCitations";
+import {
+  ATTACHMENT_ONLY_BOOTSTRAP_PROMPT,
+  formatComposerContextReference,
+  toComposerContextId,
+} from "@d4research/shared/composerContextReferences";
+
 import type { MessagesTimelineRow } from "./MessagesTimeline.logic";
 import { deriveTimelineMinimapItems, resolveTimelineMinimapPreview } from "./timelineMinimapItems";
 import type { ChatMessage } from "../../types";
@@ -31,7 +38,6 @@ function rows(
     assistantCopyStreaming: false,
   }));
 }
-import { ATTACHMENT_ONLY_BOOTSTRAP_PROMPT } from "@d4research/shared/composerContextReferences";
 
 describe("deriveTimelineMinimapItems", () => {
   it.each(["", "Ultrathink:\n"])(
@@ -117,5 +123,33 @@ describe("timeline minimap previews", () => {
       assistantText: "First second",
     });
     expect(resolveTimelineMinimapPreview(first)?.assistantText).toBe("First");
+  });
+
+  it("previews a quote, a context chip and a file link in the user's message as their text", () => {
+    const quote = serializeAssistantCitation({
+      version: 1,
+      environmentId: EnvironmentId.make("env-1"),
+      threadId: ThreadId.make("thread-1"),
+      messageId: MessageId.make("assistant-1"),
+      text: "The cache misses on a cold start.",
+      start: 0,
+      end: 33,
+      prefix: "",
+      suffix: "",
+    });
+    const file = formatComposerContextReference({
+      kind: "file",
+      contextId: toComposerContextId("readme"),
+      label: "README.md",
+    });
+    const preview = resolveTimelineMinimapPreview({
+      id: "turn-1",
+      rowIndex: 0,
+      userText: `${quote}\nWhere do ${file} and [math.ts](src/math.ts) cover this?`,
+      assistantText: null,
+    });
+    expect(preview?.userText).toBe(
+      "The cache misses on a cold start. Where do README.md and math.ts cover this?",
+    );
   });
 });

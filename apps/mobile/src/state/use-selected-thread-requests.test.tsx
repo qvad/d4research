@@ -8,6 +8,10 @@ const fixture = vi.hoisted(() => ({
   preparationAtom: Symbol("preparation"),
 }));
 vi.mock("react-native", () => ({ Alert: { alert: vi.fn() } }));
+vi.mock("./question-attachment-preparation", () => ({
+  appendUnsentQuestionAttachments: vi.fn(),
+  resolveQuestionImagePreparations: vi.fn(),
+}));
 vi.mock("@effect/atom-react", () => ({
   useAtomValue: (atom: unknown) =>
     atom === "drafts"

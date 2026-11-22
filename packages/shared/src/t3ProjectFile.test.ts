@@ -32,7 +32,10 @@ describe("buildT3ProjectFileJsonSchema", () => {
       "$schema",
       "defaultThreadEnvMode",
       "iconPath",
+      "ignoreRepositories",
       "scripts",
+      "worktreeLayout",
+      "worktreeSparsePatternsPath",
       "worktreeSubmodules",
     ]);
     expect(schema.required).toBeUndefined();

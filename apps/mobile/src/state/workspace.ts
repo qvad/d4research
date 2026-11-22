@@ -1,8 +1,9 @@
 import { useAtomValue } from "@effect/atom-react";
 import { useMemo } from "react";
+import { Atom } from "effect/reactivity";
 
-import { environmentShellSummaryAtom } from "./shell";
-import { projectWorkspaceState } from "./workspaceModel";
+import { environmentShell, environmentShellSummaryAtom } from "./shell";
+import { isEnvironmentShellPending, projectWorkspaceState } from "./workspaceModel";
 import { environmentCatalog } from "../connection/catalog";
 import { environmentPresentations } from "./presentation";
 import { createWorkspaceConnectionAtoms } from "./workspace-connection-atoms";
@@ -12,6 +13,16 @@ export const workspaceConnections = createWorkspaceConnectionAtoms({
   networkStatusValueAtom: environmentCatalog.networkStatusValueAtom,
   presentationAtom: environmentPresentations.presentationAtom,
 });
+
+// A disconnected environment's retries also leave its shell synchronizing.
+const hasSyncingConnectedEnvironmentAtom = Atom.make((get) =>
+  get(workspaceConnections.environmentsAtom).some(
+    (environment) =>
+      environment.isEnabled &&
+      environment.connectionState === "connected" &&
+      isEnvironmentShellPending(get(environmentShell.stateValueAtom(environment.environmentId))),
+  ),
+).pipe(Atom.withLabel("mobile:has-syncing-connected-environment"));
 
 export function useWorkspaceEnvironments() {
   return useAtomValue(workspaceConnections.environmentsAtom);
@@ -30,6 +41,7 @@ export function useWorkspaceState() {
   const networkStatus = useAtomValue(environmentCatalog.networkStatusValueAtom);
   const projectedEnvironments = useWorkspaceEnvironments();
   const shellSummary = useAtomValue(environmentShellSummaryAtom);
+  const hasSyncingConnectedEnvironment = useAtomValue(hasSyncingConnectedEnvironmentAtom);
   const state = useMemo(
     () =>
       projectWorkspaceState({
@@ -37,8 +49,9 @@ export function useWorkspaceState() {
         networkStatus,
         environments: projectedEnvironments,
         shellSummary,
+        hasSyncingConnectedEnvironment,
       }),
-    [isReady, networkStatus, projectedEnvironments, shellSummary],
+    [isReady, networkStatus, projectedEnvironments, shellSummary, hasSyncingConnectedEnvironment],
   );
 
   return {

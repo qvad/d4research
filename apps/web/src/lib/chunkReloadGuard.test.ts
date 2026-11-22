@@ -1,10 +1,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import {
-  clearChunkReloadGuard,
-  installChunkLoadRecovery,
-  reloadOnceForChunkLoadError,
-} from "./chunkReloadGuard";
+import { installChunkLoadRecovery, reloadOnceForChunkLoadError } from "./chunkReloadGuard";
+import { isChunkLoadError } from "./chunkReloadGuard";
 
 function createStorageStub(): Storage {
   const store = new Map<string, string>();
@@ -40,7 +37,6 @@ describe("reloadOnceForChunkLoadError", () => {
     expect(repeated.defaultPrevented).toBe(false);
     expect(reload).toHaveBeenCalledTimes(1);
 
-    clearChunkReloadGuard(() => storage);
     uninstall();
     target.dispatchEvent(new Event("vite:preloadError", { cancelable: true }));
     expect(reload).toHaveBeenCalledTimes(1);
@@ -50,21 +46,20 @@ describe("reloadOnceForChunkLoadError", () => {
     const storage = createStorageStub();
     const reload = vi.fn();
 
-    expect(reloadOnceForChunkLoadError(() => storage, reload)).toBe(true);
+    expect(reloadOnceForChunkLoadError(() => storage, reload, "1.0.0")).toBe(true);
     expect(reload).toHaveBeenCalledTimes(1);
 
-    expect(reloadOnceForChunkLoadError(() => storage, reload)).toBe(false);
+    expect(reloadOnceForChunkLoadError(() => storage, reload, "1.0.0")).toBe(false);
     expect(reload).toHaveBeenCalledTimes(1);
   });
 
-  it("reloads again after a successful boot cleared the guard", () => {
+  it("reloads again once a deploy changed the build", () => {
     const storage = createStorageStub();
     const reload = vi.fn();
 
-    reloadOnceForChunkLoadError(() => storage, reload);
-    clearChunkReloadGuard(() => storage);
+    reloadOnceForChunkLoadError(() => storage, reload, "1.0.0");
 
-    expect(reloadOnceForChunkLoadError(() => storage, reload)).toBe(true);
+    expect(reloadOnceForChunkLoadError(() => storage, reload, "1.0.1")).toBe(true);
     expect(reload).toHaveBeenCalledTimes(2);
   });
 
@@ -76,6 +71,16 @@ describe("reloadOnceForChunkLoadError", () => {
 
     expect(reloadOnceForChunkLoadError(blocked, reload)).toBe(false);
     expect(reload).not.toHaveBeenCalled();
-    expect(() => clearChunkReloadGuard(blocked)).not.toThrow();
+  });
+});
+
+describe("isChunkLoadError", () => {
+  it.each([
+    ["Failed to fetch dynamically imported module: t3code://app/assets/a.js", true],
+    ["error loading dynamically imported module: https://app.t3.codes/assets/a.js", true],
+    ["Importing a module script failed.", true],
+    ["Cannot read properties of undefined", false],
+  ])("%s", (message, expected) => {
+    expect(isChunkLoadError(new TypeError(message))).toBe(expected);
   });
 });

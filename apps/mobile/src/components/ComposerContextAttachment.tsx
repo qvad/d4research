@@ -1,3 +1,6 @@
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
+import { T, useGT } from "gt-react-native";
+import { m } from "../i18n/messages";
 import * as Dialog from "./ui/Dialog";
 import type { ComposerContextRecord, EnvironmentId } from "@d4research/contracts";
 import { Pressable, View } from "react-native";
@@ -18,6 +21,7 @@ export function ComposerContextAttachment(props: {
   environmentId?: EnvironmentId;
   attachment?: DraftComposerAttachment;
 }) {
+  const gt = useGT();
   const { record, attachment } = props;
   const shareSourceIdentifier = useId();
   const resource = useMemo(
@@ -53,13 +57,14 @@ export function ComposerContextAttachment(props: {
         setError(null);
       })
       .catch(() => {
-        if (!controller.signal.aborted) setError("The local file is unavailable. Attach it again.");
+        if (!controller.signal.aborted)
+          setError(gt("The local file is unavailable. Attach it again."));
       });
     return () => {
       controller.abort();
       dispose?.();
     };
-  }, [local]);
+  }, [local, gt]);
   const uri = local ? localUri : (inlineUri ?? (asset._tag === "Success" ? asset.url : null));
   const share = async () => {
     if (sharing) return;
@@ -75,7 +80,7 @@ export function ComposerContextAttachment(props: {
         });
       } else {
         const url = await refresh();
-        if (!url) throw new Error("Reconnect to the environment and try again.");
+        if (!url) throw new Error(gt("Reconnect to the environment and try again."));
         await downloadAndShareAttachment({
           url,
           attachment: record,
@@ -86,8 +91,10 @@ export function ComposerContextAttachment(props: {
     })()
       .catch((cause: unknown) => {
         Dialog.alert(
-          "Could not open attachment",
-          cause instanceof Error ? cause.message : "Try again.",
+          gt("Could not open attachment"),
+          cause instanceof Error
+            ? (errorDisplayMessage(cause, m) ?? cause.message)
+            : gt("Try again."),
         );
       })
       .finally(() => {
@@ -99,7 +106,7 @@ export function ComposerContextAttachment(props: {
       {record.kind === "image" && uri ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Preview ${record.name}`}
+          accessibilityLabel={gt("Preview {name}", { name: record.name })}
           onPress={() => setPreviewOpen(true)}
         >
           <Image
@@ -116,7 +123,7 @@ export function ComposerContextAttachment(props: {
       ) : null}
       {error || (!local && asset._tag === "Failure") ? (
         <Text className="text-foreground-muted">
-          {error ?? "Attachment unavailable. Reconnect and try again."}
+          {error ?? <T>Attachment unavailable. Reconnect and try again.</T>}
         </Text>
       ) : null}
       <PresentationSource identifier={shareSourceIdentifier}>
@@ -127,7 +134,7 @@ export function ComposerContextAttachment(props: {
           className="rounded-xl bg-subtle p-4"
         >
           <Text className="text-foreground">
-            {sharing ? "Opening attachment…" : "Open or share attachment"}
+            {sharing ? gt("Opening attachment…") : gt("Open or share attachment")}
           </Text>
         </Pressable>
       </PresentationSource>

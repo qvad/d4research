@@ -31,8 +31,6 @@ const edit = {
   operation: "create",
   content: "# Test",
   expectedHash: null,
-  rationale: "requested",
-  evidence: [],
 };
 const scope = (
   access: "read-only" | "full-access",
@@ -84,7 +82,9 @@ function call(
             ? { title: "Local", context: "Offline", decision: "Local", consequences: "Disk" }
             : tool === "brain_reindex" || tool === "brain_capture"
               ? {}
-              : edit),
+              : tool === "brain_propose"
+                ? { ...edit, rationale: "requested", evidence: [] }
+                : edit),
     });
     return result.content
       .filter((p) => p.type === "text")
@@ -178,6 +178,8 @@ it.effect("paginates bounded proposal summaries without exposing large bodies", 
           {
             ...edit,
             path: `notes/large-${i}.md`,
+            rationale: "requested",
+            evidence: [],
             kind: "note",
             operation: "create",
             content: "body ".repeat(60000),

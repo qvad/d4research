@@ -46,6 +46,9 @@ vi.mock("../layout/workspace/useAndroidWorkspaceNavigation", () => ({
 }));
 vi.mock("react-native", () => ({ Alert: { alert: () => {} }, Linking: {}, Platform: {} }));
 vi.mock("../layout/AdaptiveWorkspaceLayout", () => ({
+  useWorkspacePaneState: () => ({
+    panes: { primarySidebarVisible: false, auxiliaryPaneVisible: false },
+  }),
   useAdaptiveWorkspaceLayout: () => ({
     layout: { usesSplitView: false },
     panes: { primarySidebarVisible: false, auxiliaryPaneVisible: false },

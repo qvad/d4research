@@ -1,6 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { removeLocalStorageItem } from "./hooks/useLocalStorage";
+import { createMemoryStorage } from "./lib/storage";
 
 import {
   MAX_STASH_ENTRIES,
@@ -126,12 +127,42 @@ describe("promptStashStore", () => {
 
   it("takeEntry removes and returns the entry; second take returns null", () => {
     const store = usePromptStashStore.getState();
-    store.stashEntry(makeEntry({ id: "keep" }));
-    store.stashEntry(makeEntry({ id: "take" }));
-    expect(store.takeEntry("take").entry?.id).toBe("take");
-    expect(store.takeEntry("take").entry).toBeNull();
-    const entries = usePromptStashStore.getState().entries;
-    expect(entries.map((entry) => entry.id)).toEqual(["keep"]);
+    store.stashEntry({ ...makeEntry({ id: "pending-restore" }), pendingImageCount: 1 });
+    const menuSnapshot = usePromptStashStore.getState().entries[0];
+    expect(menuSnapshot?.attachments).toEqual([]);
+    store.stashEntry(makeEntry({ id: "stashed-while-encoding" }));
+    expect(
+      usePromptStashStore.getState().entries.find((entry) => entry.id === "pending-restore")
+        ?.pendingImageCount,
+    ).toBe(1);
+
+    store.finalizeEntryImages("pending-restore", {
+      attachments: [
+        {
+          id: "img-finalized",
+          name: "finalized.webp",
+          mimeType: "image/webp",
+          sizeBytes: 12,
+          dataUrl: "data:image/webp;base64,BBBB",
+        },
+      ],
+      droppedImageNames: ["too-large.png"],
+      unreadableImageNames: ["unreadable.png"],
+    });
+
+    const { entry: taken } = store.takeEntry("pending-restore");
+    expect(taken).not.toBe(menuSnapshot);
+    expect(taken).toMatchObject({
+      attachments: [
+        {
+          id: "img-finalized",
+          name: "finalized.webp",
+        },
+      ],
+      droppedImageNames: ["too-large.png"],
+      unreadableImageNames: ["unreadable.png"],
+      pendingImageCount: 0,
+    });
   });
 
   it("finalizeEntryImages attaches images and clears the pending count", () => {
@@ -197,6 +228,101 @@ describe("promptStashStore", () => {
     );
     expect(usePromptStashStore.getState().entries).toEqual([]);
   });
+
+  // regression: #35010 stashing in one tab erased what another tab stashed after it loaded
+  it("keeps an entry another tab stashed after this tab loaded", async () => {
+    const sharedStorage = createMemoryStorage();
+    vi.stubGlobal("localStorage", sharedStorage);
+    vi.stubGlobal("window", new EventTarget());
+    vi.resetModules();
+    try {
+      const thisTab = await import("./promptStashStore");
+      sharedStorage.setItem(
+        PROMPT_STASH_STORAGE_KEY,
+        JSON.stringify({ version: 2, state: { entries: [makeEntry({ id: "other-tab" })] } }),
+      );
+      window.dispatchEvent(Object.assign(new Event("storage"), { key: PROMPT_STASH_STORAGE_KEY }));
+
+      thisTab.usePromptStashStore.getState().stashEntry(makeEntry({ id: "this-tab" }));
+
+      const saved = JSON.parse(sharedStorage.getItem(PROMPT_STASH_STORAGE_KEY) as string);
+      expect(saved.state.entries.map((entry: PromptStashEntry) => entry.id)).toEqual([
+        "this-tab",
+        "other-tab",
+      ]);
+
+      thisTab.usePromptStashStore.getState().stashEntry({
+        ...makeEntry({ id: "encoding-image" }),
+        pendingImageCount: 1,
+      });
+      vi.resetModules();
+      const secondTab = await import("./promptStashStore");
+      const finalized = makeEntry({ id: "encoding-image", attachmentChars: 12 }).attachments;
+      thisTab.usePromptStashStore.getState().finalizeEntryImages("encoding-image", {
+        attachments: finalized,
+        droppedImageNames: [],
+        unreadableImageNames: [],
+      });
+      secondTab.usePromptStashStore.getState().stashEntry(makeEntry({ id: "second-tab-new" }));
+      const afterFinalization = JSON.parse(
+        sharedStorage.getItem(PROMPT_STASH_STORAGE_KEY) as string,
+      );
+      expect(
+        afterFinalization.state.entries.find(
+          (entry: PromptStashEntry) => entry.id === "encoding-image",
+        )?.attachments,
+      ).toEqual(finalized);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.resetModules();
+    }
+  });
+
+  it.each(["restore", "take"] as const)(
+    "keeps a failed finalize after another tab stashes, then handles %s",
+    async (action) => {
+      const storage = createMemoryStorage();
+      vi.stubGlobal("localStorage", {
+        ...storage,
+        setItem: (key: string, value: string) => {
+          if (value.includes("rejected-image")) throw new Error("QuotaExceededError");
+          storage.setItem(key, value);
+        },
+      });
+      vi.resetModules();
+      try {
+        const { usePromptStashStore: store } = await import("./promptStashStore");
+        store.getState().stashEntry({ ...makeEntry({ id: "too-big" }), pendingImageCount: 1 });
+        vi.resetModules();
+        const { usePromptStashStore: otherTab } = await import("./promptStashStore");
+        const { attachments } = makeEntry({ id: "rejected-image", attachmentChars: 4 });
+        const images = { attachments, droppedImageNames: [], unreadableImageNames: [] };
+        expect(store.getState().finalizeEntryImages("too-big", images)).toEqual({
+          attached: true,
+          durable: false,
+        });
+        otherTab.getState().stashEntry(makeEntry({ id: "unrelated" }));
+
+        if (action === "take") {
+          otherTab.getState().takeEntry("too-big");
+          expect(store.getState().finalizeEntryImages("too-big", images)).toEqual({
+            attached: false,
+            durable: true,
+          });
+          expect(store.getState().takeEntry("too-big").entry).toBeNull();
+          return;
+        }
+
+        expect(store.getState().takeEntry("too-big").entry).toMatchObject({
+          attachments,
+          unreadableImageNames: [],
+        });
+      } finally {
+        vi.unstubAllGlobals();
+        vi.resetModules();
+      }
+    },
+  );
 });
 
 describe("prompt stash context records", () => {

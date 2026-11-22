@@ -237,8 +237,7 @@ export class PairingGrantStore extends Context.Service<
         readonly requestedScopes?: ReadonlyArray<AuthEnvironmentScope>;
         /** All scopes must be granted; requestedScopes only requires an overlap for OAuth. */
         readonly requiredScopes?: ReadonlyArray<AuthEnvironmentScope>;
-        /** Also spends a code issued for an agent sign-in at this level; others refuse them. */
-        readonly mcpApproval?: AuthMcpClientAccess;
+        readonly allowedSubject?: string;
       },
     ) => Effect.Effect<BootstrapGrant, BootstrapCredentialError>;
   }
@@ -260,6 +259,15 @@ type ConsumeResult =
     };
 
 const DEFAULT_ONE_TIME_TOKEN_TTL_MINUTES = Duration.minutes(5);
+
+const toPairingLink = (row: AuthPairingLinks.AuthPairingLinkRecord): AuthPairingLink => ({
+  id: row.id,
+  scopes: row.scopes,
+  subject: row.subject,
+  ...(row.label ? { label: row.label } : {}),
+  createdAt: row.createdAt,
+  expiresAt: row.expiresAt,
+});
 const DESKTOP_BOOTSTRAP_TTL_HOURS = Duration.hours(24);
 const DEV_STARTUP_TTL_HOURS = Duration.hours(24);
 const PAIRING_TOKEN_REJECTION_LIMIT =
@@ -349,25 +357,7 @@ const make = Effect.gen(function* () {
     function* () {
       const now = yield* DateTime.now;
       const rows = yield* pairingLinks.listActive({ now });
-
-      return rows.map((row) =>
-        row.label
-          ? ({
-              id: row.id,
-              scopes: row.scopes,
-              subject: row.subject,
-              label: row.label,
-              createdAt: row.createdAt,
-              expiresAt: row.expiresAt,
-            } satisfies AuthPairingLink)
-          : ({
-              id: row.id,
-              scopes: row.scopes,
-              subject: row.subject,
-              createdAt: row.createdAt,
-              expiresAt: row.expiresAt,
-            } satisfies AuthPairingLink),
-      );
+      return rows.map(toPairingLink);
     },
     Effect.mapError((cause) => new ActivePairingLinksLoadError({ cause })),
   );
@@ -441,8 +431,8 @@ const make = Effect.gen(function* () {
             }),
         ),
       );
-    // Approval codes stay out of the pairing links and QR codes that clients show.
-    if (!mcpApproval) {
+    // Purpose-bound codes stay out of the pairing links and QR codes that clients show.
+    if (!subject.startsWith(AuthPairingLinks.MCP_APPROVAL_SUBJECT_PREFIX)) {
       yield* emitUpsert({
         id,
         scopes: input?.scopes ?? AuthStandardClientScopes,
@@ -562,8 +552,10 @@ const make = Effect.gen(function* () {
       }
 
       // Only credentials in the issued pairing-code formats are case-insensitive.
-      const pairingCredential = PAIRING_TOKEN_PATTERN.test(credential)
-        ? credential.toUpperCase()
+      // People type codes in groups such as XXXX-XXXX-XXXX.
+      const compactCredential = credential.replace(/[\s-]/g, "");
+      const pairingCredential = PAIRING_TOKEN_PATTERN.test(compactCredential)
+        ? compactCredential.toUpperCase()
         : (parseMcpApprovalCode(credential)?.code ?? credential);
 
       // Check scopes in the UPDATE so rejected requests cannot spend one-time links.
@@ -575,11 +567,7 @@ const make = Effect.gen(function* () {
             ? { requestedScopes: input.requestedScopes }
             : {}),
           ...(input?.requiredScopes !== undefined ? { requiredScopes: input.requiredScopes } : {}),
-          ...(input?.mcpApproval
-            ? {
-                mcpApprovalSubject: `${AuthPairingLinks.MCP_APPROVAL_SUBJECT_PREFIX}${input.mcpApproval}`,
-              }
-            : {}),
+          ...(input?.allowedSubject ? { allowedSubject: input.allowedSubject } : {}),
           consumedAt: now,
           now,
         })

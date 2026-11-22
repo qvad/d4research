@@ -16,7 +16,7 @@ import { vcsEnvironment } from "../../state/vcs";
 import { useTerminalUiStateStore } from "../../terminalUiStateStore";
 import type { Thread } from "../../types";
 import { resolveVisibleWorktreeSetup, resolveWorktreeSetupProgress } from "../ChatView.logic";
-import { worktreeSetupAgentStarted } from "./MessagesTimeline.logic";
+import { worktreeSetupAgentStarted } from "@d4research/client-runtime/worktree-setup";
 
 /** Runs with a workspace preparation retry in flight, across ChatView instances. */
 const retryingWorkspacePreparationRunIds = new Set<RunId>();
@@ -112,7 +112,7 @@ export function useWorktreeSetup(input: {
   const worktreeSetup = resolveVisibleWorktreeSetup({
     live: liveSnapshot,
     recorded: null,
-    turnStarted: activityRun?.startedAt != null,
+    runs: serverProjection?.runs ?? [],
     followUpSent,
   });
   // Sends wait for agent handoff, not slow async setup scripts. Until the first

@@ -1,12 +1,11 @@
+import { chunkTerminalWrite, TERMINAL_WRITE_MAX_LENGTH } from "@d4research/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
   applyCtrlModifier,
-  chunkTerminalWrite,
   encodeTerminalPaste,
   hostPlatformFromOs,
   resolveModifiedTerminalInput,
-  TERMINAL_WRITE_MAX_LENGTH,
 } from "./terminalInput";
 
 const byte = (code: number) => String.fromCharCode(code);

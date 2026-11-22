@@ -261,6 +261,48 @@ it.layer(NodeServices.layer)("effect-codex-app-server client", (it) => {
       assert.notInclude(JSON.stringify(warnings), secret);
     }),
   );
+
+  it.effect("a dying notification handler does not retire a live app-server", () =>
+    Effect.gen(function* () {
+      const handle = yield* makeHandle();
+      const client = yield* Layer.build(CodexClient.layerChildProcess(handle)).pipe(
+        Effect.flatMap((context) =>
+          Effect.service(CodexClient.CodexAppServerClient).pipe(Effect.provide(context)),
+        ),
+      );
+      // Handler defects are isolated from the transport and from later handlers.
+      const handlerFailure = CodexError.CodexAppServerRequestError.internalError("Injected");
+      yield* client.handleServerNotification("error", () =>
+        Effect.fail(handlerFailure).pipe(Effect.orDie),
+      );
+      const notifications = yield* Ref.make(0);
+      yield* client.handleServerNotification("error", () =>
+        Ref.update(notifications, (n) => n + 1),
+      );
+      const response = yield* client.raw.request("mock/notifyThenRespond", {
+        notification: {
+          method: "error",
+          params: {
+            error: {
+              message: "Fatal error: application network permission was revoked",
+              codexErrorInfo: "other",
+              additionalDetails: null,
+            },
+            willRetry: false,
+            threadId: "thread-1",
+            turnId: "turn-1",
+          },
+        },
+      });
+
+      assert.deepEqual(response, { answered: true });
+      assert.equal(yield* Ref.get(notifications), 1);
+      assert.deepEqual(yield* client.raw.request("account/read", {}), {
+        account: { type: "chatgpt", email: "mock@example.com", planType: "plus" },
+        requiresOpenaiAuth: false,
+      });
+    }),
+  );
 });
 
 it.live("reports the stderr error when the process exits before initialize", () =>

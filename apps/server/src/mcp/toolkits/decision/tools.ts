@@ -5,7 +5,7 @@ import {
   McpDecisionRankResult,
   OrchestratorMcpFailure,
 } from "@d4research/contracts";
-import { Tool, Toolkit } from "effect/ai";
+import { McpSchema, Tool, Toolkit } from "effect/ai";
 import * as Schema from "effect/Schema";
 import * as DecisionService from "../../../decision/DecisionService.ts";
 import * as McpInvocationContext from "../../McpInvocationContext.ts";
@@ -25,7 +25,8 @@ export const DecisionToolkit = Toolkit.make(
     success: Schema.toCodecJson(McpDecisionEvaluateResult),
   })
     .annotate(Tool.Readonly, true)
-    .annotate(Tool.Destructive, false),
+    .annotate(Tool.Destructive, false)
+    .annotate(McpSchema.EnabledWhen, McpInvocationContext.hiddenFromOutsideClients),
   Tool.make("decision_rank", {
     ...shared,
     description:
@@ -34,5 +35,6 @@ export const DecisionToolkit = Toolkit.make(
     success: Schema.toCodecJson(McpDecisionRankResult),
   })
     .annotate(Tool.Readonly, true)
-    .annotate(Tool.Destructive, false),
+    .annotate(Tool.Destructive, false)
+    .annotate(McpSchema.EnabledWhen, McpInvocationContext.hiddenFromOutsideClients),
 );

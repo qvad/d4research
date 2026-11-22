@@ -5,6 +5,7 @@ import {
   normalizeBaseFontSize,
   resolveAppearance,
   resolveAppearancePreferences,
+  resolveComposerTextRole,
   resolveMarkdownFontSizes,
   resolveMobileCodeSurface,
   resolveNativeMarkdownTypography,
@@ -133,5 +134,15 @@ describe("appearancePreferences", () => {
       lineHeight: 32,
       headingFontSizes: [29, 26, 23, 21, 21, 21],
     });
+  });
+
+  it("scales the iOS composer text with the system text size", () => {
+    const body = { fontSize: 16, lineHeight: 23 };
+    expect(resolveComposerTextRole(body, 1, "ios")).toEqual(body);
+    expect(resolveComposerTextRole(body, 2.643, "ios")).toEqual({
+      fontSize: 16 * 2.643,
+      lineHeight: 23 * 2.643,
+    });
+    expect(resolveComposerTextRole(body, 2.643, "android")).toEqual(body);
   });
 });

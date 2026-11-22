@@ -1,3 +1,5 @@
+import { msg } from "gt-i18n";
+import { translatableDetail } from "../errors/translatable.ts";
 import type {
   AuthClientPresentationMetadata,
   ExecutionEnvironmentDescriptor,
@@ -137,6 +139,9 @@ const makePrimaryBroker = Effect.fn("clientRuntime.connection.broker.makePrimary
       const credential = yield* credentials
         .get(credentialConnectionId(host.connectionId))
         .pipe(Effect.flatMap(Effect.fromOption(() => credentialMissingError(host.connectionId))));
+      if (!isBearerCredential(credential)) {
+        return yield* credentialMissingError(host.connectionId);
+      }
       const socketUrl = yield* resolveRemoteWebSocketConnectionUrl({
         httpBaseUrl: target.httpBaseUrl,
         wsBaseUrl: target.wsBaseUrl,
@@ -196,7 +201,11 @@ const makeBearerBroker = Effect.fn("clientRuntime.connection.broker.makeBearer")
     if (!isBearerProfile(profile)) {
       return yield* new ConnectionBlockedError({
         reason: "configuration",
-        detail: `Connection profile ${target.connectionId} is not a bearer connection.`,
+        ...translatableDetail(
+          msg("Connection profile {connectionId} is not a bearer connection.", {
+            connectionId: target.connectionId,
+          }),
+        ),
       });
     }
     if (profile.environmentId !== target.environmentId) {
@@ -219,7 +228,7 @@ const makeBearerBroker = Effect.fn("clientRuntime.connection.broker.makeBearer")
         }),
       ),
     );
-    if (!isBearerCredential(credential)) {
+    if (credential._tag !== "BearerConnectionCredential") {
       return yield* credentialMissingError(target.connectionId);
     }
     const authorized = yield* remote.authorizeBearer({
@@ -252,7 +261,11 @@ const makeSshBroker = Effect.fn("clientRuntime.connection.broker.makeSsh")(funct
     if (!isSshProfile(profile)) {
       return yield* new ConnectionBlockedError({
         reason: "configuration",
-        detail: `Connection profile ${target.connectionId} is not an SSH connection.`,
+        ...translatableDetail(
+          msg("Connection profile {connectionId} is not an SSH connection.", {
+            connectionId: target.connectionId,
+          }),
+        ),
       });
     }
     if (profile.environmentId !== target.environmentId) {
@@ -375,6 +388,7 @@ export const make = Effect.gen(function* () {
     }
     return {
       ...prepared,
+      descriptor,
       socketUrl: appendOrchestrationProtocol(prepared.socketUrl),
     };
   });

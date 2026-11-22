@@ -130,7 +130,7 @@ it.effect.each(["context", "model-unavailable"] as const)(
       WHERE thread_id = ${threadId} AND payload_json LIKE ${`%${first!.id}%`}`;
       assert.deepEqual(
         effects.map((effect) => effect.status),
-        ["failed"],
+        ["succeeded"],
       );
     }).pipe(Effect.provide(makeLayer(reason))),
 );

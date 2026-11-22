@@ -1,3 +1,4 @@
+import { useGT } from "gt-react-native";
 import { useLayoutEffect, useState } from "react";
 import { View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -16,20 +17,17 @@ type SettingsDragHandleProps = {
 
 function createDragGesture(props: SettingsDragHandleProps) {
   let latest = props;
-  let translation = 0;
   const gesture = Gesture.Pan()
     .minDistance(0)
     .shouldCancelWhenOutside(false)
     .runOnJS(true)
     .onStart(() => {
-      translation = 0;
       latest.onStart();
     })
     .onUpdate((event) => {
-      translation = event.translationY;
       latest.onMove(event.translationY);
     })
-    .onFinalize((_, success) => latest.onEnd(translation, !success));
+    .onFinalize((event, success) => latest.onEnd(event.translationY, !success));
   return {
     gesture,
     update(next: SettingsDragHandleProps) {
@@ -39,6 +37,7 @@ function createDragGesture(props: SettingsDragHandleProps) {
 }
 
 export function SettingsDragHandle(props: SettingsDragHandleProps) {
+  const gt = useGT();
   const [controller] = useState(() => createDragGesture(props));
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep the mounted native gesture handlers on the latest committed callbacks.
   useLayoutEffect(() => controller.update(props), [controller, props]);
@@ -48,10 +47,10 @@ export function SettingsDragHandle(props: SettingsDragHandleProps) {
         collapsable={false}
         accessible
         accessibilityRole="adjustable"
-        accessibilityLabel={`Reorder ${props.title}`}
+        accessibilityLabel={gt("Reorder {item}", { item: props.title })}
         accessibilityActions={[
-          ...(props.canMoveUp ? [{ name: "decrement", label: "Move up" }] : []),
-          ...(props.canMoveDown ? [{ name: "increment", label: "Move down" }] : []),
+          ...(props.canMoveUp ? [{ name: "decrement", label: gt("Move up") }] : []),
+          ...(props.canMoveDown ? [{ name: "increment", label: gt("Move down") }] : []),
         ]}
         onAccessibilityAction={({ nativeEvent }) => {
           if (nativeEvent.actionName === "decrement" && props.canMoveUp) props.onStep("up");

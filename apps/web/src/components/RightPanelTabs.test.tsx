@@ -1,6 +1,6 @@
 import type { DesktopPreviewFavicon, PreviewSessionSnapshot } from "@d4research/contracts";
 import { DEFAULT_RESOLVED_KEYBINDINGS } from "@d4research/shared/keybindings";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup } from "../../test/renderToStaticMarkup";
 import { RightPanelTabs } from "./RightPanelTabs";
 import { EnvironmentId, type ThreadPullRequestLink } from "@d4research/contracts";
 import { describe, expect, it } from "vite-plus/test";
@@ -70,6 +70,7 @@ function overlay(
     canGoBack: false,
     canGoForward: false,
     loading: false,
+    navStatus: { _tag: "Idle" as const },
     zoomFactor: 1,
     pictureInPicture: false,
     colorScheme: "system" as const,

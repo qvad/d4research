@@ -2,6 +2,7 @@ import {
   MessageId,
   RuntimeRequestId,
   CheckpointId,
+  CheckpointRef,
   CheckpointScopeId,
   NodeId,
   PlanId,
@@ -12,6 +13,7 @@ import {
   ScheduledTaskId,
   ThreadId,
   TurnItemId,
+  type OrchestrationV2PlanArtifact,
   type OrchestrationV2ProjectedTurnItem,
   type OrchestrationV2ExecutionNode,
   type OrchestrationV2RunAttempt,
@@ -30,6 +32,7 @@ import {
   deriveRevertTurnCountByUserMessageId,
   derivePhase,
   findLatestProposedPlan,
+  findRevertCheckpoint,
   isLatestRunSettled,
   selectHandoffImageResources,
   selectMessageImageResources,
@@ -40,8 +43,29 @@ import {
   workEntryDisplayIndicatesToolFailure,
   workEntryIndicatesToolSuccess,
 } from "./session-logic";
-import { makeStreamingTimelineFixture, makeThreadProjectionFixture } from "./test-fixtures";
+import {
+  makeStreamingTimelineFixture,
+  makeStreamingWorkTimelineFixture,
+  makeThreadProjectionFixture,
+  withStreamedText,
+} from "./test-fixtures";
 import type { ChatMessage } from "./types";
+
+function streamingPlanArtifact(
+  fixture: ReturnType<typeof makeStreamingWorkTimelineFixture>,
+  markdown: string,
+  status: "active" | "superseded",
+): OrchestrationV2PlanArtifact {
+  return {
+    id: PlanId.make("live-plan"),
+    threadId: fixture.threadId,
+    runId: fixture.runId,
+    nodeId: NodeId.make("live-node"),
+    kind: "proposed_plan",
+    markdown,
+    status,
+  };
+}
 
 describe("V2 session presentation", () => {
   it("uses run status as the settlement boundary", () => {
@@ -276,8 +300,8 @@ describe("V2 session presentation", () => {
     }));
 
     const targets = deriveRevertTurnCountByUserMessageId({
-      threadStartCheckpointReady: true,
       timelineEntries,
+      threadStartCheckpointAvailable: true,
       checkpoints: [
         {
           runId,
@@ -293,6 +317,222 @@ describe("V2 session presentation", () => {
 
     expect([...targets]).toEqual([[turnStartMessageId, 0]]);
     expect(targets.has(steerMessageId)).toBe(false);
+  });
+
+  describe("revert targets after a rewind", () => {
+    const runId = (ordinal: number) => RunId.make(`run-${ordinal}`);
+    const turn = (ordinal: number): TimelineEntry[] =>
+      (["user", "assistant"] as const).map((role) => {
+        const id = MessageId.make(`${role}-${ordinal}`);
+        const createdAt = `2026-06-20T00:00:0${ordinal}.000Z`;
+        return {
+          id,
+          kind: "message",
+          createdAt,
+          message: {
+            id,
+            role,
+            text: role,
+            runId: runId(ordinal),
+            ...(role === "user" ? { inputIntent: "turn_start" as const } : {}),
+            streaming: false,
+            createdAt,
+            updatedAt: createdAt,
+          },
+        };
+      });
+    const checkpoint = (ordinal: number, status: "ready" | "missing" | "stale" = "ready") => ({
+      runId: runId(ordinal),
+      checkpointTurnCount: ordinal,
+      checkpointRef: `checkpoint-${ordinal}` as never,
+      status,
+      files: [],
+      assistantMessageId: MessageId.make(`assistant-${ordinal}`),
+      completedAt: "2026-06-20T00:00:09.000Z",
+    });
+    const targets = (
+      ordinals: ReadonlyArray<number>,
+      checkpoints: ReadonlyArray<ReturnType<typeof checkpoint>>,
+      options: { threadStartCheckpointAvailable?: boolean; unsettledRunId?: RunId } = {},
+    ) =>
+      Object.fromEntries(
+        deriveRevertTurnCountByUserMessageId({
+          timelineEntries: ordinals.flatMap(turn),
+          checkpoints,
+          threadStartCheckpointAvailable: options.threadStartCheckpointAvailable ?? true,
+          unsettledRunId: options.unsettledRunId ?? null,
+        }),
+      );
+
+    it("keeps rewound and stopped runs editable at the previous visible checkpoint", () => {
+      // Runs 1 and 3 were rewound; run 5 stopped without capturing a checkpoint.
+      expect(targets([2, 4, 5], [checkpoint(2), checkpoint(3, "stale"), checkpoint(4)])).toEqual({
+        "user-2": 0,
+        "user-4": 2,
+        "user-5": 4,
+      });
+      expect(targets([2], [checkpoint(1, "stale")])).toEqual({ "user-2": 0 });
+      // Without file snapshots, missing checkpoints still pin the conversation.
+      expect(targets([1, 2], [checkpoint(1, "missing"), checkpoint(2, "missing")])).toEqual({
+        "user-1": 0,
+        "user-2": 1,
+      });
+    });
+
+    it("preserves a notification-only wake run while ignoring inherited and unrelated work", () => {
+      const fixture = makeStreamingTimelineFixture();
+      const first = fixture.visibleTurnItems[0]!;
+      if (first.item.type !== "user_message") throw new Error("Expected a user message fixture.");
+      const notification = {
+        ...first,
+        item: {
+          ...first.item,
+          id: TurnItemId.make("wake-item"),
+          runId: runId(2),
+          type: "notification" as const,
+          source: { kind: "delegated_task" as const, taskIds: [NodeId.make("task-1")] },
+          outcome: "unknown" as const,
+          summary: "Delegated task finished",
+        },
+      };
+      const inherited = {
+        ...notification,
+        visibility: "inherited" as const,
+        sourceThreadId: ThreadId.make("parent-thread"),
+        sourceItemId: TurnItemId.make("inherited-wake"),
+        item: {
+          ...notification.item,
+          id: TurnItemId.make("inherited-wake"),
+          threadId: ThreadId.make("parent-thread"),
+          runId: runId(7),
+        },
+      };
+      const work: TimelineEntry = {
+        id: "background-work",
+        kind: "work",
+        createdAt: "2026-06-20T00:00:02.000Z",
+        entry: {
+          id: "background-work",
+          createdAt: "2026-06-20T00:00:02.000Z",
+          runId: runId(8),
+          itemType: "command_execution",
+          label: "Background work",
+          tone: "tool",
+        },
+      };
+
+      expect(
+        Object.fromEntries(
+          deriveRevertTurnCountByUserMessageId({
+            timelineEntries: [
+              ...turn(1),
+              ...deriveTimelineEntriesFromVisibleTurnItems({
+                visibleTurnItems: [notification, inherited],
+                optimisticMessages: [],
+              }),
+              work,
+              ...turn(3),
+            ],
+            checkpoints: [
+              checkpoint(1),
+              checkpoint(2),
+              checkpoint(3),
+              checkpoint(7),
+              checkpoint(8),
+            ],
+            threadStartCheckpointAvailable: true,
+          }),
+        ),
+      ).toEqual({ "user-1": 0, "user-3": 2 });
+    });
+
+    it("hides edit when the predecessor is unavailable or the run is unsettled", () => {
+      expect(targets([1, 2], [checkpoint(2)])).toEqual({ "user-1": 0 });
+      expect(targets([1, 2], [checkpoint(1, "stale"), checkpoint(2)])).toEqual({ "user-1": 0 });
+      // Earlier history is paged out, so the first loaded run's predecessor is unknown.
+      expect(
+        targets([4, 5], [checkpoint(4), checkpoint(5)], { threadStartCheckpointAvailable: false }),
+      ).toEqual({ "user-5": 4 });
+      expect(targets([1, 2], [checkpoint(1), checkpoint(2)], { unsettledRunId: runId(2) })).toEqual(
+        { "user-1": 0 },
+      );
+    });
+
+    it("can edit a cancelled run but cannot target its checkpoint without a provider turn", () => {
+      expect(
+        Object.fromEntries(
+          deriveRevertTurnCountByUserMessageId({
+            timelineEntries: [1, 2, 3].flatMap(turn),
+            checkpoints: [checkpoint(1), checkpoint(2), checkpoint(3)],
+            threadStartCheckpointAvailable: true,
+            availableRevertTurnCounts: new Set([0, 1]),
+          }),
+        ),
+      ).toEqual({ "user-1": 0, "user-2": 1 });
+    });
+
+    it("never rewinds to a tracked repository's checkpoint", () => {
+      const now = DateTime.makeUnsafe("2026-11-10T00:00:00.000Z");
+      const entry = (id: string, scope: string, ordinal: number, appRunOrdinal: number | null) => ({
+        id: CheckpointId.make(id),
+        threadId: ThreadId.make("thread"),
+        scopeId: CheckpointScopeId.make(scope),
+        runId: null,
+        nodeId: NodeId.make("node"),
+        parentCheckpointId: null,
+        ordinalWithinScope: ordinal,
+        appRunOrdinal,
+        ref: CheckpointRef.make(`refs/t3/${id}`),
+        status: "ready" as const,
+        files: [],
+        capturedAt: now,
+      });
+      const projection = {
+        checkpoints: [
+          entry("root-start", "root", 0, null),
+          entry("api-start", "api", 0, null),
+          entry("root-1", "root", 1, 1),
+        ],
+        checkpointScopes: [
+          {
+            id: CheckpointScopeId.make("api"),
+            threadId: ThreadId.make("thread"),
+            runId: null,
+            nodeId: NodeId.make("node"),
+            parentScopeId: CheckpointScopeId.make("root"),
+            providerThreadId: null,
+            kind: "manual" as const,
+            ordinalWithinParent: 1,
+            advancesAppRunCount: false,
+            cwd: "/work/api",
+            repositoryPath: "/work/api",
+            createdAt: now,
+          },
+        ],
+      };
+      expect(findRevertCheckpoint(projection, 0)?.id).toBe("root-start");
+      expect(findRevertCheckpoint(projection, 1)?.id).toBe("root-1");
+      expect(findRevertCheckpoint(null, 0)).toBeUndefined();
+    });
+
+    it("leaves inherited history uneditable and restores the first local run to thread start", () => {
+      const fixture = makeStreamingTimelineFixture();
+      const inheritedEntries = deriveTimelineEntriesFromVisibleTurnItems({
+        visibleTurnItems: fixture.visibleTurnItems
+          .filter(({ item }) => item.runId === fixture.historyRunId)
+          .map((item) => ({ ...item, visibility: "inherited" as const })),
+        optimisticMessages: [],
+      });
+      expect(
+        Object.fromEntries(
+          deriveRevertTurnCountByUserMessageId({
+            timelineEntries: [...inheritedEntries, ...turn(2)],
+            checkpoints: [{ ...checkpoint(7), runId: fixture.historyRunId }, checkpoint(2)],
+            threadStartCheckpointAvailable: true,
+          }),
+        ),
+      ).toEqual({ "user-2": 0 });
+    });
   });
 
   it("uses visible turn item order and keeps provider errors in the work log", () => {
@@ -1036,6 +1276,82 @@ describe("native provider presentation in the v2 timeline", () => {
     ).toBe("message");
   });
 
+  it("shows a late async answer that started a later run where that run begins", () => {
+    const requestId = RuntimeRequestId.make("late-question");
+    const inRun = (item: OrchestrationV2TurnItem, runId: string, ordinal: number) =>
+      visible({ ...item, runId: RunId.make(runId), ordinal });
+    const userMessage = (
+      id: string,
+      text: string,
+    ): Extract<OrchestrationV2TurnItem, { type: "user_message" }> => ({
+      ...base,
+      id: TurnItemId.make(id),
+      type: "user_message",
+      messageId: MessageId.make(id),
+      inputIntent: "queued_turn",
+      text,
+      createdBy: "user",
+      creationSource: "web",
+      attachments: [],
+    });
+    const assistantMessage = (id: string, text: string): OrchestrationV2TurnItem => ({
+      ...base,
+      id: TurnItemId.make(id),
+      type: "assistant_message",
+      messageId: MessageId.make(id),
+      text,
+      streaming: false,
+    });
+    const question = inRun(
+      {
+        ...base,
+        id: TurnItemId.make("late-question"),
+        type: "user_input_request",
+        requestId,
+        questions: [],
+        questionAnswer: { requestId, answers: { color: "Blue" }, attachmentsByQuestionId: {} },
+      },
+      "run-8",
+      8_000_070,
+    );
+    const answerMessageId = MessageId.make(`async-answer:${requestId}`);
+    const settledPrefix = [
+      question,
+      inRun(userMessage("queued", "Queued follow-up"), "run-9", 9_000_001),
+      inRun(assistantMessage("reply-9", "RUN 9 REPLY"), "run-9", 9_000_002),
+    ];
+    const lateRun = [
+      inRun(
+        {
+          ...userMessage(answerMessageId, "Which color?\nBlue"),
+          inputIntent: "steer",
+          creationSource: "server",
+        },
+        "run-10",
+        10_000_001,
+      ),
+      inRun(assistantMessage("reply-10", "RUN 10 ACKNOWLEDGED BLUE"), "run-10", 10_000_002),
+    ];
+    const input = { visibleTurnItems: [...settledPrefix, ...lateRun], optimisticMessages: [] };
+    const messageIds = (entries: ReadonlyArray<TimelineEntry>) =>
+      entries.flatMap((entry) => (entry.kind === "message" ? [entry.message.id] : []));
+    const expectedMessageIds = ["queued", "reply-9", answerMessageId, "reply-10"];
+
+    expect
+      .soft(messageIds(deriveTimelineEntriesFromVisibleTurnItems(input)), "full projection")
+      .toEqual(expectedMessageIds);
+    const previous = deriveTimelineEntriesFromVisibleTurnItemsWithState({
+      ...input,
+      visibleTurnItems: settledPrefix,
+    });
+    expect
+      .soft(
+        messageIds(deriveTimelineEntriesFromVisibleTurnItemsWithState(input, previous).entries),
+        "incremental projection",
+      )
+      .toEqual(expectedMessageIds);
+  });
+
   it("excludes checkpoint-only work from the timeline", () => {
     const message: OrchestrationV2TurnItem = {
       ...base,
@@ -1309,7 +1625,30 @@ describe("HTML renders in the timeline", () => {
     ]);
   });
 
-  it("hosts a captured MCP app in place, from any provider's tool", () => {
+  it("shows a sent message in place through the turn fold, and only once sent", () => {
+    const sentMessage = "Draft reply:\n\n> Thanks, Thursday works.";
+    const send = (
+      status: OrchestrationV2TurnItem["status"],
+      output?: unknown,
+    ): OrchestrationV2TurnItem => ({
+      ...base("render", 2),
+      status,
+      type: "dynamic_tool",
+      toolName: "mcp__t3-code__send_to_user",
+      input: { message: sentMessage },
+      ...(output === undefined ? {} : { output }),
+    });
+    const entries = turn(send("completed", { structuredContent: { sentMessage }, content: [] }));
+    expect(entries.find((entry) => entry.kind === "sent-message")).toMatchObject({
+      id: "render",
+      runId,
+      text: sentMessage,
+    });
+    expect(rowsFor(entries, false)).toEqual(["message", "turn-fold", "sent-message", "message"]);
+    expect(turn(send("running")).some((entry) => entry.kind === "sent-message")).toBe(false);
+  });
+
+  it("hosts a captured MCP app after its tool row, from any provider's tool", () => {
     const mcpApp = {
       attachmentId: "render-thread-app-html",
       server: "weather",
@@ -1321,11 +1660,56 @@ describe("HTML renders in the timeline", () => {
       call.type === "dynamic_tool" ? { ...call, toolName: "weather.get_weather" } : call,
     );
     expect(entries.find((entry) => entry.kind === "mcp-app")).toMatchObject({
-      id: "render",
+      id: "mcp-app:render",
       itemId: "render",
       mcpApp,
     });
     expect(rowsFor(entries, false)).toEqual(["message", "turn-fold", "mcp-app", "message"]);
+  });
+
+  it("keeps an MCP app call's tool row and output beside its app card", () => {
+    const mcpApp = {
+      attachmentId: "render-thread-app-html",
+      server: "repro",
+      tool: "aggregate_rum_events",
+      resourceUri: "ui://repro/dataviz",
+    };
+    const result = { content: [{ type: "text", text: "Notice\nview\tcount\n/home\t42" }] };
+    const call = renderCall("completed", { t3McpApp: mcpApp, result });
+    const entries = turn(
+      call.type === "dynamic_tool" ? { ...call, toolName: "repro.aggregate_rum_events" } : call,
+    );
+    expect(entries.find((entry) => entry.kind === "mcp-app")).toMatchObject({ mcpApp });
+    const toolRows = entries.flatMap((entry) =>
+      entry.kind === "work" && entry.entry.toolTitle === "repro.aggregate_rum_events"
+        ? [entry.entry]
+        : [],
+    );
+    expect(toolRows).toMatchObject([{ toolData: { output: { result } } }]);
+  });
+
+  it("drops an MCP app card when an update removes the call's app", () => {
+    const mcpApp = {
+      attachmentId: "render-thread-app-html",
+      server: "repro",
+      tool: "aggregate_rum_events",
+      resourceUri: "ui://repro/dataviz",
+    };
+    const call = (output: unknown) => ({
+      ...renderCall("completed", output),
+      toolName: "repro.aggregate_rum_events",
+    });
+    const result = { content: [{ type: "text", text: "rows" }] };
+    const input = (output: unknown) => ({
+      visibleTurnItems: [visible(command("before", 1)), visible(call(output))],
+      optimisticMessages: [],
+    });
+    const previous = deriveTimelineEntriesFromVisibleTurnItemsWithState(
+      input({ t3McpApp: mcpApp, result }),
+    );
+    const nextInput = input({ result });
+    const next = deriveTimelineEntriesFromVisibleTurnItemsWithState(nextInput, previous);
+    expect(next.entries).toEqual(deriveTimelineEntriesFromVisibleTurnItems(nextInput));
   });
 
   it("keeps a render visible when its superseded attempt folds", () => {
@@ -1636,6 +2020,66 @@ describe("incremental v2 timeline entries", () => {
       "live-work",
       "live-assistant",
     ]);
+  });
+
+  it("keeps every other entry when streaming plan text changes", () => {
+    const fixture = makeStreamingWorkTimelineFixture("proposed_plan");
+    // Codex emits `plan.updated` with each delta, so the artifact array is rebuilt too.
+    const plans = (markdown: string) => [streamingPlanArtifact(fixture, markdown, "active")];
+    let input = {
+      visibleTurnItems: withStreamedText(
+        fixture.visibleTurnItems,
+        fixture.streamingItemId,
+        "Let",
+        fixture.time(20),
+      ),
+      optimisticMessages: [],
+      plans: plans("Let"),
+    };
+    let projection = deriveTimelineEntriesFromVisibleTurnItemsWithState(input);
+    for (const [step, text] of ["Let me", "Let me check the tests"].entries()) {
+      input = {
+        visibleTurnItems: withStreamedText(
+          input.visibleTurnItems,
+          fixture.streamingItemId,
+          text,
+          fixture.time(21 + step),
+        ),
+        optimisticMessages: [],
+        plans: plans(text),
+      };
+      const previous = projection;
+      projection = deriveTimelineEntriesFromVisibleTurnItemsWithState(input, previous);
+      expect(projection.entries).toEqual(deriveTimelineEntriesFromVisibleTurnItems(input));
+      for (const [index, entry] of previous.entries.entries()) {
+        if (entry.id !== fixture.streamingItemId) expect(projection.entries[index]).toBe(entry);
+      }
+    }
+  });
+
+  it("rebuilds the plan entry when only its artifact status changes", () => {
+    const fixture = makeStreamingWorkTimelineFixture("proposed_plan");
+    const visibleTurnItems = withStreamedText(
+      fixture.visibleTurnItems,
+      fixture.streamingItemId,
+      "Plan",
+      fixture.time(20),
+    );
+    const previous = deriveTimelineEntriesFromVisibleTurnItemsWithState({
+      visibleTurnItems,
+      optimisticMessages: [],
+      plans: [streamingPlanArtifact(fixture, "Plan", "active")],
+    });
+    const input = {
+      visibleTurnItems,
+      optimisticMessages: [],
+      plans: [streamingPlanArtifact(fixture, "Plan", "superseded")],
+    };
+    const next = deriveTimelineEntriesFromVisibleTurnItemsWithState(input, previous);
+    expect(next.entries).toEqual(deriveTimelineEntriesFromVisibleTurnItems(input));
+    expect(next.entries.find((entry) => entry.kind === "proposed-plan")).toMatchObject({
+      proposedPlan: { status: "superseded" },
+    });
   });
 });
 

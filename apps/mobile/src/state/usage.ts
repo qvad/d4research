@@ -11,8 +11,10 @@ import { resolveUsageAccess } from "@d4research/client-runtime/state/usage-acces
 import { mergeUsage, type EnvironmentUsage, type MergedUsage } from "@d4research/shared/usageMerge";
 import * as Option from "effect/Option";
 import { AsyncResult, Atom } from "effect/reactivity";
+import { msg, useMessages } from "gt-react-native";
 import { useCallback, useMemo } from "react";
 
+import { keepMarked } from "../i18n/messages";
 import { appAtomRegistry } from "./atom-registry";
 import { environmentPresentations } from "./presentation";
 import { serverEnvironment } from "./server";
@@ -40,11 +42,14 @@ const usageByWindowAtom = Atom.family((windowKey: string) =>
     const statuses: EnvironmentUsageStatus[] = [];
     for (const [environmentId, presentation] of presentations) {
       const sessionResult = get(environmentSession.sessionStateAtom(environmentId));
-      const access = resolveUsageAccess({
-        connectionPhase: presentation.connection.phase,
-        session: Option.getOrNull(AsyncResult.value(sessionResult)),
-        hasSessionError: sessionResult._tag === "Failure",
-      });
+      const access = resolveUsageAccess(
+        {
+          connectionPhase: presentation.connection.phase,
+          session: Option.getOrNull(AsyncResult.value(sessionResult)),
+          hasSessionError: sessionResult._tag === "Failure",
+        },
+        keepMarked,
+      );
       if (!access.canReadDiagnostics) {
         statuses.push({
           environmentId,
@@ -71,13 +76,26 @@ const usageByWindowAtom = Atom.family((windowKey: string) =>
         isPending: result.waiting,
         isConnected: presentation.connection.phase === "connected",
         canReadDiagnostics: true,
-        error: result._tag === "Failure" ? "This environment could not report usage." : null,
+        error: result._tag === "Failure" ? msg("This environment could not report usage.") : null,
         summary,
       });
     }
     return statuses;
   }).pipe(Atom.withLabel(`mobile-usage:window:${windowKey}`)),
 );
+
+/** Every environment usage can come from, without asking any of them for usage. */
+const usageEnvironmentsAtom = Atom.make((get): readonly EnvironmentUsageStatus[] =>
+  [...get(environmentPresentations.presentationsAtom)].map(([environmentId, presentation]) => ({
+    environmentId,
+    label: presentation.entry.target.label,
+    isPending: true,
+    isConnected: presentation.connection.phase === "connected",
+    canReadDiagnostics: false,
+    error: null,
+    summary: null,
+  })),
+).pipe(Atom.withLabel("mobile-usage:environments"));
 
 export interface UsageView {
   readonly merged: MergedUsage;
@@ -93,6 +111,8 @@ export interface UsageView {
 export function useUsage(
   input: UsageSummaryInput,
   selectedEnvironmentIds: ReadonlySet<EnvironmentId> | null = null,
+  /** Off, it lists the environments without loading their usage. */
+  load = true,
 ): UsageView {
   const windowKey = useMemo(
     () =>
@@ -113,8 +133,19 @@ export function useUsage(
       input.untilTime,
     ],
   );
-  const atom = usageByWindowAtom(windowKey);
-  const environments = useAtomValue(atom);
+  const messages = useMessages();
+  const markedEnvironments = useAtomValue(
+    load ? usageByWindowAtom(windowKey) : usageEnvironmentsAtom,
+  );
+  const environments = useMemo(
+    () =>
+      markedEnvironments.map((environment) =>
+        environment.error === null
+          ? environment
+          : { ...environment, error: messages(environment.error) },
+      ),
+    [markedEnvironments, messages],
+  );
   const selectedEnvironments = useMemo(
     () =>
       selectedEnvironmentIds === null

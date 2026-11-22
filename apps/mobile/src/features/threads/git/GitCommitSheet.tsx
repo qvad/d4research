@@ -1,15 +1,19 @@
+import { FitSheet } from "../../../components/ui/FitSheet";
 import { SheetHeader } from "../../../components/ui/SheetHeader";
 import { useNavigation, type StaticScreenProps } from "@react-navigation/native";
+import { useGT } from "gt-react-native";
 import { useCallback, useMemo, useState } from "react";
-import { Platform, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 import { formatDiffCount } from "@d4research/client-runtime/diff-count";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ScreenContent } from "../../../components/ui/ScreenContent";
 import { SymbolView } from "../../../components/ui/AppSymbol";
 import { AppText as Text, AppTextInput as TextInput } from "../../../components/ui/AppText";
 import { cn } from "../../../lib/cn";
 import { useEnvironmentQuery } from "../../../state/query";
+import {
+  gitRepositoryTargetFromRoute,
+  type GitRepositoryRouteParams,
+} from "../../../state/thread-git-target";
 import { useThreadSelection } from "../../../state/use-thread-selection";
 import { useSelectedThreadGitActions } from "../../../state/use-selected-thread-git-actions";
 import { useSelectedThreadGitState } from "../../../state/use-selected-thread-git-state";
@@ -17,20 +21,23 @@ import { useSelectedThreadWorktree } from "../../../state/use-selected-thread-wo
 import { vcsEnvironment } from "../../../state/vcs";
 import { SheetActionButton } from "./gitSheetComponents";
 
-type GitCommitSheetProps = StaticScreenProps<{
-  readonly environmentId: string;
-  readonly threadId: string;
-}>;
+type GitCommitSheetProps = StaticScreenProps<
+  {
+    readonly environmentId: string;
+    readonly threadId: string;
+  } & GitRepositoryRouteParams
+>;
 
-export function GitCommitSheet(_props: GitCommitSheetProps) {
+export function GitCommitSheet(props: GitCommitSheetProps) {
+  const repository = gitRepositoryTargetFromRoute(props.route.params);
+  const gt = useGT();
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
   const { selectedThread } = useThreadSelection();
-  const { selectedThreadCwd } = useSelectedThreadWorktree();
-  const gitState = useSelectedThreadGitState();
-  const gitActions = useSelectedThreadGitActions();
-  const { canWriteSourceControl, canChangeThreadBranch } = gitActions;
+  const threadWorktree = useSelectedThreadWorktree();
+  const selectedThreadCwd = repository?.cwd ?? threadWorktree.selectedThreadCwd;
+  const gitState = useSelectedThreadGitState(repository);
+  const gitActions = useSelectedThreadGitActions(repository);
+  const { canWriteSourceControl, canCreateFeatureBranch } = gitActions;
 
   const gitStatus = useEnvironmentQuery(
     selectedThread !== null && selectedThreadCwd !== null
@@ -61,7 +68,7 @@ export function GitCommitSheet(_props: GitCommitSheetProps) {
 
   const runCommitAction = useCallback(
     async (featureBranch: boolean) => {
-      if (!canWriteSourceControl || (featureBranch && !canChangeThreadBranch)) return;
+      if (!canWriteSourceControl || (featureBranch && !canCreateFeatureBranch)) return;
       const commitMessage = dialogCommitMessage.trim();
       navigation.goBack();
       await gitActions.onRunSelectedThreadGitAction({
@@ -74,7 +81,7 @@ export function GitCommitSheet(_props: GitCommitSheetProps) {
     [
       allSelected,
       canWriteSourceControl,
-      canChangeThreadBranch,
+      canCreateFeatureBranch,
       dialogCommitMessage,
       gitActions,
       navigation,
@@ -82,234 +89,211 @@ export function GitCommitSheet(_props: GitCommitSheetProps) {
     ],
   );
 
-  const android = Platform.OS === "android";
-  const header = (
-    <SheetHeader
-      title="Commit changes"
-      subtitle={gitStatus.data?.refName ?? "(detached HEAD)"}
-      onCancel={() => navigation.goBack()}
-      accessibilityLabel="Cancel commit"
-    />
-  );
-
   return (
-    // Material sheet drags follow the first nested-scrolling native view, and the inline
-    // header's Compose button is one, so Android renders content first and reverses the column.
-    <View
-      collapsable={false}
-      className="bg-sheet ios:flex-1 android:flex-col-reverse"
-      style={android ? { maxHeight: windowHeight * 0.92 } : undefined}
+    <FitSheet
+      header={
+        <SheetHeader
+          title={gt("Commit changes")}
+          subtitle={[repository?.name, gitStatus.data?.refName ?? gt("(detached HEAD)")]
+            .filter(Boolean)
+            .join(" · ")}
+          onCancel={() => navigation.goBack()}
+          accessibilityLabel={gt("Cancel commit")}
+        />
+      }
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      automaticallyAdjustKeyboardInsets
+      contentContainerClassName="px-5 pt-4 gap-5"
     >
-      <ScreenContent fitToContents>
-        <ScrollView
-          nestedScrollEnabled
-          contentInsetAdjustmentBehavior="automatic"
-          keyboardDismissMode="on-drag"
-          automaticallyAdjustKeyboardInsets
-          className="android:shrink android:grow-0 ios:flex-1"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentInset={{ bottom: Math.max(insets.bottom, 18) + 18 }}
-          contentContainerClassName="android:gap-2 android:p-2 ios:gap-4 ios:px-5 ios:pt-2"
-          contentContainerStyle={
-            Platform.OS === "android"
-              ? { paddingBottom: Math.max(insets.bottom, 18) + 18 }
-              : undefined
-          }
-        >
-          <View className="gap-3 bg-card p-4 android:rounded-[20px] ios:rounded-[22px] ios:border ios:border-border">
-            <View className="android:gap-1 ios:flex-row ios:items-center ios:justify-between ios:gap-3">
-              <Text className="text-foreground-muted text-sm font-medium">Branch</Text>
-              <Text className="text-foreground text-base android:font-t3-medium ios:font-t3-bold">
-                {gitStatus.data?.refName ?? "(detached HEAD)"}
+      <View className="gap-3 bg-card p-4 android:rounded-[20px] ios:rounded-[22px] ios:border ios:border-border">
+        <View className="android:gap-1 ios:flex-row ios:items-center ios:justify-between ios:gap-3">
+          <Text className="text-foreground-muted text-sm font-medium">Branch</Text>
+          <Text className="text-foreground text-base android:font-t3-medium ios:font-t3-bold">
+            {gitStatus.data?.refName ?? "(detached HEAD)"}
+          </Text>
+        </View>
+        {isDefaultRef ? (
+          <Text className="text-xs leading-normal text-warning-foreground">
+            Warning: this is the default branch.
+          </Text>
+        ) : null}
+      </View>
+
+      <View className="gap-3 bg-card p-4 android:rounded-[20px] ios:rounded-[22px] ios:border ios:border-border">
+        <View className="flex-row items-center justify-between gap-3">
+          <View className="gap-1">
+            <Text className="text-foreground text-base android:font-t3-medium ios:font-t3-bold">
+              Files
+            </Text>
+            <Text className="text-foreground-muted text-xs leading-normal">
+              {selectedFiles.length} selected · +{formatDiffCount(selectedInsertions)} / -
+              {formatDiffCount(selectedDeletions)}
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-2">
+            {allFiles.length > 0 && isEditingFiles ? (
+              <Pressable
+                className="rounded-full px-3 android:min-h-12 android:justify-center android:active:bg-subtle ios:bg-subtle ios:py-2"
+                onPress={() =>
+                  setExcludedFiles(
+                    allSelected ? new Set(allFiles.map((file) => file.path)) : new Set(),
+                  )
+                }
+              >
+                <Text className="android:text-primary-text android:text-sm android:font-t3-medium ios:text-foreground ios:text-2xs ios:font-t3-bold ios:uppercase">
+                  {allSelected ? "Deselect all" : "Select all"}
+                </Text>
+              </Pressable>
+            ) : null}
+            <Pressable
+              className="rounded-full px-3 android:min-h-12 android:justify-center android:active:bg-subtle ios:bg-subtle ios:py-2"
+              onPress={() => setIsEditingFiles((current) => !current)}
+            >
+              <Text className="android:text-primary-text android:text-sm android:font-t3-medium ios:text-foreground ios:text-2xs ios:font-t3-bold ios:uppercase">
+                {isEditingFiles ? "Done" : "Edit"}
               </Text>
-            </View>
-            {isDefaultRef ? (
-              <Text className="text-xs leading-normal text-warning-foreground">
-                Warning: this is the default branch.
+            </Pressable>
+          </View>
+        </View>
+
+        {allFiles.length === 0 ? (
+          <Text className="text-foreground-secondary text-sm leading-normal">
+            No changed files are available to commit.
+          </Text>
+        ) : !isEditingFiles ? (
+          <View className="gap-2">
+            {selectedFilePreview.map((file) => (
+              <View key={file.path} className="flex-row items-center justify-between gap-3">
+                <Text className="text-foreground flex-1 text-sm font-medium" numberOfLines={1}>
+                  {file.path}
+                </Text>
+                <Text className="text-xs font-t3-bold text-adaptive-emerald-700-300">
+                  +{formatDiffCount(file.insertions)}
+                </Text>
+                <Text className="text-xs font-t3-bold text-adaptive-rose-700-300">
+                  -{formatDiffCount(file.deletions)}
+                </Text>
+              </View>
+            ))}
+            {selectedFiles.length > selectedFilePreview.length ? (
+              <Text className="text-foreground-muted text-xs leading-snug">
+                +{selectedFiles.length - selectedFilePreview.length} more files
               </Text>
             ) : null}
           </View>
-
-          <View className="gap-3 bg-card p-4 android:rounded-[20px] ios:rounded-[22px] ios:border ios:border-border">
-            <View className="flex-row items-center justify-between gap-3">
-              <View className="gap-1">
-                <Text className="text-foreground text-base android:font-t3-medium ios:font-t3-bold">
-                  Files
-                </Text>
-                <Text className="text-foreground-muted text-xs leading-normal">
-                  {selectedFiles.length} selected · +{formatDiffCount(selectedInsertions)} / -
-                  {formatDiffCount(selectedDeletions)}
-                </Text>
-              </View>
-              <View className="flex-row items-center gap-2">
-                {allFiles.length > 0 && isEditingFiles ? (
-                  <Pressable
-                    className="rounded-full px-3 android:min-h-12 android:justify-center android:active:bg-subtle ios:bg-subtle ios:py-2"
-                    onPress={() =>
-                      setExcludedFiles(
-                        allSelected ? new Set(allFiles.map((file) => file.path)) : new Set(),
-                      )
-                    }
-                  >
-                    <Text className="android:text-primary-text android:text-sm android:font-t3-medium ios:text-foreground ios:text-2xs ios:font-t3-bold ios:uppercase">
-                      {allSelected ? "Deselect all" : "Select all"}
-                    </Text>
-                  </Pressable>
-                ) : null}
+        ) : (
+          <View className="gap-2">
+            {allFiles.map((file) => {
+              const included = !excludedFiles.has(file.path);
+              return (
                 <Pressable
-                  className="rounded-full px-3 android:min-h-12 android:justify-center android:active:bg-subtle ios:bg-subtle ios:py-2"
-                  onPress={() => setIsEditingFiles((current) => !current)}
+                  key={file.path}
+                  className={cn(
+                    "px-4 py-3 android:rounded-xl ios:rounded-[18px] ios:border",
+                    included ? "android:bg-subtle ios:border-border" : "ios:border-border-subtle",
+                  )}
+                  accessibilityRole="checkbox"
+                  accessibilityLabel={file.path}
+                  accessibilityState={{ checked: included }}
+                  onPress={() => {
+                    setExcludedFiles((current) => {
+                      const next = new Set(current);
+                      if (next.has(file.path)) {
+                        next.delete(file.path);
+                      } else {
+                        next.add(file.path);
+                      }
+                      return next;
+                    });
+                  }}
                 >
-                  <Text className="android:text-primary-text android:text-sm android:font-t3-medium ios:text-foreground ios:text-2xs ios:font-t3-bold ios:uppercase">
-                    {isEditingFiles ? "Done" : "Edit"}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-
-            {allFiles.length === 0 ? (
-              <Text className="text-foreground-secondary text-sm leading-normal">
-                No changed files are available to commit.
-              </Text>
-            ) : !isEditingFiles ? (
-              <View className="gap-2">
-                {selectedFilePreview.map((file) => (
-                  <View key={file.path} className="flex-row items-center justify-between gap-3">
-                    <Text className="text-foreground flex-1 text-sm font-medium" numberOfLines={1}>
-                      {file.path}
-                    </Text>
-                    <Text className="text-xs font-t3-bold text-adaptive-emerald-700-300">
-                      +{formatDiffCount(file.insertions)}
-                    </Text>
-                    <Text className="text-xs font-t3-bold text-adaptive-rose-700-300">
-                      -{formatDiffCount(file.deletions)}
-                    </Text>
-                  </View>
-                ))}
-                {selectedFiles.length > selectedFilePreview.length ? (
-                  <Text className="text-foreground-muted text-xs leading-snug">
-                    +{selectedFiles.length - selectedFilePreview.length} more files
-                  </Text>
-                ) : null}
-              </View>
-            ) : (
-              <View className="gap-2">
-                {allFiles.map((file) => {
-                  const included = !excludedFiles.has(file.path);
-                  return (
-                    <Pressable
-                      key={file.path}
-                      className={cn(
-                        "px-4 py-3 android:rounded-xl ios:rounded-[18px] ios:border",
-                        included
-                          ? "android:bg-subtle ios:border-border"
-                          : "ios:border-border-subtle",
-                      )}
-                      accessibilityRole="checkbox"
-                      accessibilityLabel={file.path}
-                      accessibilityState={{ checked: included }}
-                      onPress={() => {
-                        setExcludedFiles((current) => {
-                          const next = new Set(current);
-                          if (next.has(file.path)) {
-                            next.delete(file.path);
-                          } else {
-                            next.add(file.path);
-                          }
-                          return next;
-                        });
-                      }}
-                    >
-                      {Platform.OS !== "android" ? (
-                        <View
-                          className={`absolute inset-0 rounded-[18px] ${included ? "bg-card" : "bg-subtle"}`}
-                        />
-                      ) : null}
-                      <View className="flex-row items-start justify-between gap-3">
-                        {Platform.OS === "android" ? (
-                          <View
-                            className={cn(
-                              "mt-0.5 size-5 items-center justify-center rounded-sm",
-                              included ? "bg-primary" : "border border-input-border",
-                            )}
-                          >
-                            {included ? (
-                              <SymbolView
-                                name="checkmark"
-                                size={16}
-                                tintColorClassName="accent-primary-foreground"
-                                type="monochrome"
-                              />
-                            ) : null}
-                          </View>
+                  {Platform.OS !== "android" ? (
+                    <View
+                      className={`absolute inset-0 rounded-[18px] ${included ? "bg-card" : "bg-subtle"}`}
+                    />
+                  ) : null}
+                  <View className="flex-row items-start justify-between gap-3">
+                    {Platform.OS === "android" ? (
+                      <View
+                        className={cn(
+                          "mt-0.5 size-5 items-center justify-center rounded-sm",
+                          included ? "bg-primary" : "border border-input-border",
+                        )}
+                      >
+                        {included ? (
+                          <SymbolView
+                            name="checkmark"
+                            size={16}
+                            tintColorClassName="accent-primary-foreground"
+                            type="monochrome"
+                          />
                         ) : null}
-                        <View className="flex-1 gap-1">
-                          <Text
-                            selectable
-                            className={`text-sm font-t3-bold ${included ? "text-foreground" : "text-foreground-muted"}`}
-                          >
-                            {file.path}
-                          </Text>
-                          {!included ? (
-                            <Text className="text-foreground-muted text-2xs leading-normal">
-                              Excluded from this commit
-                            </Text>
-                          ) : null}
-                        </View>
-                        <View className="items-end gap-1">
-                          <Text className="text-xs font-t3-bold text-adaptive-emerald-700-300">
-                            +{formatDiffCount(file.insertions)}
-                          </Text>
-                          <Text className="text-xs font-t3-bold text-adaptive-rose-700-300">
-                            -{formatDiffCount(file.deletions)}
-                          </Text>
-                        </View>
                       </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
+                    ) : null}
+                    <View className="flex-1 gap-1">
+                      <Text
+                        selectable
+                        className={`text-sm font-t3-bold ${included ? "text-foreground" : "text-foreground-muted"}`}
+                      >
+                        {file.path}
+                      </Text>
+                      {!included ? (
+                        <Text className="text-foreground-muted text-2xs leading-normal">
+                          Excluded from this commit
+                        </Text>
+                      ) : null}
+                    </View>
+                    <View className="items-end gap-1">
+                      <Text className="text-xs font-t3-bold text-adaptive-emerald-700-300">
+                        +{formatDiffCount(file.insertions)}
+                      </Text>
+                      <Text className="text-xs font-t3-bold text-adaptive-rose-700-300">
+                        -{formatDiffCount(file.deletions)}
+                      </Text>
+                    </View>
+                  </View>
+                </Pressable>
+              );
+            })}
           </View>
+        )}
+      </View>
 
-          <View className="android:gap-3 android:rounded-[20px] android:bg-card android:p-4 ios:gap-2">
-            <Text className="text-foreground android:text-base android:font-t3-medium ios:text-sm ios:font-t3-bold">
-              Commit message
-            </Text>
-            <TextInput
-              multiline
-              accessibilityLabel="Commit message"
-              value={dialogCommitMessage}
-              onChangeText={setDialogCommitMessage}
-              placeholder="Leave empty to auto-generate"
-              textAlignVertical="top"
-              className="min-h-[128px] px-4 py-3.5 android:rounded-xl android:bg-sheet-solid ios:rounded-[20px]"
-            />
-          </View>
+      <View className="android:gap-3 android:rounded-[20px] android:bg-card android:p-4 ios:gap-2">
+        <Text className="text-foreground android:text-base android:font-t3-medium ios:text-sm ios:font-t3-bold">
+          Commit message
+        </Text>
+        <TextInput
+          multiline
+          accessibilityLabel={gt("Commit message")}
+          value={dialogCommitMessage}
+          onChangeText={setDialogCommitMessage}
+          placeholder={gt("Leave empty to auto-generate")}
+          textAlignVertical="top"
+          className="min-h-[128px] px-4 py-3.5 android:rounded-xl android:bg-sheet-solid ios:rounded-[20px]"
+        />
+      </View>
 
-          <View className="android:gap-2 ios:flex-row ios:gap-3">
-            <View className="ios:flex-1">
-              <SheetActionButton
-                icon="arrow.branch"
-                label="Commit on new branch"
-                disabled={!canWriteSourceControl || !canChangeThreadBranch || noneSelected || busy}
-                onPress={() => void runCommitAction(true)}
-              />
-            </View>
-            <View className="ios:flex-1">
-              <SheetActionButton
-                icon="checkmark.circle"
-                label="Commit"
-                tone="primary"
-                disabled={!canWriteSourceControl || noneSelected || busy}
-                onPress={() => void runCommitAction(false)}
-              />
-            </View>
-          </View>
-        </ScrollView>
-      </ScreenContent>
-      {header}
-    </View>
+      <View className="android:gap-2 ios:flex-row ios:gap-3">
+        <View className="ios:flex-1">
+          <SheetActionButton
+            icon="arrow.branch"
+            label={gt("Commit on new branch")}
+            disabled={!canWriteSourceControl || !canCreateFeatureBranch || noneSelected || busy}
+            onPress={() => void runCommitAction(true)}
+          />
+        </View>
+        <View className="ios:flex-1">
+          <SheetActionButton
+            icon="checkmark.circle"
+            label={gt("Commit")}
+            tone="primary"
+            disabled={!canWriteSourceControl || noneSelected || busy}
+            onPress={() => void runCommitAction(false)}
+          />
+        </View>
+      </View>
+    </FitSheet>
   );
 }

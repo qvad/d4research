@@ -27,7 +27,10 @@ import type * as EffectAcpSchema from "effect-acp/compat";
 import type * as AcpSessionRuntime from "@d4research/provider-acp/server/AcpSessionRuntime";
 import { parseSessionModeState } from "@d4research/provider-acp/server/runtimeModel";
 import { acpProviderOptionDescriptors } from "@d4research/provider-acp/server/sessionConfig";
-import { makeManagedServerProvider } from "@d4research/provider-core/server/managedProvider";
+import {
+  DeferringFailedCheck,
+  makeManagedServerProvider,
+} from "@d4research/provider-core/server/managedProvider";
 import {
   makeManualOnlyProviderMaintenanceCapabilities,
   type ProviderMaintenanceCapabilities,
@@ -48,12 +51,9 @@ const SIGN_IN_MESSAGE = "Sign in with Google to use Antigravity.";
 const AUTH_UNCHECKED_MESSAGE =
   "Antigravity is installed. Google account access is not checked yet.";
 // Set while a finished quota read republishes, so that health check does not read again.
-const PublishingUsage = Context.Reference<boolean>(
-  "d4research/provider/AntigravityPublishingUsage",
-  {
-    defaultValue: () => false,
-  },
-);
+const PublishingUsage = Context.Reference<boolean>("d4research/provider/AntigravityPublishingUsage", {
+  defaultValue: () => false,
+});
 
 type SessionSetupResult = Pick<
   AcpSessionRuntime.AcpSessionRuntimeStartResult["sessionSetupResult"],
@@ -318,7 +318,7 @@ export const makeAntigravityProvider = Effect.fn("makeAntigravityProvider")(func
     const supportsTextGeneration =
       initialized !== undefined ? yield* options.supportsTextGeneration : false;
     const updatedAt = DateTime.formatIso(yield* DateTime.now);
-    const next = yield* SubscriptionRef.updateAndGet(metadata, (state) => {
+    const applyCheck = (state: AntigravityProviderState) => {
       if (state.authRevision !== before.authRevision) return state;
       const { message: _previousMessage, ...draft } = state.draft;
       const authenticated = draft.auth.status === "authenticated";
@@ -357,6 +357,13 @@ export const makeAntigravityProvider = Effect.fn("makeAntigravityProvider")(func
           ...(message ? { message } : {}),
         },
       } satisfies AntigravityProviderState;
+    };
+    // This state is published as it changes, so a failure the managed provider discards stays out.
+    const deferFailure = errorMessage !== undefined && (yield* DeferringFailedCheck);
+    const next = yield* SubscriptionRef.modifySome(metadata, (state) => {
+      const checked = applyCheck(state);
+      const stored = deferFailure && state.draft.status === "ready" ? state : checked;
+      return [checked, stored === state ? Option.none() : Option.some(stored)];
     });
     if (initialized !== undefined) yield* refreshUsage();
     return yield* options.stampIdentity(next.draft);

@@ -8,12 +8,14 @@ import { useTheme } from "../../hooks/useTheme";
 import { RenderErrorBoundary } from "../RenderErrorBoundary";
 import { HighlightedTokens } from "./HighlightedTokens";
 
-const WORD_CLASS_NAME = "inline-block max-w-full [overflow-wrap:anywhere]";
+const WORD_CLASS_NAME = "[overflow-wrap:anywhere]";
 
 // The shell parser loads with the first expanded command, not with the timeline.
-let embeddedScriptsModule: Promise<typeof import("../../lib/embeddedScripts")> | undefined;
+let embeddedScriptsModule:
+  | Promise<typeof import("@d4research/client-runtime/work-log/embedded-scripts")>
+  | undefined;
 function loadEmbeddedScripts() {
-  embeddedScriptsModule ??= import("../../lib/embeddedScripts");
+  embeddedScriptsModule ??= import("@d4research/client-runtime/work-log/embedded-scripts");
   return embeddedScriptsModule;
 }
 
