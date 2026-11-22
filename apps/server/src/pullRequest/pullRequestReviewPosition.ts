@@ -1,4 +1,4 @@
-import type { PullRequestReviewPosition } from "@t3tools/contracts";
+import type { PullRequestReviewPosition } from "@d4research/contracts";
 
 import { HUNK_HEADER, headerPath } from "./pullRequestReviewGuideNormalize.ts";
 

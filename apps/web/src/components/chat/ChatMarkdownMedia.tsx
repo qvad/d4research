@@ -1,5 +1,5 @@
-import { mediaFileReference, mediaUrlReference } from "@t3tools/client-runtime/media-reference";
-import type { AssetResource, EnvironmentId, SOURCE_CONTROL_MEDIA_ASSET } from "@t3tools/contracts";
+import { mediaFileReference, mediaUrlReference } from "@d4research/client-runtime/media-reference";
+import type { AssetResource, EnvironmentId, SOURCE_CONTROL_MEDIA_ASSET } from "@d4research/contracts";
 import { msg, useGT, useMessages } from "gt-react";
 import { TriangleAlertIcon } from "lucide-react";
 import {

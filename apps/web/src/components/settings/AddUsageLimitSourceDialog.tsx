@@ -1,4 +1,4 @@
-import type { EnvironmentId, SecretReference, UnifiedSettings } from "@t3tools/contracts";
+import type { EnvironmentId, SecretReference, UnifiedSettings } from "@d4research/contracts";
 import { T, useGT, Var } from "gt-react";
 import { useId, useState } from "react";
 

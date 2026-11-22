@@ -1,4 +1,4 @@
-import { SourceControlProviderKind } from "@t3tools/contracts";
+import { SourceControlProviderKind } from "@d4research/contracts";
 import {
   EnvironmentId,
   ProjectId,
@@ -8,7 +8,7 @@ import {
   PullRequestOperationError,
   type PullRequestListResult,
   type PullRequestSummary,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Cause from "effect/Cause";
 import * as Effect from "effect/Effect";
 import { AsyncResult, Atom } from "effect/reactivity";
@@ -24,9 +24,9 @@ vi.mock("@effect/atom-react", async (importOriginal) => ({
   useAtomValue: (atom: Atom.Atom<unknown>) => registry.get(atom),
 }));
 vi.mock("../rpc/atomRegistry", () => ({ appAtomRegistry: registry }));
-vi.mock("@t3tools/client-runtime/state/pull-requests", async (importOriginal) => {
+vi.mock("@d4research/client-runtime/state/pull-requests", async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import("@t3tools/client-runtime/state/pull-requests")>();
+    await importOriginal<typeof import("@d4research/client-runtime/state/pull-requests")>();
   return {
     ...actual,
     createPullRequestEnvironmentAtoms: (

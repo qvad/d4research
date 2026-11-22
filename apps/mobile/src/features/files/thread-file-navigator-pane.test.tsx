@@ -1,11 +1,11 @@
-import { EnvironmentId } from "@t3tools/contracts";
+import { EnvironmentId } from "@d4research/contracts";
 import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vite-plus/test";
 
 const queries = vi.hoisted(() => [] as { cwd: string | null; searchQuery: string }[]);
 
-vi.mock("@t3tools/client-runtime/state/filesystem", () => ({
+vi.mock("@d4research/client-runtime/state/filesystem", () => ({
   resolveFilesystemReadAccess: () => ({ canReadFiles: true, isPending: false }),
 }));
 vi.mock("../../state/session", () => ({ environmentSession: { sessionStateAtom: () => null } }));

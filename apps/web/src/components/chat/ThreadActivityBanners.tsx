@@ -4,16 +4,16 @@ import type {
   OrchestrationV2ProviderGoal,
   OrchestrationV2ProviderSession,
   ThreadId,
-} from "@t3tools/contracts";
-import type { EnvironmentThreadShell, ThreadStructure } from "@t3tools/client-runtime/state/shell";
+} from "@d4research/contracts";
+import type { EnvironmentThreadShell, ThreadStructure } from "@d4research/client-runtime/state/shell";
 import {
   presentPendingBackgroundWork,
   presentProviderGoal,
   type RunStopPresentation,
-} from "@t3tools/client-runtime/state/thread-execution";
-import { childThreadInputsTitle } from "@t3tools/client-runtime/state/threads";
-import { commandDisplayText } from "@t3tools/client-runtime/work-log/command-label";
-import { formatDuration } from "@t3tools/shared/orchestrationTimingCopy";
+} from "@d4research/client-runtime/state/thread-execution";
+import { childThreadInputsTitle } from "@d4research/client-runtime/state/threads";
+import { commandDisplayText } from "@d4research/client-runtime/work-log/command-label";
+import { formatDuration } from "@d4research/shared/orchestrationTimingCopy";
 import * as DateTime from "effect/DateTime";
 import { msg, T, Var } from "gt-react";
 import {

@@ -1,8 +1,8 @@
-import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
-import type { EnvironmentId, PullRequestDetail, PullRequestRef } from "@t3tools/contracts";
+import { squashAtomCommandFailure } from "@d4research/client-runtime/state/runtime";
+import type { EnvironmentId, PullRequestDetail, PullRequestRef } from "@d4research/contracts";
 import { msg, T, useGT } from "gt-react";
 import { useState } from "react";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
 
 import { m } from "~/i18n/messages";
 import { pullRequestEnvironment } from "~/state/pullRequests";
@@ -14,7 +14,7 @@ import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { PullRequestDetailTitleRow } from "./PullRequestDetailLayout";
 import { PullRequestEditButton } from "./PullRequestEditButton";
 import { readableFailure } from "./pullRequestDetail.logic";
-import { canEditPullRequestChangeRequest } from "@t3tools/client-runtime/pull-request-editing";
+import { canEditPullRequestChangeRequest } from "@d4research/client-runtime/pull-request-editing";
 
 import { changeRequestTermKind } from "./changeRequestTerm";
 

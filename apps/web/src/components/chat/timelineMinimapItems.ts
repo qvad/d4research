@@ -1,9 +1,9 @@
-import { assistantCitationsToPlainText } from "@t3tools/shared/assistantCitations";
-import { parseThreadLinkHref } from "@t3tools/shared/threadLinks";
+import { assistantCitationsToPlainText } from "@d4research/shared/assistantCitations";
+import { parseThreadLinkHref } from "@d4research/shared/threadLinks";
 import {
   isAttachmentOnlyBootstrapPrompt,
   replaceComposerContextReferences,
-} from "@t3tools/shared/composerContextReferences";
+} from "@d4research/shared/composerContextReferences";
 import type { Nodes } from "mdast";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";

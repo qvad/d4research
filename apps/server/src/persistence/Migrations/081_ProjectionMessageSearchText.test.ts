@@ -1,7 +1,7 @@
 import { assert, it } from "@effect/vitest";
-import { EnvironmentId, MessageId, ThreadId } from "@t3tools/contracts";
-import { serializeAssistantCitation } from "@t3tools/shared/assistantCitations";
-import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
+import { EnvironmentId, MessageId, ThreadId } from "@d4research/contracts";
+import { serializeAssistantCitation } from "@d4research/shared/assistantCitations";
+import * as NodeSqliteClient from "@d4research/shared/nodeSqliteClient";
 import * as Effect from "effect/Effect";
 import * as SqlClient from "effect/sql/SqlClient";
 

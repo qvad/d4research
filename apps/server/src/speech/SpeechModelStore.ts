@@ -14,7 +14,7 @@ import type { PlatformError } from "effect/PlatformError";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@d4research/shared/HostProcess";
 
 import * as ServerConfig from "../config.ts";
 import { expandHomePath } from "../os-jank.ts";
@@ -68,7 +68,7 @@ export class SpeechModelStore extends Context.Service<
     /** Removes T3 Code's file or link; a linked file itself is left in place. */
     readonly remove: (model: ModelFile) => Effect.Effect<void, PlatformError>;
   }
->()("t3/speech/SpeechModelStore") {}
+>()("d4research/speech/SpeechModelStore") {}
 
 const DOWNLOAD_ATTEMPTS = 3;
 const PARTIAL_FILENAME =

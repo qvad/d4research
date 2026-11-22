@@ -1,6 +1,6 @@
-import type { RunId, ScreenReaderAnnouncements } from "@t3tools/contracts";
+import type { RunId, ScreenReaderAnnouncements } from "@d4research/contracts";
 import * as DateTime from "effect/DateTime";
-import { searchToolLabelParts } from "@t3tools/shared/toolActivity";
+import { searchToolLabelParts } from "@d4research/shared/toolActivity";
 import { msg } from "gt-react";
 
 import { m } from "../../i18n/messages";

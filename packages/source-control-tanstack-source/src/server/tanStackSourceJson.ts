@@ -6,13 +6,13 @@ import {
   type PullRequestReviewCommentDraft,
   type PullRequestReviewThread,
   type PullRequestState,
-} from "@t3tools/contracts";
-import { sortChecks } from "@t3tools/source-control-core/server/pullRequestChecks";
+} from "@d4research/contracts";
+import { sortChecks } from "@d4research/source-control-core/server/pullRequestChecks";
 import type {
   ProviderChangeRequest,
   ProviderChangeRequestActivity,
   ProviderChangeRequestStack,
-} from "@t3tools/source-control-core/server/PullRequestProvider";
+} from "@d4research/source-control-core/server/PullRequestProvider";
 import * as DateTime from "effect/DateTime";
 import * as Schema from "effect/Schema";
 

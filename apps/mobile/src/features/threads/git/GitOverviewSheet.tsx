@@ -5,10 +5,10 @@ import {
   buildMenuItems,
   getGitActionDisabledReason,
   requiresDefaultBranchConfirmation,
-} from "@t3tools/client-runtime/state/vcs";
-import type { ThreadRepositorySection } from "@t3tools/client-runtime/state/thread-repositories";
-import { EnvironmentId, ThreadId } from "@t3tools/contracts";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+} from "@d4research/client-runtime/state/vcs";
+import type { ThreadRepositorySection } from "@d4research/client-runtime/state/thread-repositories";
+import { EnvironmentId, ThreadId } from "@d4research/contracts";
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
 import { changeRequestTermKind } from "../../../lib/changeRequestTerm";
 import {
   CommonActions,

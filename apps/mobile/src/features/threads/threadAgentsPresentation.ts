@@ -1,23 +1,23 @@
-import { resolveLinkedThreadOpen } from "@t3tools/client-runtime/linked-thread";
+import { resolveLinkedThreadOpen } from "@d4research/client-runtime/linked-thread";
 import {
   formatSubagentDisplayTitle,
   resolveSubagentMetadata,
   subagentCardDetail,
   subagentDetailPreview,
-} from "@t3tools/client-runtime/state/subagent-display";
+} from "@d4research/client-runtime/state/subagent-display";
 import {
   isActiveSubagentStatus,
   type RuntimeSubagent,
   type SubagentWorkflowGroup,
-} from "@t3tools/client-runtime/state/subagentRuntime";
-import { REASONING_EFFORT_OPTION_IDS } from "@t3tools/client-runtime/state/thread-execution";
+} from "@d4research/client-runtime/state/subagentRuntime";
+import { REASONING_EFFORT_OPTION_IDS } from "@d4research/client-runtime/state/thread-execution";
 import type {
   EnvironmentId,
   OrchestrationV2Subagent,
   ServerProvider,
   ThreadId,
-} from "@t3tools/contracts";
-import { resolveSelectableModel } from "@t3tools/shared/model";
+} from "@d4research/contracts";
+import { resolveSelectableModel } from "@d4research/shared/model";
 import { msg } from "gt-react-native";
 
 import { m, type MessageResolver } from "../../i18n/messages";

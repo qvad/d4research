@@ -1,7 +1,7 @@
 import {
   formatComposerContextReference,
   toComposerContextId,
-} from "@t3tools/shared/composerContextReferences";
+} from "@d4research/shared/composerContextReferences";
 import { describe, expect, it } from "vite-plus/test";
 
 import { stashEntrySnippet } from "./ComposerStashMenu";

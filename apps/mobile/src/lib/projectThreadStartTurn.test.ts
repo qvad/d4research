@@ -1,4 +1,4 @@
-import { ProjectId, ProviderInstanceId } from "@t3tools/contracts";
+import { ProjectId, ProviderInstanceId } from "@d4research/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import { serializeComposerMessageForServer } from "./composerContext";
@@ -88,13 +88,13 @@ describe("project thread title", () => {
       worktreePath: null,
       startFromOrigin: false,
       worktreeRepositories: ["/workspace/api"],
-      worktreeBranchName: "t3/new",
+      worktreeBranchName: "d4research/new",
     });
 
     expect(input.bootstrap.prepareWorktree).toEqual({
       projectCwd: "/workspace",
       baseBranch: "HEAD",
-      branch: "t3/new",
+      branch: "d4research/new",
       repositories: [{ path: "/workspace/api" }],
     });
   });

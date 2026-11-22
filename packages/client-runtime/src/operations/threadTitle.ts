@@ -1,9 +1,9 @@
 import { mFallback, msg } from "gt-i18n";
 import type { MFunctionType } from "gt-i18n/types";
-import type { ChatAttachment } from "@t3tools/contracts";
-import { assistantCitationsToPlainText } from "@t3tools/shared/assistantCitations";
-import { replaceComposerContextReferences } from "@t3tools/shared/composerContextReferences";
-import { truncate } from "@t3tools/shared/String";
+import type { ChatAttachment } from "@d4research/contracts";
+import { assistantCitationsToPlainText } from "@d4research/shared/assistantCitations";
+import { replaceComposerContextReferences } from "@d4research/shared/composerContextReferences";
+import { truncate } from "@d4research/shared/String";
 
 import { collectComposerModelMentions } from "../composerModelMentions.ts";
 

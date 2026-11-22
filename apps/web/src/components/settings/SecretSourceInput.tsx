@@ -4,10 +4,10 @@ import {
   type SecretProviderConfig,
   type SecretProviderId,
   type SecretProviderKind,
-} from "@t3tools/contracts";
-import { builtInSecretProviderDefinitions } from "@t3tools/secret-provider-definitions/registry";
-import { invalidSecretReferenceText } from "@t3tools/client-runtime/secret-request";
-import { hasFeatureFlag } from "@t3tools/client-runtime/state/server";
+} from "@d4research/contracts";
+import { builtInSecretProviderDefinitions } from "@d4research/secret-provider-definitions/registry";
+import { invalidSecretReferenceText } from "@d4research/client-runtime/secret-request";
+import { hasFeatureFlag } from "@d4research/client-runtime/state/server";
 import { useAtomValue } from "@effect/atom-react";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";

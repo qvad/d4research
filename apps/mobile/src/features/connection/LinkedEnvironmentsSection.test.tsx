@@ -4,7 +4,7 @@ import {
   type NavigationProp,
   type ParamListBase,
 } from "@react-navigation/native";
-import { EnvironmentId } from "@t3tools/contracts";
+import { EnvironmentId } from "@d4research/contracts";
 import { AtomRegistry } from "effect/reactivity";
 import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";

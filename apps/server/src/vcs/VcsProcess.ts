@@ -18,9 +18,9 @@ import {
   VcsProcessSpawnError,
   VcsProcessStdinWriteError,
   VcsProcessTimeoutError,
-} from "@t3tools/contracts";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import type { SourceControlProcessInput } from "@t3tools/source-control-core/server/SourceControlHost";
+} from "@d4research/contracts";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import type { SourceControlProcessInput } from "@d4research/source-control-core/server/SourceControlHost";
 
 import { gitCommandDuration, gitCommandsTotal, withMetrics } from "../observability/Metrics.ts";
 import * as ProcessRunner from "../processRunner.ts";
@@ -60,7 +60,7 @@ export class VcsProcess extends Context.Service<
   {
     readonly run: (input: VcsProcessInput) => Effect.Effect<VcsProcessOutput, VcsError>;
   }
->()("t3/vcs/VcsProcess") {}
+>()("d4research/vcs/VcsProcess") {}
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_OUTPUT_BYTES = 1_000_000;
@@ -70,7 +70,7 @@ const VCS_PROCESS_CONCURRENCY = 8;
 const NON_GIT_PROCESS_CONCURRENCY = VCS_PROCESS_CONCURRENCY / 2;
 
 /** Background non-git calls, such as the pull request sync sweep's, leave one slot for the rest. */
-export const Background = Context.Reference<boolean>("t3/vcs/VcsProcess/Background", {
+export const Background = Context.Reference<boolean>("d4research/vcs/VcsProcess/Background", {
   defaultValue: () => false,
 });
 

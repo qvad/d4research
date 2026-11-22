@@ -1,8 +1,8 @@
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import * as SourceControlHost from "@t3tools/source-control-core/server/SourceControlHost";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import * as SourceControlHost from "@d4research/source-control-core/server/SourceControlHost";
 
 const SESSION_ADDRESS_PREFIX = "DBUS_SESSION_BUS_ADDRESS=";
 

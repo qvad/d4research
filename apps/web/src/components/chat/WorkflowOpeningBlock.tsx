@@ -1,5 +1,5 @@
 import { T, useGT, useMessages } from "gt-react";
-import type { SideThreadOpenIntent } from "@t3tools/client-runtime/side-thread";
+import type { SideThreadOpenIntent } from "@d4research/client-runtime/side-thread";
 import { useSideThreadTrigger } from "../../hooks/useSideThreadTrigger";
 import { useAtomValue } from "@effect/atom-react";
 import {
@@ -8,13 +8,13 @@ import {
   workflowOpeningHeadline,
   type RuntimeSubagent,
   type WorkflowOpening,
-} from "@t3tools/client-runtime/state/subagentRuntime";
+} from "@d4research/client-runtime/state/subagentRuntime";
 import type {
   EnvironmentId,
   ProviderDriverKind,
   ProviderInstanceId,
   ServerProvider,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import { ChevronRightIcon, WorkflowIcon } from "lucide-react";
 import { useState } from "react";
 

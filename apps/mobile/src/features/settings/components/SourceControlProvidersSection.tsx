@@ -1,18 +1,18 @@
 import { useAtomValue } from "@effect/atom-react";
-import { sourceControlInstallHintText } from "@t3tools/client-runtime/contract-labels";
-import { isSourceControlProviderOffered } from "@t3tools/client-runtime/operations/projects";
-import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+import { sourceControlInstallHintText } from "@d4research/client-runtime/contract-labels";
+import { isSourceControlProviderOffered } from "@d4research/client-runtime/operations/projects";
+import { squashAtomCommandFailure } from "@d4research/client-runtime/state/runtime";
 import {
   readHostCredentialSettings,
   sourceControlClients,
   type SourceControlDefinition,
   type SourceControlHostCredentials,
-} from "@t3tools/client-runtime/source-control-clients";
+} from "@d4research/client-runtime/source-control-clients";
 import type {
   EnvironmentId,
   SettingsSecretValue,
   SourceControlProviderDiscoveryItem,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import { useNavigation } from "@react-navigation/native";

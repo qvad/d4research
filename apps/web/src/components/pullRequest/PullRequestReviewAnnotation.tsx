@@ -7,7 +7,7 @@ import type {
   PullRequestReviewThread,
   PullRequestThreadCommentsResult,
   PullRequestThreadComment,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   HammerIcon,
   MessageSquareIcon,
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { T, useGT } from "gt-react";
 import { type ReactNode, useRef, useState } from "react";
-import { settlePromise, squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+import { settlePromise, squashAtomCommandFailure } from "@d4research/client-runtime/state/runtime";
 
 import { RelativeTime } from "~/components/RelativeTime";
 import { cn } from "~/lib/utils";

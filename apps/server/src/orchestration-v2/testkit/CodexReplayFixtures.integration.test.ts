@@ -3,8 +3,8 @@ import * as Tracer from "effect/Tracer";
 import * as Effect from "effect/Effect";
 import * as Predicate from "effect/Predicate";
 
-import type { ProviderReplayTranscript } from "@t3tools/contracts";
-import { materializeReplayTranscriptWorkspace } from "@t3tools/provider-testing/replayTranscript";
+import type { ProviderReplayTranscript } from "@d4research/contracts";
+import { materializeReplayTranscriptWorkspace } from "@d4research/provider-testing/replayTranscript";
 import { CodexOrchestratorReplayHarness } from "../Adapters/CodexAdapterV2.testkit.ts";
 import {
   findReplayFixture,

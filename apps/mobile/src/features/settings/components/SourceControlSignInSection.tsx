@@ -1,11 +1,11 @@
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
 import { useGT } from "gt-react-native";
-import type { SourceControlSignInPrompt } from "@t3tools/contracts";
+import type { SourceControlSignInPrompt } from "@d4research/contracts";
 import {
   readHostCredentialSettings,
   type SourceControlAppSignIn,
   type SourceControlDefinition,
-} from "@t3tools/client-runtime/source-control-clients";
+} from "@d4research/client-runtime/source-control-clients";
 import * as Cause from "effect/Cause";
 import * as Clipboard from "expo-clipboard";
 import { useRef, useState } from "react";

@@ -1,4 +1,4 @@
-import type { ProviderDriverKind, ServerProvider } from "@t3tools/contracts";
+import type { ProviderDriverKind, ServerProvider } from "@d4research/contracts";
 import { msg } from "gt-react";
 import { BotIcon, type LucideIcon } from "lucide-react";
 import { m, type MessageResolver } from "../../i18n/messages";

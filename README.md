@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://t3.codes/download"><strong>Download</strong></a> ·
   <a href="https://apps.apple.com/us/app/t3-code-remote-claude-more/id6787819824">iOS</a> ·
-  <a href="https://play.google.com/store/apps/details?id=com.t3tools.t3code">Android</a> ·
+  <a href="https://play.google.com/store/apps/details?id=ai.dimaggi.d4research">Android</a> ·
   <a href="https://app.t3.codes">Web</a> ·
   <a href="./docs/README.md">Docs</a> ·
   <a href="https://discord.gg/jn4EGJjrvv">Discord</a>
@@ -65,11 +65,11 @@ On Windows, in PowerShell:
 irm https://t3.codes/install.ps1 | iex
 ```
 
-To try it once without an install, run `npx t3@latest`.
+To try it once without an install, run `npx d4research@latest`.
 
 ### Phone
 
-Get the app from the [App Store](https://apps.apple.com/us/app/t3-code-remote-claude-more/id6787819824) or [Google Play](https://play.google.com/store/apps/details?id=com.t3tools.t3code). Then follow [remote access](./docs/user/remote-access.md) to connect it to your computer.
+Get the app from the [App Store](https://apps.apple.com/us/app/t3-code-remote-claude-more/id6787819824) or [Google Play](https://play.google.com/store/apps/details?id=ai.dimaggi.d4research). Then follow [remote access](./docs/user/remote-access.md) to connect it to your computer.
 
 ### Sign in to an agent
 

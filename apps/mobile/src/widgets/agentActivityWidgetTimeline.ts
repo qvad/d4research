@@ -1,4 +1,4 @@
-import type { RelayAgentActivityAggregateState } from "@t3tools/contracts/relay";
+import type { RelayAgentActivityAggregateState } from "@d4research/contracts/relay";
 import { msg } from "gt-react-native";
 
 import { m, type MessageResolver } from "../i18n/messages";

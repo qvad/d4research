@@ -7,9 +7,9 @@ import {
   TextGeneratorError,
   type TextGeneratorModel,
   textGeneratorForSelection,
-} from "@t3tools/contracts";
-import * as TextGenerationOperations from "@t3tools/provider-core/server/textGenerationOperations";
-import * as SecretResolver from "@t3tools/secret-provider-core/server/SecretResolver";
+} from "@d4research/contracts";
+import * as TextGenerationOperations from "@d4research/provider-core/server/textGenerationOperations";
+import * as SecretResolver from "@d4research/secret-provider-core/server/SecretResolver";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Equal from "effect/Equal";
@@ -39,7 +39,7 @@ export class TextGenerators extends Context.Service<
       input: ListTextGeneratorModelsInput,
     ) => Effect.Effect<ListTextGeneratorModelsResult, TextGeneratorError>;
   }
->()("t3/textGeneration/TextGenerators") {}
+>()("d4research/textGeneration/TextGenerators") {}
 
 interface CachedModels {
   readonly config: TextGeneratorConfig;

@@ -1,4 +1,4 @@
-import type { ServerProcessSignal } from "@t3tools/contracts";
+import type { ServerProcessSignal } from "@d4research/contracts";
 import { T, useGT, Var } from "gt-react";
 
 import { InlineButton } from "../ui/button";

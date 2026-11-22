@@ -1,9 +1,9 @@
-import { createAdvertisedEndpoint } from "@t3tools/shared/advertisedEndpoint";
+import { createAdvertisedEndpoint } from "@d4research/shared/advertisedEndpoint";
 import {
   ExecutionEnvironmentDescriptor,
   type AdvertisedEndpoint,
   type AdvertisedEndpointProvider,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   buildTailscaleHttpsBaseUrl,
   isTailscaleIpv4Address,
@@ -11,7 +11,7 @@ import {
   probeTailscaleHttpsEndpoint,
   readTailscaleStatus,
   type TailscaleStatus,
-} from "@t3tools/tailscale";
+} from "@d4research/tailscale";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as HttpClient from "effect/http/HttpClient";

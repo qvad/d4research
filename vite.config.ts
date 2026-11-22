@@ -36,9 +36,9 @@ const RESTRICTED_IMPORT_PATHS = [
       "Use LegendList from @legendapp/list/react-native, with renderScrollComponent={NativeScrollView} in a screen. Pass whatever renderItem reads through extraData: rows only re-render when their item or extraData changes.",
   },
   {
-    name: "@t3tools/client-runtime",
+    name: "@d4research/client-runtime",
     message:
-      "Import from an explicit @t3tools/client-runtime/* subpath. The package has no root export.",
+      "Import from an explicit @d4research/client-runtime/* subpath. The package has no root export.",
   },
   {
     name: "@pierre/diffs/react",
@@ -437,16 +437,16 @@ export default defineConfig({
                     "expo",
                     "expo-*",
                     "lucide-react",
-                    "@t3tools/client-runtime",
-                    "@t3tools/client-runtime/*",
+                    "@d4research/client-runtime",
+                    "@d4research/client-runtime/*",
                     "../client/*",
                     "../server/*",
                     "../../client/*",
                     "../../server/*",
                     "../../../client/*",
                     "../../../server/*",
-                    "@t3tools/source-control-*/client/*",
-                    "@t3tools/source-control-*/server/*",
+                    "@d4research/source-control-*/client/*",
+                    "@d4research/source-control-*/server/*",
                   ],
                   message:
                     "Shared forge definitions load on the server and every client; keep UI and server code out.",
@@ -466,7 +466,7 @@ export default defineConfig({
               patterns: [
                 {
                   group: [
-                    "@t3tools/source-control-*/client/*",
+                    "@d4research/source-control-*/client/*",
                     "../client/*",
                     "../../client/*",
                     "../../../client/*",
@@ -610,7 +610,7 @@ export default defineConfig({
           "react/jsx-no-constructed-context-values": "off",
           "react/memo-dependencies": "error",
           "react/preserve-manual-memoization": "error",
-          // Render-time clock reads use @t3tools/client-runtime/clock or state seeded with the
+          // Render-time clock reads use @d4research/client-runtime/clock or state seeded with the
           // time; any other read carries a suppression that says why. oxlint also flags time reads
           // inside event handlers (oxc#27309); those suppressions cite it.
           "react/purity": "error",

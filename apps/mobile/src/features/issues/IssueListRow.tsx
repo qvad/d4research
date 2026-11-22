@@ -1,4 +1,4 @@
-import type { EnvironmentIssueEntry } from "@t3tools/client-runtime/issue-list";
+import type { EnvironmentIssueEntry } from "@d4research/client-runtime/issue-list";
 import { useGT } from "gt-react-native";
 import { memo } from "react";
 import { Pressable, View } from "react-native";

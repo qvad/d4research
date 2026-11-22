@@ -12,8 +12,8 @@ import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
 import * as EffectAcpErrors from "effect-acp/errors";
 import type * as EffectAcpSchema from "effect-acp/compat";
 import * as NodeBuffer from "node:buffer";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { gitForWindowsBash, SpawnExecutableResolution } from "@t3tools/shared/shell";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import { gitForWindowsBash, SpawnExecutableResolution } from "@d4research/shared/shell";
 
 const MAX_LIVE_TERMINALS = 16;
 const MAX_UNRELEASED_TERMINALS = 64;

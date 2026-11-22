@@ -2,7 +2,7 @@ import { useIsFocused } from "@react-navigation/native";
 import {
   nextThreadAnnouncement,
   type ThreadAnnouncementMemory,
-} from "@t3tools/client-runtime/state/thread-activity-announcement";
+} from "@d4research/client-runtime/state/thread-activity-announcement";
 import { useEffect, useRef } from "react";
 import { AccessibilityInfo } from "react-native";
 

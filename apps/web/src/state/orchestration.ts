@@ -1,6 +1,6 @@
-import { ORCHESTRATION_V2_WS_METHODS } from "@t3tools/contracts";
-import { createOrchestrationEnvironmentAtoms } from "@t3tools/client-runtime/state/orchestration";
-import { createEnvironmentRpcCommand } from "@t3tools/client-runtime/state/runtime";
+import { ORCHESTRATION_V2_WS_METHODS } from "@d4research/contracts";
+import { createOrchestrationEnvironmentAtoms } from "@d4research/client-runtime/state/orchestration";
+import { createEnvironmentRpcCommand } from "@d4research/client-runtime/state/runtime";
 
 import { connectionAtomRuntime } from "../connection/runtime";
 import { environmentShell } from "./shell";

@@ -4,20 +4,20 @@ import {
   ExecutionEnvironmentDescriptor,
   ORCHESTRATION_PROTOCOL_VERSION,
   PortSchema,
-} from "@t3tools/contracts";
-import { resolveWorktreeT3Home } from "@t3tools/shared/devHome";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { formatHostForUrl, isWildcardHost } from "@t3tools/shared/hostClassification";
-import { DEFAULT_SIGNAL_EXPORT } from "@t3tools/shared/observability";
-import { buildPairingAppLink } from "@t3tools/shared/remote";
-import * as OtelEnvironment from "@t3tools/shared/otelEnvironment";
+} from "@d4research/contracts";
+import { resolveWorktreeT3Home } from "@d4research/shared/devHome";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import { formatHostForUrl, isWildcardHost } from "@d4research/shared/hostClassification";
+import { DEFAULT_SIGNAL_EXPORT } from "@d4research/shared/observability";
+import { buildPairingAppLink } from "@d4research/shared/remote";
+import * as OtelEnvironment from "@d4research/shared/otelEnvironment";
 import {
   buildTailscaleHttpsBaseUrl,
   DEFAULT_TAILSCALE_SERVE_PORT,
   ensureTailscaleServe,
   readTailscaleServeRootHolder,
   readTailscaleStatus,
-} from "@t3tools/tailscale";
+} from "@d4research/tailscale";
 import * as Config from "effect/Config";
 import * as Console from "effect/Console";
 import * as DateTime from "effect/DateTime";
@@ -559,7 +559,7 @@ export const pairCommand = Command.make("pair", {
         return yield* new IncompatibleServerProtocolError({
           serverVersion: target.descriptor.serverVersion,
           serverProtocolVersion,
-          pairCommand: `npx t3@${target.descriptor.serverVersion} pair${baseDirArgs}`,
+          pairCommand: `npx d4research@${target.descriptor.serverVersion} pair${baseDirArgs}`,
         });
       }
 

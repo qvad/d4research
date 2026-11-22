@@ -1,4 +1,4 @@
-import { stripDisplayedPlanMarkdown, proposedPlanTitle } from "@t3tools/shared/proposedPlanText";
+import { stripDisplayedPlanMarkdown, proposedPlanTitle } from "@d4research/shared/proposedPlanText";
 import { msg } from "gt-react";
 
 import { m, type MessageResolver } from "./i18n/messages";

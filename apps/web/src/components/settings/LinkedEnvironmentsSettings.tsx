@@ -3,19 +3,19 @@ import {
   linkBackBlockLabel,
   linkBatchFailureLabel,
   linkWithMintedCode,
-} from "@t3tools/client-runtime/link-batch";
-import { ANOTHER_ADDRESS, linkRequestFailureMessage } from "@t3tools/client-runtime/link-request";
+} from "@d4research/client-runtime/link-batch";
+import { ANOTHER_ADDRESS, linkRequestFailureMessage } from "@d4research/client-runtime/link-request";
 import {
   AuthAccessWriteScope,
   type AuthMcpClientAccess,
   type EnvironmentId,
   type PeerLinkSummary,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import { peerLinkHealth, type PeerLinkHealth } from "@t3tools/client-runtime/state/peerLinks";
+} from "@d4research/client-runtime/state/runtime";
+import { peerLinkHealth, type PeerLinkHealth } from "@d4research/client-runtime/state/peerLinks";
 import * as DateTime from "effect/DateTime";
 import * as Option from "effect/Option";
 import * as Result from "effect/Result";

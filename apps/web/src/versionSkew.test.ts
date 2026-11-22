@@ -1,5 +1,5 @@
-import { EnvironmentId } from "@t3tools/contracts";
-import type { ServerUpdateState } from "@t3tools/client-runtime/state/server";
+import { EnvironmentId } from "@d4research/contracts";
+import type { ServerUpdateState } from "@d4research/client-runtime/state/server";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const branding = vi.hoisted(() => ({ APP_VERSION: "0.0.34" }));
@@ -22,11 +22,11 @@ const MISMATCH_HINT =
 describe("versionSkew", () => {
   it("updates only the proven install and safely quotes its paths", () => {
     expect(manualServerUpdateCommand("0.0.45", { kind: "npm-global", prefix: "/opt/node" })).toBe(
-      "npm install --global --prefix '/opt/node' t3@0.0.45",
+      "npm install --global --prefix '/opt/node' d4research@0.0.45",
     );
     expect(
       manualServerUpdateCommand("0.0.45", { kind: "npm-global", prefix: "/opt/maria's node" }),
-    ).toBe("npm install --global --prefix '/opt/maria'\\''s node' t3@0.0.45");
+    ).toBe("npm install --global --prefix '/opt/maria'\\''s node' d4research@0.0.45");
     expect(
       manualServerUpdateCommand("0.0.45", {
         kind: "t3-launcher",

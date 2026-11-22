@@ -1,5 +1,5 @@
 import { msg, T, useGT, useMessages } from "gt-react-native";
-import { BranchNamingMode, type ServerSettingsPatch } from "@t3tools/contracts";
+import { BranchNamingMode, type ServerSettingsPatch } from "@d4research/contracts";
 import { useEffect, useEffectEvent, useRef } from "react";
 import { View } from "react-native";
 
@@ -88,8 +88,8 @@ export function BranchNamingSettings(props: {
           <Text className="text-sm text-foreground-muted">
             {gt("Use {short} or {slash} for {example}. Leave empty for no prefix.", {
               short: "t3",
-              slash: "t3/",
-              example: "t3/add-search",
+              slash: "d4research/",
+              example: "d4research/add-search",
             })}
           </Text>
           <AppTextInput

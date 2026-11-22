@@ -1,7 +1,7 @@
 import * as Dialog from "../../components/ui/Dialog";
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
-import { resolveAssetUrl } from "@t3tools/client-runtime/state/assets";
-import type { EnvironmentId, ThreadId } from "@t3tools/contracts";
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
+import { resolveAssetUrl } from "@d4research/client-runtime/state/assets";
+import type { EnvironmentId, ThreadId } from "@d4research/contracts";
 import * as Option from "effect/Option";
 import { useGT } from "gt-react-native";
 import { m } from "../../i18n/messages";

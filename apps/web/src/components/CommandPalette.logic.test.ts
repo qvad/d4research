@@ -1,6 +1,6 @@
-import { threadKey } from "@t3tools/client-runtime/state/entities";
+import { threadKey } from "@d4research/client-runtime/state/entities";
 import { describe, expect, it, vi } from "vite-plus/test";
-import { EnvironmentId, ProjectId, ProviderInstanceId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, ProjectId, ProviderInstanceId, ThreadId } from "@d4research/contracts";
 import type { Thread } from "../types";
 import { makeThreadFixture } from "../test-fixtures";
 import {

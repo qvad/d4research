@@ -2,7 +2,7 @@ import {
   FILE_PREVIEW_SCROLL_SCRIPT,
   injectHtmlRenderBootstrap,
   readFilePreviewScroll,
-} from "@t3tools/shared/htmlRender";
+} from "@d4research/shared/htmlRender";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { page } from "vite-plus/test/browser";
 

@@ -1,9 +1,9 @@
 import {
   sourceControlClients,
   type ChangeRequestTerminology,
-} from "@t3tools/client-runtime/source-control-clients";
+} from "@d4research/client-runtime/source-control-clients";
 import type { MenuAction } from "@react-native-menu/menu";
-import type { PullRequestDetail, PullRequestLinkedThreadsResult } from "@t3tools/contracts";
+import type { PullRequestDetail, PullRequestLinkedThreadsResult } from "@d4research/contracts";
 import { msg } from "gt-react-native";
 
 import { m, type MessageResolver } from "../../i18n/messages";

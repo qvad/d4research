@@ -19,8 +19,8 @@ import {
 import { HttpClient } from "effect/http";
 import * as Headers from "effect/http/Headers";
 import { LINEAR_KIND } from "../shared/issueUrl.ts";
-import { IssueTrackerError } from "@t3tools/source-control-core/server/IssueTracker";
-import * as IssueTrackerHost from "@t3tools/source-control-core/server/IssueTrackerHost";
+import { IssueTrackerError } from "@d4research/source-control-core/server/IssueTracker";
+import * as IssueTrackerHost from "@d4research/source-control-core/server/IssueTrackerHost";
 
 import type {
   CommentCreateInput,
@@ -157,15 +157,15 @@ export class LinearApi extends Context.Service<
       IssueTrackerError
     >;
   }
->()("@t3tools/issue-tracker-linear/server/LinearApi") {}
+>()("@d4research/issue-tracker-linear/server/LinearApi") {}
 
 /** The API key a call is sent with: the stored one, or a new one being vetted. */
 class LinearToken extends Context.Service<LinearToken, string>()(
-  "@t3tools/issue-tracker-linear/server/LinearApi/LinearToken",
+  "@d4research/issue-tracker-linear/server/LinearApi/LinearToken",
 ) {}
 
 class LinearAuth extends GraphQLMiddleware.Service<LinearAuth, { requires: LinearToken }>()(
-  "@t3tools/issue-tracker-linear/server/LinearApi/LinearAuth",
+  "@d4research/issue-tracker-linear/server/LinearApi/LinearAuth",
 ) {}
 
 const LinearGroup = LinearApiGraphQLGroup.middleware(LinearAuth);

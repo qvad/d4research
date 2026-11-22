@@ -8,10 +8,10 @@ import {
   isPrivateNetworkHost,
   isSharedAddressSpaceHost,
   isWildcardHost,
-} from "@t3tools/shared/hostClassification";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { QrCode } from "@t3tools/shared/qrCode";
-import { buildPairingAppLink } from "@t3tools/shared/remote";
+} from "@d4research/shared/hostClassification";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import { QrCode } from "@d4research/shared/qrCode";
+import { buildPairingAppLink } from "@d4research/shared/remote";
 import * as Clock from "effect/Clock";
 import * as Effect from "effect/Effect";
 import { HttpServer } from "effect/http";

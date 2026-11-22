@@ -1,5 +1,5 @@
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { writeFileStringAtomically } from "@t3tools/shared/atomicWrite";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import { writeFileStringAtomically } from "@d4research/shared/atomicWrite";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
@@ -35,7 +35,7 @@ export class RelayClientLedger extends Context.Service<
     /** Records a started relay client; the returned effect forgets it once it has stopped. */
     readonly track: (pid: number) => Effect.Effect<Effect.Effect<void>>;
   }
->()("t3/cloud/RelayClientLedger") {}
+>()("d4research/cloud/RelayClientLedger") {}
 
 const ENTRY_DIRECTORY = "relay-clients";
 const ENTRY_FILE = /^\d+\.json$/;

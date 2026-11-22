@@ -1,4 +1,4 @@
-import type { DevicePlatform, EnvironmentId } from "@t3tools/contracts";
+import type { DevicePlatform, EnvironmentId } from "@d4research/contracts";
 import { useAtomValue } from "@effect/atom-react";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { T, useGT } from "gt-react";
@@ -7,7 +7,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { renewDeviceHubAccess, useDeviceHubAccess } from "~/state/device";
-import { resolveDeviceShape } from "@t3tools/client-runtime/device/shape-profile";
+import { resolveDeviceShape } from "@d4research/client-runtime/device/shape-profile";
 import { deviceKeyboard, deviceModel } from "./deviceModels";
 import { fitDeviceFrame } from "./deviceFrameLayout";
 import { DeviceDuoViewport } from "./DeviceDuoViewport";
@@ -23,7 +23,7 @@ import {
   type DeviceStreamSession,
   IDLE_DEVICE_STREAM_STATE,
 } from "./deviceStreamSession";
-import type { DeviceHardwareButton, DeviceScreenSize } from "@t3tools/client-runtime/device/stream";
+import type { DeviceHardwareButton, DeviceScreenSize } from "@d4research/client-runtime/device/stream";
 import { observeResize } from "~/lib/observeResize";
 
 const NO_SESSION_ATOM = Atom.make<DeviceStreamSession | null>(null).pipe(

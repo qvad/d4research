@@ -1,5 +1,5 @@
-import type { ThreadCheckpointSummary } from "@t3tools/client-runtime/state/thread-checkpoints";
-import { CheckpointRef, CheckpointScopeId, RunId } from "@t3tools/contracts";
+import type { ThreadCheckpointSummary } from "@d4research/client-runtime/state/thread-checkpoints";
+import { CheckpointRef, CheckpointScopeId, RunId } from "@d4research/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import {

@@ -24,7 +24,7 @@ Code server, so it gives you any restart steps and does not do them itself.
 If the app does not start, or triage does not work in the app, run:
 
 ```sh
-npx t3 triage
+npx d4research triage
 ```
 
 It starts Claude Code, Codex, or Antigravity in your terminal with the same
@@ -32,8 +32,8 @@ instructions. If more than one is installed, it asks which to use. You can also
 choose explicitly:
 
 ```sh
-npx t3 triage --agent antigravity
-npx t3 triage --agent codex
+npx d4research triage --agent antigravity
+npx d4research triage --agent codex
 ```
 
 Antigravity needs Google's standalone `agy` CLI on your `PATH` and its own sign-in.

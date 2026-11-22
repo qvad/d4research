@@ -7,7 +7,7 @@ import {
   DesktopBrowserEvent,
   type DesktopBrowserCommand as DesktopBrowserCommandType,
   type PreviewAutomationLoadError,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Context from "effect/Context";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
@@ -59,7 +59,7 @@ export class DesktopBrowserChannel extends Context.Service<
     /** Never fails. A failed write means a broken channel; the next backend starts with no turns. */
     readonly turn: (threadId: string, active: boolean) => Effect.Effect<void>;
   }
->()("t3/preview/DesktopBrowserChannel") {}
+>()("d4research/preview/DesktopBrowserChannel") {}
 
 const make = Effect.gen(function* () {
   const config = yield* ServerConfig.ServerConfig;

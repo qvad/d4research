@@ -1,9 +1,9 @@
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
-import { AuthSessionId, ProjectId, RunId, ThreadId } from "@t3tools/contracts";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import * as NetService from "@t3tools/shared/Net";
+import { AuthSessionId, ProjectId, RunId, ThreadId } from "@d4research/contracts";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import * as NetService from "@d4research/shared/Net";
 import * as ConfigProvider from "effect/ConfigProvider";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
@@ -579,9 +579,9 @@ it.live("resolves a path inside a git worktree of the project's repository to th
     yield* fileSystem.writeFileString(path.join(repo, "pkg", "index.ts"), "export {};\n");
     yield* git(repo, ["init", "--quiet", "-b", "main"]);
     yield* commitAll(repo);
-    yield* git(repo, ["worktree", "add", "--quiet", "-b", "t3/8ff64c24", worktree]);
+    yield* git(repo, ["worktree", "add", "--quiet", "-b", "d4research/8ff64c24", worktree]);
     yield* git(repo, ["worktree", "add", "--quiet", "-b", "feature", feature]);
-    yield* git(feature, ["worktree", "add", "--quiet", "-b", "t3/1a2b3c4d", featureWorktree]);
+    yield* git(feature, ["worktree", "add", "--quiet", "-b", "d4research/1a2b3c4d", featureWorktree]);
 
     const project = (id: string, workspaceRoot: string) => ({
       id: ProjectId.make(id),

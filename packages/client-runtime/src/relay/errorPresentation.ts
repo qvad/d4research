@@ -1,9 +1,9 @@
-import type { DpopFailureReason } from "@t3tools/contracts";
+import type { DpopFailureReason } from "@d4research/contracts";
 import {
   T3CHAT_PLAN_TUNNEL_LIMITS,
   type RelayEnvironmentStatusResponse,
   type RelayProtectedError,
-} from "@t3tools/contracts/relay";
+} from "@d4research/contracts/relay";
 import { mFallback, msg } from "gt-i18n";
 import type { MFunctionType } from "gt-i18n/types";
 

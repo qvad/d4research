@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
-import { type ModelSelection, ProviderDriverKind, ProviderInstanceId } from "@t3tools/contracts";
+import { type ModelSelection, ProviderDriverKind, ProviderInstanceId } from "@d4research/contracts";
 
 import { resolveProviderCatalog, type ModelManifestData } from "./ModelManifest.ts";
 import {

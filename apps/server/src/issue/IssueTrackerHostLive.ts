@@ -7,9 +7,9 @@
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
-import type { IssueTrackerKind } from "@t3tools/contracts";
-import { IssueTrackerError } from "@t3tools/source-control-core/server/IssueTracker";
-import * as IssueTrackerHost from "@t3tools/source-control-core/server/IssueTrackerHost";
+import type { IssueTrackerKind } from "@d4research/contracts";
+import { IssueTrackerError } from "@d4research/source-control-core/server/IssueTracker";
+import * as IssueTrackerHost from "@d4research/source-control-core/server/IssueTrackerHost";
 
 import * as ServerSecretStore from "../auth/ServerSecretStore.ts";
 

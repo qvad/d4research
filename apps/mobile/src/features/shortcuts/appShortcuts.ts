@@ -1,7 +1,7 @@
 import type { Action } from "expo-quick-actions";
 import { msg } from "gt-react-native";
 import type { NavigationState } from "@react-navigation/native";
-import { EnvironmentId, ThreadId, type ScopedThreadRef } from "@t3tools/contracts";
+import { EnvironmentId, ThreadId, type ScopedThreadRef } from "@d4research/contracts";
 
 import { m } from "../../i18n/messages";
 import type { RecentThreadShortcut } from "../../persistence/imperative";

@@ -1,4 +1,4 @@
-import { EnvironmentId, PROVIDER_SEND_TURN_MAX_IMAGE_BYTES } from "@t3tools/contracts";
+import { EnvironmentId, PROVIDER_SEND_TURN_MAX_IMAGE_BYTES } from "@d4research/contracts";
 import * as Option from "effect/Option";
 import { describe, expect, it } from "@effect/vitest";
 import { beforeEach, vi } from "vite-plus/test";
@@ -33,7 +33,7 @@ const mocks = vi.hoisted(() => ({
     ),
 }));
 
-vi.mock("@t3tools/client-runtime/state/runtime", async () => {
+vi.mock("@d4research/client-runtime/state/runtime", async () => {
   const Effect = await import("effect/Effect");
   return {
     createEnvironmentRpcCommand: () => Symbol("rpc-command"),

@@ -3,7 +3,7 @@ import * as NodeModule from "node:module";
 import * as React from "react";
 import { act, useLayoutEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { EnvironmentId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, ThreadId } from "@d4research/contracts";
 import { expect, it, vi } from "vite-plus/test";
 
 const harness = vi.hoisted(() => ({

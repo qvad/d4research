@@ -1,9 +1,9 @@
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
 import { changeRequestTermKind } from "../../lib/changeRequestTerm";
 import Animated from "react-native-reanimated";
 import { PR_ROW_LAYOUT } from "./pullRequestAnimations";
 import { useNavigation } from "@react-navigation/native";
-import type { PullRequestDetail } from "@t3tools/contracts";
+import type { PullRequestDetail } from "@d4research/contracts";
 import type { MenuAction } from "@react-native-menu/menu";
 import { useGT } from "gt-react-native";
 import type { ReactNode } from "react";

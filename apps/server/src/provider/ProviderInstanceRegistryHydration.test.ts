@@ -6,10 +6,10 @@ import {
   SecretProviderId,
   SecretProviderKind,
   type ServerSettings,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import * as ProviderHost from "@t3tools/provider-core/server/ProviderHost";
+import * as ProviderHost from "@d4research/provider-core/server/ProviderHost";
 import { it as effectIt } from "@effect/vitest";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";

@@ -1,6 +1,6 @@
-import { presentThreadShell } from "@t3tools/client-runtime/state/models";
-import { threadKey } from "@t3tools/client-runtime/state/entities";
-import { isThreadWorking as isSidebarThreadWorking } from "@t3tools/client-runtime/state/thread-inbox";
+import { presentThreadShell } from "@d4research/client-runtime/state/models";
+import { threadKey } from "@d4research/client-runtime/state/entities";
+import { isThreadWorking as isSidebarThreadWorking } from "@d4research/client-runtime/state/thread-inbox";
 import * as DateTime from "effect/DateTime";
 import { deriveActiveWorkStartedAt } from "../session-logic.ts";
 import { describe, expect, it } from "vite-plus/test";
@@ -39,14 +39,14 @@ import {
   sidebarFolderExpansionKeys,
   withoutRemovedCheckout,
 } from "./Sidebar.logic";
-import { scopeThreadRef, scopedThreadKey } from "@t3tools/client-runtime/environment";
+import { scopeThreadRef, scopedThreadKey } from "@d4research/client-runtime/environment";
 import {
   sortActiveThreadsByOrderKey,
   sortPinnedThreadsByOrderKey,
-} from "@t3tools/client-runtime/state/thread-sort";
+} from "@d4research/client-runtime/state/thread-sort";
 import { resolveProjectExpanded } from "../uiStateStore";
-import { threadSearchMatchKey } from "@t3tools/client-runtime/state/thread-search";
-import { EnvironmentId, ProjectId, ProviderInstanceId, RunId, ThreadId } from "@t3tools/contracts";
+import { threadSearchMatchKey } from "@d4research/client-runtime/state/thread-search";
+import { EnvironmentId, ProjectId, ProviderInstanceId, RunId, ThreadId } from "@d4research/contracts";
 
 import {
   DEFAULT_INTERACTION_MODE,
@@ -156,7 +156,7 @@ function makeLatestRun(overrides?: {
 }
 
 describe("withoutRemovedCheckout", () => {
-  const worktree = { branch: "t3/task", worktreePath: "/worktrees/task" };
+  const worktree = { branch: "d4research/task", worktreePath: "/worktrees/task" };
   const local = { branch: "main", worktreePath: null };
   const removed = { branch: null, worktreePath: null };
   const tracking = { trackedFolders: [{ path: "/work/wrapper/api" }] };

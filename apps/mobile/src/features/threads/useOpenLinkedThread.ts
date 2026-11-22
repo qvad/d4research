@@ -1,6 +1,6 @@
 import { StackActions, useNavigation, useRoute, type Route } from "@react-navigation/native";
 import { use } from "react";
-import type { EnvironmentId, ThreadId } from "@t3tools/contracts";
+import type { EnvironmentId, ThreadId } from "@d4research/contracts";
 
 import { linkedThreadStep } from "../../lib/android-workspace-navigation";
 import { linkedThreadRouteParams } from "./linkedThreadRoute";

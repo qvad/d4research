@@ -1,11 +1,11 @@
 import type { ToolCallDiffTarget } from "../../diffPanelStore";
-import type { SideThreadOpenIntent } from "@t3tools/client-runtime/side-thread";
+import type { SideThreadOpenIntent } from "@d4research/client-runtime/side-thread";
 import type {
   ProviderApprovalDecision,
   ResponseContextRecord,
   RuntimeRequestId,
   WorktreeSetupSnapshot,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   type EnvironmentId,
   type MessageId,
@@ -16,19 +16,19 @@ import {
   type RunId,
   ThreadId,
   type TurnItemId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import type { AsyncResult, Atom } from "effect/reactivity";
-import type { CommandOutputView } from "@t3tools/client-runtime/state/command-output";
-import type { WorkflowOpening } from "@t3tools/client-runtime/state/subagentRuntime";
+import type { CommandOutputView } from "@d4research/client-runtime/state/command-output";
+import type { WorkflowOpening } from "@d4research/client-runtime/state/subagentRuntime";
 import { useEffect, useRef, createContext, type MouseEvent, type ReactNode } from "react";
 import { type LegendListRef } from "@legendapp/list/react";
-import type { CodexArtifactTemplate } from "@t3tools/shared/codexArtifactTemplates";
+import type { CodexArtifactTemplate } from "@d4research/shared/codexArtifactTemplates";
 import type { PendingApproval } from "../../session-logic";
 import { type ChatFileAttachment } from "../../types";
 import { type ExpandedImageItem, ExpandedImagePreview } from "./ExpandedImagePreview";
 import { type AssistantCitationTarget } from "./AssistantCitationSource";
 import { type MessagesTimelineRow, type WorkGroupScrollAnchor } from "./MessagesTimeline.logic";
-import { type TimestampFormat } from "@t3tools/contracts/settings";
+import { type TimestampFormat } from "@d4research/contracts/settings";
 import type { TurnItemDetailSource } from "../../state/queries";
 import { type HandoffTimelineRun } from "./V2LifecycleRow";
 

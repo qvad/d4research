@@ -7,8 +7,8 @@
 import * as DateTime from "effect/DateTime";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
-import type { IssueComment, IssueEvent, IssueState, IssueTemplate } from "@t3tools/contracts";
-import type { TrackerIssueSummary } from "@t3tools/source-control-core/server/IssueTracker";
+import type { IssueComment, IssueEvent, IssueState, IssueTemplate } from "@d4research/contracts";
+import type { TrackerIssueSummary } from "@d4research/source-control-core/server/IssueTracker";
 
 import {
   ForgejoComment,

@@ -2,7 +2,7 @@ import {
   PROJECT_TRACKED_FOLDERS_MAX,
   type ProjectTrackedFolder,
   type WorkspaceScannedFolder,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 
 /**
  * Folders a project's `.code-workspace` file lists that the project does not cover yet. The

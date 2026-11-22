@@ -1,4 +1,4 @@
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
 import {
   MousePointer2Icon,
   PaintbrushIcon,

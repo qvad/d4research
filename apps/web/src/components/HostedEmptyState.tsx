@@ -1,5 +1,5 @@
 import { useAuth } from "@clerk/react";
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentId } from "@d4research/contracts";
 import { Link } from "@tanstack/react-router";
 import { T } from "gt-react";
 import { CheckIcon } from "lucide-react";

@@ -2,7 +2,7 @@
 import { msg } from "gt-i18n";
 import { type MarkedText, markedTextEnglish } from "../errors/translatable.ts";
 import * as Schema from "effect/Schema";
-import { extractPng } from "@t3tools/shared/png";
+import { extractPng } from "@d4research/shared/png";
 import { withDeviceHubQuery } from "./hubAccess.ts";
 import type { DeviceStreamTarget } from "./stream.ts";
 

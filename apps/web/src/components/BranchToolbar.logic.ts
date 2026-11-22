@@ -5,17 +5,17 @@ import {
   type VcsRef,
   type ProjectId,
   type WorktreeSubmodules,
-} from "@t3tools/contracts";
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
-import type { ThreadStructureRuntime } from "@t3tools/client-runtime/state/shell";
+} from "@d4research/contracts";
+import { thrownErrorMessage } from "@d4research/client-runtime/errors";
+import type { ThreadStructureRuntime } from "@d4research/client-runtime/state/shell";
 import * as Schema from "effect/Schema";
 import { msg } from "gt-react";
-import { sanitizeNewRefName } from "@t3tools/shared/git";
-import { workspaceRelativeFilePath } from "@t3tools/shared/path";
-import { toSortableTimestamp } from "@t3tools/client-runtime/state/thread-sort";
+import { sanitizeNewRefName } from "@d4research/shared/git";
+import { workspaceRelativeFilePath } from "@d4research/shared/path";
+import { toSortableTimestamp } from "@d4research/client-runtime/state/thread-sort";
 import { m, type MessageResolver } from "../i18n/messages";
 import { deriveCanInterruptRunningThread } from "../session-logic";
-export { deriveLocalBranchNameFromRemoteRef, sanitizeNewRefName } from "@t3tools/shared/git";
+export { deriveLocalBranchNameFromRemoteRef, sanitizeNewRefName } from "@d4research/shared/git";
 
 const isGitCommandError = Schema.is(GitCommandError);
 

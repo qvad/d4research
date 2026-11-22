@@ -1,8 +1,8 @@
-import { type EnvironmentId, sessionGrantsScope } from "@t3tools/contracts";
+import { type EnvironmentId, sessionGrantsScope } from "@d4research/contracts";
 import {
   AUTH_SCOPE_OPTIONS,
   sessionPermissionsUnavailableMessage,
-} from "@t3tools/shared/authScopeOptions";
+} from "@d4research/shared/authScopeOptions";
 import { T, useGT, useMessages } from "gt-react";
 import { useEnvironmentSessionState } from "~/state/session";
 

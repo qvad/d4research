@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { EnvironmentId, type EnvironmentSpeechModel } from "@t3tools/contracts";
+import { EnvironmentId, type EnvironmentSpeechModel } from "@d4research/contracts";
 import * as Effect from "effect/Effect";
 import { HttpClient, HttpClientResponse } from "effect/http";
 

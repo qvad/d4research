@@ -1,6 +1,6 @@
 import { useAtom } from "@effect/atom-react";
 import { useNavigation, type StaticScreenProps } from "@react-navigation/native";
-import type { IssueCandidatesTarget } from "@t3tools/client-runtime/state/issues";
+import type { IssueCandidatesTarget } from "@d4research/client-runtime/state/issues";
 import { useGT } from "gt-react-native";
 import { useState } from "react";
 

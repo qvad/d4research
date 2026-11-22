@@ -4,7 +4,7 @@ import * as NodeHttp from "node:http";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, describe, it } from "@effect/vitest";
 import type { InteractionUpdate } from "@cursor/sdk";
-import { toolOutputImages } from "@t3tools/shared/toolOutput";
+import { toolOutputImages } from "@d4research/shared/toolOutput";
 import {
   CheckpointId,
   EnvironmentId,
@@ -17,15 +17,15 @@ import {
   RunAttemptId,
   RunId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Cause from "effect/Cause";
 import * as DateTime from "effect/DateTime";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
 import * as Exit from "effect/Exit";
 import * as ChildProcess from "effect/process/ChildProcess";
-import { spawnAndCollect } from "@t3tools/provider-core/server/snapshotProbe";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import { spawnAndCollect } from "@d4research/provider-core/server/snapshotProbe";
+import * as HostProcess from "@d4research/shared/HostProcess";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
@@ -33,13 +33,13 @@ import * as Path from "effect/Path";
 import * as Stream from "effect/Stream";
 import { vi } from "vite-plus/test";
 
-import { symlinksSupported } from "@t3tools/shared/testing/symlinks";
-import * as TestProviderHost from "@t3tools/provider-testing/TestProviderHost";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
-import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
-import * as ProviderContinuationRequests from "@t3tools/provider-core/server/ProviderContinuationRequests";
-import { makeProviderFailure } from "@t3tools/provider-core/server/failure";
+import { symlinksSupported } from "@d4research/shared/testing/symlinks";
+import * as TestProviderHost from "@d4research/provider-testing/TestProviderHost";
+import * as IdAllocator from "@d4research/provider-core/server/IdAllocator";
+import * as McpProviderSessions from "@d4research/provider-core/server/McpProviderSessions";
+import * as ProviderAdapter from "@d4research/provider-core/server/ProviderAdapter";
+import * as ProviderContinuationRequests from "@d4research/provider-core/server/ProviderContinuationRequests";
+import { makeProviderFailure } from "@d4research/provider-core/server/failure";
 import {
   cursorMcpServers,
   cursorRuntimeAgentPolicy,

@@ -1,7 +1,7 @@
 import {
   commandHighlightLanguage,
   withVisibleControlCharacters,
-} from "@t3tools/client-runtime/work-log/command-label";
+} from "@d4research/client-runtime/work-log/command-label";
 import { Suspense, use } from "react";
 
 import { useRenderedAppearance } from "../../hooks/useTheme";
@@ -11,10 +11,10 @@ import { HighlightedTokens } from "./HighlightedTokens";
 const WORD_CLASS_NAME = "[overflow-wrap:anywhere]";
 
 let embeddedScriptsModule:
-  | Promise<typeof import("@t3tools/client-runtime/work-log/embedded-scripts")>
+  | Promise<typeof import("@d4research/client-runtime/work-log/embedded-scripts")>
   | undefined;
 function loadEmbeddedScripts() {
-  embeddedScriptsModule ??= import("@t3tools/client-runtime/work-log/embedded-scripts");
+  embeddedScriptsModule ??= import("@d4research/client-runtime/work-log/embedded-scripts");
   return embeddedScriptsModule;
 }
 

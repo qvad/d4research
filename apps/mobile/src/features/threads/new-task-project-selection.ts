@@ -1,11 +1,11 @@
-import type { EnvironmentConnectionPhase } from "@t3tools/client-runtime/connection";
-import { availableScratchWorkspaceRoot } from "@t3tools/client-runtime/operations/projects";
+import type { EnvironmentConnectionPhase } from "@d4research/client-runtime/connection";
+import { availableScratchWorkspaceRoot } from "@d4research/client-runtime/operations/projects";
 import {
   isPickableProjectMember,
   isRepositoryRootProject,
-} from "@t3tools/client-runtime/state/project-grouping";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
-import { repositoryGroupingKeyOf, type EnvironmentId, type ServerConfig } from "@t3tools/contracts";
+} from "@d4research/client-runtime/state/project-grouping";
+import type { EnvironmentProject } from "@d4research/client-runtime/state/shell";
+import { repositoryGroupingKeyOf, type EnvironmentId, type ServerConfig } from "@d4research/contracts";
 
 import { scopedProjectKey } from "../../lib/scopedEntities";
 import type { HomeProjectScope } from "../home/homeThreadList";

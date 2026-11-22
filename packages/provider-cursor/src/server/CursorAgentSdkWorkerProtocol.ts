@@ -7,7 +7,7 @@ import type {
   SendOptions,
   SteerAckOutcome,
 } from "@cursor/sdk";
-import type { OrchestrationV2ProviderSession, ThreadId } from "@t3tools/contracts";
+import type { OrchestrationV2ProviderSession, ThreadId } from "@d4research/contracts";
 
 import type {
   CursorAgentSdkOpenInput,

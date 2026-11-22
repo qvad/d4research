@@ -1,5 +1,5 @@
-import { githubEmojiAliases } from "@t3tools/client-runtime/pull-request-markdown";
-import type { ReferenceAutolink } from "@t3tools/client-runtime/source-control-clients";
+import { githubEmojiAliases } from "@d4research/client-runtime/pull-request-markdown";
+import type { ReferenceAutolink } from "@d4research/client-runtime/source-control-clients";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";

@@ -18,7 +18,7 @@ import {
   OrchestrationV2CommandOutputFrame,
   OrchestrationV2GetTurnItemResult,
   OrchestrationV2ThreadHistoryPage,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as ByteSize from "effect/ByteSize";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
@@ -27,7 +27,7 @@ import * as Schema from "effect/Schema";
 import { HttpRouter, HttpServerRequest, HttpServerResponse, Multipart } from "effect/http";
 import * as HttpIncomingMessage from "effect/http/HttpIncomingMessage";
 
-import { htmlRenderFileName } from "@t3tools/shared/htmlRender";
+import { htmlRenderFileName } from "@d4research/shared/htmlRender";
 
 import { eventStreamResponse } from "../eventStreamResponse.ts";
 import { assetFileResponse, downloadContentDisposition } from "../http.ts";

@@ -1,6 +1,6 @@
 import * as Schema from "effect/Schema";
 import { msg } from "gt-react";
-import { SavedViewIdentity } from "@t3tools/client-runtime/saved-views";
+import { SavedViewIdentity } from "@d4research/client-runtime/saved-views";
 
 import type { SavedView, SavedViewsKind } from "../SavedViewsMenu";
 import {

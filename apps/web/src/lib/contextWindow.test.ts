@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import type { ThreadStructureTurnItem } from "@t3tools/client-runtime/state/shell";
-import { OrchestrationV2ProviderTurnTokenUsage } from "@t3tools/contracts";
+import type { ThreadStructureTurnItem } from "@d4research/client-runtime/state/shell";
+import { OrchestrationV2ProviderTurnTokenUsage } from "@d4research/contracts";
 import * as Schema from "effect/Schema";
 import { formatContextWindowCompactionMessage } from "../components/chat/compaction.logic";
 import * as DateTime from "effect/DateTime";
@@ -11,13 +11,13 @@ import {
   ProviderThreadId,
   RunId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import { makeThreadProjectionFixture } from "../test-fixtures";
 import {
   deriveLatestContextWindowSnapshot,
   latestProviderTurnTokenUsage,
   shouldOfferResumeCompaction,
-} from "@t3tools/client-runtime/state/context-window";
+} from "@d4research/client-runtime/state/context-window";
 
 const decodeTokenUsage = Schema.decodeSync(OrchestrationV2ProviderTurnTokenUsage);
 

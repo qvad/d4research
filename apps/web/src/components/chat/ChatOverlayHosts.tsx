@@ -5,8 +5,8 @@ import type {
   OrchestrationV2ThreadProjection,
   ScopedThreadRef,
   ThreadId,
-} from "@t3tools/contracts";
-import { rewindFileRestore } from "@t3tools/client-runtime/state/thread-repositories";
+} from "@d4research/contracts";
+import { rewindFileRestore } from "@d4research/client-runtime/state/thread-repositories";
 import { useAtomValue } from "@effect/atom-react";
 import { T, Var } from "gt-react";
 import { Atom } from "effect/reactivity";

@@ -1,7 +1,7 @@
-import { shouldPreserveAssistantLineBreaks } from "@t3tools/shared/markdownPipeline";
-import { MessageId, type RunId, type TurnItemId } from "@t3tools/contracts";
-import { canForkProjectedAssistantItem } from "@t3tools/client-runtime/state/thread-workflows";
-import { agentWorkingDirectories } from "@t3tools/client-runtime/workspace-basename-lookup";
+import { shouldPreserveAssistantLineBreaks } from "@d4research/shared/markdownPipeline";
+import { MessageId, type RunId, type TurnItemId } from "@d4research/contracts";
+import { canForkProjectedAssistantItem } from "@d4research/client-runtime/state/thread-workflows";
+import { agentWorkingDirectories } from "@d4research/client-runtime/workspace-basename-lookup";
 import { T, useGT, useMessages } from "gt-react";
 import { memo, use, useState } from "react";
 import { type ChatMessage, type TurnDiffSummary } from "../../types";
@@ -13,13 +13,13 @@ import { Button } from "../ui/button";
 import { ProposedPlanCard } from "./ProposedPlanCard";
 import { HtmlRenderFrame } from "./HtmlRenderFrame";
 import { McpAppFrame } from "./McpAppFrame";
-import { checkpointFileTotals } from "@t3tools/client-runtime/state/thread-checkpoints";
+import { checkpointFileTotals } from "@d4research/client-runtime/state/thread-checkpoints";
 import { ChangedFilesCard, type ChangedFilesGroup } from "./ChangedFilesTree";
 import {
   changedFileTotals,
   turnChanges,
   turnHasChanges,
-} from "@t3tools/client-runtime/state/thread-repositories";
+} from "@d4research/client-runtime/state/thread-repositories";
 import { useFileContextMenuHandler } from "../../fileContextMenu";
 import {
   readResponseSubagents,

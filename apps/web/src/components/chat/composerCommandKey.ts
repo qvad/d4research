@@ -3,7 +3,7 @@ import { type ComposerCommandItem } from "./ComposerCommandMenu";
 import {
   type ComposerDispatchMode,
   resolveComposerDispatchMode,
-} from "@t3tools/client-runtime/state/composer-dispatch";
+} from "@d4research/client-runtime/state/composer-dispatch";
 import { type ComposerPromptEditorHandle } from "../ComposerPromptEditorTiptap";
 import {
   type ComposerPromptHistoryMentions,
@@ -23,7 +23,7 @@ import {
   type EnvironmentContextRecord,
   type PreviewAnnotationPayload,
   type ThreadContextRecord,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import { type ReviewCommentContext } from "../../reviewCommentContext";
 import { composerTargetKey } from "../../composerDraftStore";
 import {

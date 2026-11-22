@@ -2,7 +2,7 @@
  * What a standalone tracker package may ask of the server it runs in: the credential the user
  * saved in Settings. Git-host trackers never need it; their CLIs carry their own credentials.
  */
-import type { IssueTrackerKind } from "@t3tools/contracts";
+import type { IssueTrackerKind } from "@d4research/contracts";
 import * as Context from "effect/Context";
 import type * as Effect from "effect/Effect";
 import type * as Option from "effect/Option";
@@ -19,4 +19,4 @@ export class IssueTrackerHost extends Context.Service<
       ) => Effect.Effect<Option.Option<string>, IssueTrackerError>;
     };
   }
->()("@t3tools/source-control-core/server/IssueTrackerHost") {}
+>()("@d4research/source-control-core/server/IssueTrackerHost") {}

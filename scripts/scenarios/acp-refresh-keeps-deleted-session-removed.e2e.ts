@@ -2,7 +2,7 @@
 import * as NodeHttp from "node:http";
 import * as NodePath from "node:path";
 
-import { ProviderDriverKind, ProviderInstanceId } from "@t3tools/contracts";
+import { ProviderDriverKind, ProviderInstanceId } from "@d4research/contracts";
 import { expect } from "e2e";
 import * as Effect from "effect/Effect";
 

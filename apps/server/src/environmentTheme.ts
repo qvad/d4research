@@ -11,14 +11,14 @@ import {
   EnvironmentThemeId,
   environmentThemeFileHasColors,
   THEME_CSS_MAX_LENGTH,
-} from "@t3tools/contracts";
-import { fromJsonStringPretty } from "@t3tools/shared/schemaJson";
-import { themeCssLoadsRemoteFiles } from "@t3tools/shared/themeCss";
+} from "@d4research/contracts";
+import { fromJsonStringPretty } from "@d4research/shared/schemaJson";
+import { themeCssLoadsRemoteFiles } from "@d4research/shared/themeCss";
 import {
   MOBILE_DEFAULT_THEME_ID,
   MOBILE_THEME_IDS,
   UNPUBLISHABLE_THEME_IDS,
-} from "@t3tools/shared/themePalettes";
+} from "@d4research/shared/themePalettes";
 import * as Cause from "effect/Cause";
 import * as Context from "effect/Context";
 import * as DateTime from "effect/DateTime";
@@ -139,7 +139,7 @@ export class EnvironmentThemeService extends Context.Service<
     /** Subscribes before reading to retain changes during connection. */
     readonly streamChanges: Stream.Stream<ReadonlyArray<EnvironmentTheme>>;
   }
->()("t3/environmentTheme/EnvironmentThemeService") {}
+>()("d4research/environmentTheme/EnvironmentThemeService") {}
 
 /** True when anything, a dangling symlink included, is at the path. */
 const pathIsTaken = (filePath: string): boolean => {

@@ -1,15 +1,15 @@
 import { T, Var, msg, useGT, useMessages } from "gt-react";
 import { ThreadHoverCardPopup } from "../ThreadHoverCard";
 import { AgentElapsed } from "./AgentElapsed";
-import { projectedSubagentsToRuntime } from "@t3tools/client-runtime/state/subagentRuntime";
+import { projectedSubagentsToRuntime } from "@d4research/client-runtime/state/subagentRuntime";
 import { use, type ReactNode } from "react";
 import { useThreadShell, useProject } from "../../state/entities";
-import type { SideThreadOpenIntent } from "@t3tools/client-runtime/side-thread";
+import type { SideThreadOpenIntent } from "@d4research/client-runtime/side-thread";
 import { SideThreadsOpenContext, useSideThreadTrigger } from "../../hooks/useSideThreadTrigger";
 import { useLinkedThreadOpener } from "../../state/linkedThreadView";
 import { SubagentTooltipContent } from "./SubagentTooltipContent";
 import { useAtomValue } from "@effect/atom-react";
-import { scopeThreadRef, scopeProjectRef } from "@t3tools/client-runtime/environment";
+import { scopeThreadRef, scopeProjectRef } from "@d4research/client-runtime/environment";
 import { environmentThreadDetails } from "../../state/threads";
 import { EMPTY_SERVER_PROVIDERS, serverEnvironment } from "../../state/server";
 import { MiddleTruncate } from "../ui/middle-truncate";
@@ -20,11 +20,11 @@ import {
   type HandoffEndpoints,
   type HandoffTimelineRun,
   resolveModelSwitchChange,
-} from "@t3tools/client-runtime/handoff";
+} from "@d4research/client-runtime/handoff";
 import {
   formatSubagentDisplayTitle,
   subagentCardDetail,
-} from "@t3tools/client-runtime/state/subagent-display";
+} from "@d4research/client-runtime/state/subagent-display";
 import {
   ProviderDriverKind,
   type ModelSelection,
@@ -39,8 +39,8 @@ import {
   type EnvironmentId,
   type NodeId,
   type ScopedThreadRef,
-} from "@t3tools/contracts";
-import type { TimestampFormat } from "@t3tools/contracts/settings";
+} from "@d4research/contracts";
+import type { TimestampFormat } from "@d4research/contracts/settings";
 import {
   BotIcon,
   ChevronRightIcon,
@@ -70,7 +70,7 @@ import { subagentResumedSince } from "./V2LifecycleRow.logic";
 import { Button, InlineButton } from "../ui/button";
 import { T3Wordmark } from "../T3Wordmark";
 
-export type { HandoffTimelineRun } from "@t3tools/client-runtime/handoff";
+export type { HandoffTimelineRun } from "@d4research/client-runtime/handoff";
 
 export function V2LifecycleRow(props: {
   readonly item: OrchestrationV2TurnItem;

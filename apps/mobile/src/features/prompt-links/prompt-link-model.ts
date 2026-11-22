@@ -1,4 +1,4 @@
-import type { PromptLinkRepository } from "@t3tools/shared/promptLinks";
+import type { PromptLinkRepository } from "@d4research/shared/promptLinks";
 import { msg } from "gt-react-native";
 
 import { m, type MessageResolver } from "../../i18n/messages";

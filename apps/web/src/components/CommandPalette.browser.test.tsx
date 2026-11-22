@@ -1,5 +1,5 @@
-import { threadKey } from "@t3tools/client-runtime/state/entities";
-import { EnvironmentId, ProjectId, ThreadId } from "@t3tools/contracts";
+import { threadKey } from "@d4research/client-runtime/state/entities";
+import { EnvironmentId, ProjectId, ThreadId } from "@d4research/contracts";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
 
@@ -22,8 +22,8 @@ const entities = vi.hoisted(() => ({
 vi.mock("../state/server", async (original) => {
   const actual = await original<typeof import("../state/server")>();
   const { Atom } = await import("effect/reactivity");
-  const { compileResolvedKeybindingsConfig } = await import("@t3tools/shared/keybindings");
-  const { THREAD_JUMP_KEYBINDING_COMMANDS } = await import("@t3tools/contracts");
+  const { compileResolvedKeybindingsConfig } = await import("@d4research/shared/keybindings");
+  const { THREAD_JUMP_KEYBINDING_COMMANDS } = await import("@d4research/contracts");
   // The default jump bindings are desktop-only; these hold in the browser too.
   const jumpBindings = compileResolvedKeybindingsConfig(
     THREAD_JUMP_KEYBINDING_COMMANDS.map((command, index) => ({

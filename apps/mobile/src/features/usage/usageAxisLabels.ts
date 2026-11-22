@@ -1,4 +1,4 @@
-import { formatDayShort, formatHourShort } from "@t3tools/shared/usageFormat";
+import { formatDayShort, formatHourShort } from "@d4research/shared/usageFormat";
 
 import { DEFAULT_LOCALE } from "../../i18n/locales";
 

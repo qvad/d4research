@@ -1,4 +1,4 @@
-import type { EnvironmentId, ManagedPolicySummary, ProviderDriverKind } from "@t3tools/contracts";
+import type { EnvironmentId, ManagedPolicySummary, ProviderDriverKind } from "@d4research/contracts";
 import { msg } from "gt-react";
 
 import { m, type MessageResolver } from "../i18n/messages";

@@ -1,4 +1,4 @@
-import type { SourceControlIcon } from "@t3tools/source-control-core/shared/definition";
+import type { SourceControlIcon } from "@d4research/source-control-core/shared/definition";
 
 /** The TanStack Source favicon, drawn in the text colour as the site draws it per theme. */
 export const icon: SourceControlIcon = {

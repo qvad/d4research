@@ -1,5 +1,5 @@
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
-import { sourceControlInstallHintText } from "@t3tools/client-runtime/contract-labels";
+import { thrownErrorMessage } from "@d4research/client-runtime/errors";
+import { sourceControlInstallHintText } from "@d4research/client-runtime/contract-labels";
 import { msg, T, useGT, useMessages, Var } from "gt-react";
 import { m, type MessageResolver } from "../i18n/messages";
 import { changeRequestTermKind } from "./pullRequest/changeRequestTerm";
@@ -12,11 +12,11 @@ import {
   type ProjectId,
   type ScopedThreadRef,
   type ThreadId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@d4research/client-runtime/state/runtime";
 import type {
   GitStackedAction,
   SourceControlCloneProtocol,
@@ -24,7 +24,7 @@ import type {
   SourceControlPublishRepositoryResult,
   SourceControlRepositoryVisibility,
   VcsStatusResult,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import { useNavigate } from "@tanstack/react-router";
 import * as Option from "effect/Option";
 import { memo, useEffect, useEffectEvent, useId, useRef, useState } from "react";
@@ -117,7 +117,7 @@ import { threadEnvironment } from "~/state/threads";
 import { useAtomCommand } from "~/state/use-atom-command";
 import { vcsActionManager, vcsEnvironment, vcsStatusRevalidation } from "~/state/vcs";
 import { randomUUID } from "~/lib/utils";
-import { resolvePathLinkTarget } from "@t3tools/shared/fileLinks";
+import { resolvePathLinkTarget } from "@d4research/shared/fileLinks";
 import { type DraftId, useComposerDraftStore } from "~/composerDraftStore";
 import {
   THREAD_DETAILS_PANEL_CHEVRON_CLASS,
@@ -130,10 +130,10 @@ import { getSourceControlPresentation, sourceControlIcon } from "~/sourceControl
 import {
   isSourceControlProviderOffered,
   type OfferedSourceControlProviders,
-} from "@t3tools/client-runtime/operations/projects";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
-import { scopeProjectRef } from "@t3tools/client-runtime/environment";
-import { formatDiffCount } from "@t3tools/client-runtime/diff-count";
+} from "@d4research/client-runtime/operations/projects";
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
+import { scopeProjectRef } from "@d4research/client-runtime/environment";
+import { formatDiffCount } from "@d4research/client-runtime/diff-count";
 import { ChangeBreakdownGrid } from "./pullRequest/ChangeBreakdownGrid";
 import { useOpenLink } from "~/browser/useOpenLink";
 

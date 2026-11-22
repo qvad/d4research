@@ -10,7 +10,7 @@ import {
   PEER_LINK_THREAD_STREAM_ROUTE,
   ThreadId,
   TurnItemId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import { expect, it } from "@effect/vitest";
 import type * as Cause from "effect/Cause";
 import * as Context from "effect/Context";

@@ -1,4 +1,4 @@
-import { resolveLocaleSelection, SYSTEM_LANGUAGE } from "@t3tools/client-runtime/locales";
+import { resolveLocaleSelection, SYSTEM_LANGUAGE } from "@d4research/client-runtime/locales";
 import { describe, expect, it } from "vite-plus/test";
 
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "../../i18n/locales";

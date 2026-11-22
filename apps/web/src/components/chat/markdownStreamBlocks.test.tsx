@@ -2,7 +2,7 @@ import {
   CHAT_MARKDOWN_REHYPE_PLUGINS,
   CHAT_MARKDOWN_REMARK_PLUGINS,
   remarkAssistantInsights,
-} from "@t3tools/shared/markdownPipeline";
+} from "@d4research/shared/markdownPipeline";
 import { renderToStaticMarkup } from "react-dom/server";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";

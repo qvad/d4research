@@ -1,5 +1,5 @@
 import { useAtomValue } from "@effect/atom-react";
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentId } from "@d4research/contracts";
 
 import { environmentServerConfigsAtom, serverEnvironment } from "../../state/server";
 import { canShareWithGuest } from "./guestShareAvailability";

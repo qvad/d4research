@@ -8,10 +8,10 @@ import {
   type ProjectId,
   type ProviderDriverKind,
   type ProviderInstanceId,
-} from "@t3tools/contracts";
-import * as AcpRegistryRuntimeCoordinator from "@t3tools/provider-acp-registry/server/AcpRegistryRuntimeCoordinator";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import type { ProviderInstance } from "@t3tools/provider-core/server/driver";
+} from "@d4research/contracts";
+import * as AcpRegistryRuntimeCoordinator from "@d4research/provider-acp-registry/server/AcpRegistryRuntimeCoordinator";
+import * as IdAllocator from "@d4research/provider-core/server/IdAllocator";
+import type { ProviderInstance } from "@d4research/provider-core/server/driver";
 import * as Context from "effect/Context";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";
@@ -62,7 +62,7 @@ export class AcpRegistrySessions extends Context.Service<
       input: AcpRegistryImportSessionInput,
     ) => Effect.Effect<AcpRegistryImportSessionResult, AcpRegistryOperationError>;
   }
->()("t3/provider/AcpRegistrySessions") {}
+>()("d4research/provider/AcpRegistrySessions") {}
 
 const make = Effect.gen(function* () {
   const projectService = yield* ProjectService.ProjectService;

@@ -22,9 +22,9 @@ import {
   injectMcpAppCookieBootstrap,
   injectMcpAppThemeBootstrap,
   MCP_APP_MAX_HTML_BYTES,
-} from "@t3tools/shared/mcpApp";
-import { ORCHESTRATION_PROTOCOL_HEADER } from "@t3tools/contracts";
-import { FILE_PREVIEW_SCROLL_SCRIPT } from "@t3tools/shared/htmlRender";
+} from "@d4research/shared/mcpApp";
+import { ORCHESTRATION_PROTOCOL_HEADER } from "@d4research/contracts";
+import { FILE_PREVIEW_SCROLL_SCRIPT } from "@d4research/shared/htmlRender";
 
 import * as ServerConfig from "./config.ts";
 

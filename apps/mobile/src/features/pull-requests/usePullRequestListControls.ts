@@ -1,5 +1,5 @@
 import { useAtomValue } from "@effect/atom-react";
-import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+import { squashAtomCommandFailure } from "@d4research/client-runtime/state/runtime";
 import { AsyncResult } from "effect/reactivity";
 
 import { mobilePreferencesAtom, saveMobilePreferences } from "../../state/preferences";

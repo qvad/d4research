@@ -1,7 +1,7 @@
 import { Service } from "@opencode/client/effect/service";
-import { AgentScope } from "@t3tools/shared/AgentScope";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { resolveCommandPath, resolveSpawnCommand } from "@t3tools/shared/shell";
+import { AgentScope } from "@d4research/shared/AgentScope";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import { resolveCommandPath, resolveSpawnCommand } from "@d4research/shared/shell";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Option from "effect/Option";

@@ -1,4 +1,4 @@
-import { resolveProviderProbeTimeoutMs } from "@t3tools/provider-core/server/snapshotProbe";
+import { resolveProviderProbeTimeoutMs } from "@d4research/provider-core/server/snapshotProbe";
 // One OpenCode 2 process serves all directories; share it across instance threads.
 import type { OpenCodeClient } from "@opencode/client/effect";
 import * as Context from "effect/Context";
@@ -32,7 +32,7 @@ export class OpenCode2Server extends Context.Service<
     /** Drops a configured server's verified connection, so the next use reads its version again. */
     readonly forget: Effect.Effect<void>;
   }
->()("@t3tools/provider-opencode/server/v2/OpenCode2Server") {}
+>()("@d4research/provider-opencode/server/v2/OpenCode2Server") {}
 
 /**
  * OpenCode 2 always requires one and prints a generated one to stdout

@@ -2,7 +2,7 @@ import {
   makeProviderSettingsSchema,
   SettingsSecretValue,
   SourceControlProviderKind,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 import {
@@ -15,7 +15,7 @@ import {
   parseCommitPath,
   projectChangeRequestHost,
   repositoryUrlFromPagePath,
-} from "@t3tools/source-control-core/shared/definition";
+} from "@d4research/source-control-core/shared/definition";
 import { icon } from "./icon.ts";
 
 /** GitCafe has no self-hosted installs: production and staging are its only hosts. */

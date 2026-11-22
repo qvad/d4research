@@ -1,10 +1,10 @@
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
 import { pipe } from "effect/Function";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import type { EnvironmentId } from "@t3tools/contracts";
+} from "@d4research/client-runtime/state/runtime";
+import type { EnvironmentId } from "@d4research/contracts";
 import { useNavigation } from "@react-navigation/native";
 import * as Clipboard from "expo-clipboard";
 import { useGT } from "gt-react-native";
@@ -21,7 +21,7 @@ import {
 import { useSelectWorkspaceDetail } from "../layout/workspace/useSelectWorkspaceDetail";
 import { usePrepareTriage } from "./usePrepareTriage";
 
-const CLI_COMMAND = "npx t3 triage";
+const CLI_COMMAND = "npx d4research triage";
 
 /**
  * In-app `t3 triage`, as on web: the server writes the session files and

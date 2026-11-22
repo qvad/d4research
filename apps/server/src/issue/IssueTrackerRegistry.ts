@@ -1,13 +1,13 @@
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import type { IssueTrackerKind } from "@t3tools/contracts";
-import * as LinearDriver from "@t3tools/issue-tracker-linear/server/driver";
+import type { IssueTrackerKind } from "@d4research/contracts";
+import * as LinearDriver from "@d4research/issue-tracker-linear/server/driver";
 import {
   isStandaloneIssueTracker,
   type IssueTrackerApi,
   type StandaloneIssueTrackerApi,
-} from "@t3tools/source-control-core/server/IssueTracker";
+} from "@d4research/source-control-core/server/IssueTracker";
 
 import * as BuiltInDrivers from "../sourceControl/builtInDrivers.ts";
 import * as IssueTrackerHostLive from "./IssueTrackerHostLive.ts";
@@ -21,7 +21,7 @@ export class IssueTrackerRegistry extends Context.Service<
     /** The trackers a user connects with a credential of their own, in registration order. */
     readonly standalone: ReadonlyArray<StandaloneIssueTrackerApi>;
   }
->()("t3/issue/IssueTrackerRegistry") {}
+>()("d4research/issue/IssueTrackerRegistry") {}
 
 /** Exported for tests, which stand a registry up from trackers they supply themselves. */
 export function fromTrackers(

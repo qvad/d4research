@@ -1,17 +1,17 @@
 import { RegistryContext } from "@effect/atom-react";
-import type { EnvironmentThreadState } from "@t3tools/client-runtime/state/threads";
+import type { EnvironmentThreadState } from "@d4research/client-runtime/state/threads";
 import {
   CommandId,
   EnvironmentId,
   MessageId,
   OrchestrationV2DispatchCommandError,
   ThreadId,
-} from "@t3tools/contracts";
-import { serializeAssistantCitation } from "@t3tools/shared/assistantCitations";
+} from "@d4research/contracts";
+import { serializeAssistantCitation } from "@d4research/shared/assistantCitations";
 import {
   formatComposerContextReference,
   toComposerContextId,
-} from "@t3tools/shared/composerContextReferences";
+} from "@d4research/shared/composerContextReferences";
 import * as Cause from "effect/Cause";
 import * as DateTime from "effect/DateTime";
 import * as Option from "effect/Option";
@@ -26,7 +26,7 @@ const state = vi.hoisted(() => ({
   commandResult: undefined as unknown,
 }));
 
-vi.mock(import("@t3tools/client-runtime/state/thread-workflows"), async (importOriginal) => ({
+vi.mock(import("@d4research/client-runtime/state/thread-workflows"), async (importOriginal) => ({
   ...(await importOriginal()),
   deriveThreadQueueWorkflowState: (() => state.workflow) as never,
 }));
@@ -56,7 +56,7 @@ vi.mock(import("../../state/query"), async (importOriginal) => ({
 // The thread detail atoms are real, fed by one state atom the test writes.
 vi.mock(import("../../state/threads"), async (importOriginal) => {
   const { createEnvironmentThreadDetailAtoms, EMPTY_ENVIRONMENT_THREAD_STATE } =
-    await import("@t3tools/client-runtime/state/threads");
+    await import("@d4research/client-runtime/state/threads");
   const { AsyncResult, Atom } = await import("effect/reactivity");
   const Option = await import("effect/Option");
   const { makeThreadProjectionFixture } = await import("../../test-fixtures");
@@ -84,7 +84,7 @@ vi.mock(import("../../assets/assetUrls"), async (importOriginal) => ({
 }));
 
 import "~/index.css";
-import { EMPTY_ENVIRONMENT_THREAD_STATE } from "@t3tools/client-runtime/state/threads";
+import { EMPTY_ENVIRONMENT_THREAD_STATE } from "@d4research/client-runtime/state/threads";
 
 import { act, render as renderUi } from "../../../test/render";
 import { makeStreamingTimelineFixture, makeThreadProjectionFixture } from "../../test-fixtures";

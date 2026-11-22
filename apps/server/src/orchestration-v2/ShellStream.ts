@@ -10,16 +10,16 @@ import type {
   OrchestrationV2StoredEvent,
   ProjectId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   isListedThreadLineage,
   isLiveSubagentShell,
   isOlderSettledThreadShell,
   OrchestrationProjectShell as ProjectShellSchema,
   OrchestrationV2ThreadShell as ThreadShellSchema,
-} from "@t3tools/contracts";
-import { turnItemCanChangeUserWait } from "@t3tools/shared/agentAwareness";
-import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
+} from "@d4research/contracts";
+import { turnItemCanChangeUserWait } from "@d4research/shared/agentAwareness";
+import * as NodeSqliteClient from "@d4research/shared/nodeSqliteClient";
 // @effect-diagnostics-next-line nodeBuiltinImport:off - a synchronous digest of a few project rows.
 import * as NodeCrypto from "node:crypto";
 import type * as Arr from "effect/Array";

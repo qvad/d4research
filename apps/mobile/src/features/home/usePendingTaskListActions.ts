@@ -1,4 +1,4 @@
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
 import * as Dialog from "../../components/ui/Dialog";
 import { msg } from "gt-react-native";
 import { useCallback } from "react";

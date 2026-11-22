@@ -1,4 +1,4 @@
-import type { UsageSource } from "@t3tools/contracts";
+import type { UsageSource } from "@d4research/contracts";
 import { mFallback, msg } from "gt-i18n";
 import type { MFunctionType } from "gt-i18n/types";
 

@@ -20,7 +20,7 @@ import {
   RuntimeRequestId,
   ThreadId,
   TurnItemId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 // @effect-diagnostics-next-line nodeBuiltinImport:off -- derive ids are synchronous, so the hash must be too.
 import * as NodeCrypto from "node:crypto";
 
@@ -194,7 +194,7 @@ export class IdAllocatorV2 extends Context.Service<
     readonly allocate: IdAllocatorV2Allocate;
     readonly derive: IdAllocatorV2Derive;
   }
->()("@t3tools/provider-core/server/IdAllocator/IdAllocatorV2") {}
+>()("@d4research/provider-core/server/IdAllocator/IdAllocatorV2") {}
 
 const encodePart = (part: string | number): string => encodeURIComponent(String(part));
 

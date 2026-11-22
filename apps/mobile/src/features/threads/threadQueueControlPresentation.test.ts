@@ -1,6 +1,6 @@
-import { ComposerContextId } from "@t3tools/contracts";
-import { formatAssistantCitationHref } from "@t3tools/shared/assistantCitations";
-import { formatComposerContextReference } from "@t3tools/shared/composerContextReferences";
+import { ComposerContextId } from "@d4research/contracts";
+import { formatAssistantCitationHref } from "@d4research/shared/assistantCitations";
+import { formatComposerContextReference } from "@d4research/shared/composerContextReferences";
 import { describe, expect, it } from "vite-plus/test";
 
 import { resolveThreadQueueRowControls } from "./threadQueueControlPresentation";

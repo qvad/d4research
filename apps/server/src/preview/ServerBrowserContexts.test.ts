@@ -6,8 +6,8 @@ import type * as NodeNet from "node:net";
 import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
 
-import { INCOGNITO_BROWSER_PROFILE_ID } from "@t3tools/contracts";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import { INCOGNITO_BROWSER_PROFILE_ID } from "@d4research/contracts";
+import * as HostProcess from "@d4research/shared/HostProcess";
 import { it as effectIt } from "@effect/vitest";
 import * as Effect from "effect/Effect";
 import { chromium, type Browser, type BrowserContext, type BrowserType } from "playwright-core";

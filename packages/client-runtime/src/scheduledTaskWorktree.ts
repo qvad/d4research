@@ -1,4 +1,4 @@
-import type { VcsRef } from "@t3tools/contracts";
+import type { VcsRef } from "@d4research/contracts";
 
 /** An empty base is automatic: the project's default branch, else `main` or `master`. */
 export function scheduledTaskWorktreeBaseRef(

@@ -5,7 +5,7 @@ import type * as Schema from "effect/Schema";
 import {
   SAVED_VIEW_NAME_MAX_LENGTH,
   savedViewNameError,
-} from "@t3tools/client-runtime/saved-views";
+} from "@d4research/client-runtime/saved-views";
 
 import { getLocalStorageItem, useLocalStorage } from "../hooks/useLocalStorage";
 import { randomUUID } from "../lib/utils";

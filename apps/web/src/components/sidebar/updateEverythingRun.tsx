@@ -1,10 +1,10 @@
 import { useAtomValue } from "@effect/atom-react";
-import { AVAILABLE_CONNECTION_STATE } from "@t3tools/client-runtime/connection";
+import { AVAILABLE_CONNECTION_STATE } from "@d4research/client-runtime/connection";
 import {
   nudgeReconnectDuringUpdateRestart,
   serverUpdateStateAtom,
-} from "@t3tools/client-runtime/state/server";
-import { EnvironmentId, type ServerConfig } from "@t3tools/contracts";
+} from "@d4research/client-runtime/state/server";
+import { EnvironmentId, type ServerConfig } from "@d4research/contracts";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";

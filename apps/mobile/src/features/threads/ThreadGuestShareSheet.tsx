@@ -1,11 +1,11 @@
 import { useAtomValue } from "@effect/atom-react";
 import { useNavigation, usePreventRemove, type StaticScreenProps } from "@react-navigation/native";
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
+import { scopeThreadRef } from "@d4research/client-runtime/environment";
 import {
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import type { EnvironmentId, ThreadGuestShare, ThreadId } from "@t3tools/contracts";
+} from "@d4research/client-runtime/state/runtime";
+import type { EnvironmentId, ThreadGuestShare, ThreadId } from "@d4research/contracts";
 import { msg, T, useGT, useMessages } from "gt-react-native";
 import * as DateTime from "effect/DateTime";
 import { useMemo, useState } from "react";

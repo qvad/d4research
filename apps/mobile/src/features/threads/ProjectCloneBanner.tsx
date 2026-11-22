@@ -1,6 +1,6 @@
 import { Button } from "../../components/ui/Button";
-import { projectCloneDisplayName, type ProjectCloneSnapshot } from "@t3tools/contracts";
-import { projectCloneProgressSummary } from "@t3tools/client-runtime/contract-labels";
+import { projectCloneDisplayName, type ProjectCloneSnapshot } from "@d4research/contracts";
+import { projectCloneProgressSummary } from "@d4research/client-runtime/contract-labels";
 import { T, useGT, useMessages, Var } from "gt-react-native";
 import { View } from "react-native";
 

@@ -1,7 +1,7 @@
 // `test` for iOS scenarios: e2e's mobile test plus `t3`, which seeds state like the web one and
 // opens the dev client paired with the scenario's server.
 import { test as base } from "@e2e-dev/mobile";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@d4research/shared/HostProcess";
 import { expect } from "e2e";
 import * as Effect from "effect/Effect";
 import * as Path from "effect/Path";
@@ -11,7 +11,7 @@ import { APP_DIR, MOBILE, MOBILE_T3_HOME } from "../e2e.config.ts";
 import { run, ScenarioError } from "./shell.ts";
 import { makeState, runPromise, type T3State } from "./t3.ts";
 
-const APP_ID = "com.t3tools.t3code.dev";
+const APP_ID = "ai.dimaggi.d4research.dev";
 const SCHEME = "t3code-dev";
 
 export interface MobileT3 extends T3State {

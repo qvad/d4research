@@ -1,4 +1,4 @@
-import type { UsageProviderKind } from "@t3tools/contracts";
+import type { UsageProviderKind } from "@d4research/contracts";
 
 export function providerColors(scheme: "light" | "dark"): Record<UsageProviderKind, string> {
   return {

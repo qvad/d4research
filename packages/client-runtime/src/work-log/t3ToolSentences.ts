@@ -2,7 +2,7 @@ import { msg } from "gt-i18n";
 
 /**
  * Whole sentences for each T3 MCP tool row, keyed by the tool's labels from
- * `@t3tools/shared/t3McpToolPresentation`. Resolve with `{ status }`, and for
+ * `@d4research/shared/t3McpToolPresentation`. Resolve with `{ status }`, and for
  * `changeRequest` also `{ changeRequest, number }`.
  */
 export interface T3ToolSentence {

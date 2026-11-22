@@ -1,6 +1,6 @@
 import { T, useGT } from "gt-react";
 import { useState } from "react";
-import type { ProviderAuthMethod } from "@t3tools/contracts";
+import type { ProviderAuthMethod } from "@d4research/contracts";
 import { RadioGroup, Radio } from "../ui/radio-group";
 import {
   Dialog,

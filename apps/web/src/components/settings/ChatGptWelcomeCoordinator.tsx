@@ -1,5 +1,5 @@
 import { useAtomValue } from "@effect/atom-react";
-import { usesChatGptSharing } from "@t3tools/shared/usageLimits";
+import { usesChatGptSharing } from "@d4research/shared/usageLimits";
 import { T, Var } from "gt-react";
 import { useState } from "react";
 import { environmentPresentations } from "../../state/presentation";

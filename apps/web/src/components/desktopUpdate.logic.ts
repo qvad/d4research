@@ -1,6 +1,6 @@
-import { desktopTrackMismatchText } from "@t3tools/client-runtime/state/server";
-import type { DesktopUpdateActionResult, DesktopUpdateState } from "@t3tools/contracts";
-import { desktopUpdateChannelOf } from "@t3tools/shared/cliRelease";
+import { desktopTrackMismatchText } from "@d4research/client-runtime/state/server";
+import type { DesktopUpdateActionResult, DesktopUpdateState } from "@d4research/contracts";
+import { desktopUpdateChannelOf } from "@d4research/shared/cliRelease";
 import { msg } from "gt-react";
 
 import { m, type MessageResolver } from "../i18n/messages";
@@ -8,7 +8,7 @@ import { channelSwitchLabel } from "./sidebar/updateEverything.logic";
 
 export type DesktopUpdateButtonAction = "download" | "install" | "none";
 
-const DEFAULT_DESKTOP_RELEASE_REPOSITORY = "pingdotgg/t3code";
+const DEFAULT_DESKTOP_RELEASE_REPOSITORY = "dimaggi-ai/d4research";
 const GITHUB_REPOSITORY_SEGMENT = /^[A-Za-z0-9._-]+$/u;
 
 function isValidRepositorySegment(value: string | undefined): value is string {

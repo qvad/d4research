@@ -4,8 +4,8 @@ import {
   findAssistantCitationText,
   serializeAssistantCitation,
   expandAssistantCitationsForProvider,
-} from "@t3tools/shared/assistantCitations";
-import { EnvironmentId, ThreadId, MessageId } from "@t3tools/contracts";
+} from "@d4research/shared/assistantCitations";
+import { EnvironmentId, ThreadId, MessageId } from "@d4research/contracts";
 
 it("offers distinct source choices within a block and maps recursive folds without merging occurrences", () => {
   const paragraph = `${"x".repeat(40)}**quote**${"x".repeat(40)}`;

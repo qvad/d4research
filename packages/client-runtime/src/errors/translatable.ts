@@ -104,7 +104,7 @@ export function translatableError(
 }
 
 /**
- * Attaches marked text to an error whose class lives in `@t3tools/contracts`, so it cannot
+ * Attaches marked text to an error whose class lives in `@d4research/contracts`, so it cannot
  * declare the field. Use only when the error's `message` is exactly that text in English.
  */
 export function withI18nMessage<E extends Error>(

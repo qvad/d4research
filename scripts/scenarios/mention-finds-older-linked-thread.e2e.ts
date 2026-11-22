@@ -1,5 +1,5 @@
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
-import { CommandId, ThreadId } from "@t3tools/contracts";
+import { CommandId, ThreadId } from "@d4research/contracts";
 import { expect } from "e2e";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";

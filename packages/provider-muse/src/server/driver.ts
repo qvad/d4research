@@ -1,6 +1,6 @@
-import { ProviderDriverKind, type ServerProvider } from "@t3tools/contracts";
+import { ProviderDriverKind, type ServerProvider } from "@d4research/contracts";
 import { MuseSettings } from "../settings.ts";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@d4research/shared/HostProcess";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Ref from "effect/Ref";
@@ -10,20 +10,20 @@ import * as Schema from "effect/Schema";
 import * as HttpClient from "effect/http/HttpClient";
 import * as ChildProcessSpawner from "effect/process/ChildProcessSpawner";
 
-import * as ProviderLatestVersions from "@t3tools/provider-core/server/ProviderLatestVersions";
-import * as ProviderHost from "@t3tools/provider-core/server/ProviderHost";
-import * as McpProviderSessions from "@t3tools/provider-core/server/McpProviderSessions";
-import { expandHomePath } from "@t3tools/provider-core/server/pathExpansion";
+import * as ProviderLatestVersions from "@d4research/provider-core/server/ProviderLatestVersions";
+import * as ProviderHost from "@d4research/provider-core/server/ProviderHost";
+import * as McpProviderSessions from "@d4research/provider-core/server/McpProviderSessions";
+import { expandHomePath } from "@d4research/provider-core/server/pathExpansion";
 import { makeMuseTextGeneration } from "./textGeneration.ts";
-import { ProviderDriverError } from "@t3tools/provider-core/server/errors";
+import { ProviderDriverError } from "@d4research/provider-core/server/errors";
 import { makeMuseAdapterV2 } from "./adapter.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
-import * as ProviderContinuationRequests from "@t3tools/provider-core/server/ProviderContinuationRequests";
+import * as IdAllocator from "@d4research/provider-core/server/IdAllocator";
+import * as ProviderContinuationRequests from "@d4research/provider-core/server/ProviderContinuationRequests";
 import { checkMuseProviderStatus, makePendingMuseProvider } from "./status.ts";
-import * as ProviderEventLoggers from "@t3tools/provider-core/server/ProviderEventLoggers";
-import { makeManagedServerProvider } from "@t3tools/provider-core/server/managedProvider";
-import type { ProviderUsageLimitsReport } from "@t3tools/provider-core/server/snapshot";
-import { makeUsageLimits } from "@t3tools/provider-core/server/usageLimits";
+import * as ProviderEventLoggers from "@d4research/provider-core/server/ProviderEventLoggers";
+import { makeManagedServerProvider } from "@d4research/provider-core/server/managedProvider";
+import type { ProviderUsageLimitsReport } from "@d4research/provider-core/server/snapshot";
+import { makeUsageLimits } from "@d4research/provider-core/server/usageLimits";
 import { enrichMuseSnapshot, latestMuseVersion, museMaintenance } from "./maintenance.ts";
 import { makeMuseEnvironment } from "./sdk.ts";
 import { museUsageReader } from "./usage.ts";
@@ -32,18 +32,18 @@ import {
   defaultProviderContinuationIdentity,
   type ProviderDriver,
   type ProviderInstance,
-} from "@t3tools/provider-core/server/driver";
-import { mergeProviderInstanceEnvironment } from "@t3tools/provider-core/server/instanceEnvironment";
+} from "@d4research/provider-core/server/driver";
+import { mergeProviderInstanceEnvironment } from "@d4research/provider-core/server/instanceEnvironment";
 import {
   makeCachedProviderMaintenanceResolution,
   resolveProviderMaintenanceCapabilitiesEffect,
-} from "@t3tools/provider-core/server/maintenanceResolver";
+} from "@d4research/provider-core/server/maintenanceResolver";
 import {
   haveProviderSnapshotSettingsChanged,
   makeProviderSnapshotSettingsSource,
   type ProviderSnapshotSettings,
-} from "@t3tools/provider-core/server/snapshotSettings";
-import { withInstanceIdentity } from "@t3tools/provider-core/server/instanceIdentity";
+} from "@d4research/provider-core/server/snapshotSettings";
+import { withInstanceIdentity } from "@d4research/provider-core/server/instanceIdentity";
 
 const DRIVER_KIND = ProviderDriverKind.make("muse");
 const decodeMuseSettings = Schema.decodeSync(MuseSettings);

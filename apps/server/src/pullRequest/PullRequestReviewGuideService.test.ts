@@ -18,7 +18,7 @@ import {
   type PullRequestStack,
   type PullRequestRef,
   type RepositoryOrigin,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 
 import * as ServerConfig from "../config.ts";
 import * as SqlitePersistence from "../persistence/Sqlite.ts";

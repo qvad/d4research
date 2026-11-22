@@ -28,7 +28,7 @@ export function loadCursorSqlite(): typeof import("@cursor/sdk/sqlite") {
 
 export type CursorSdkErrorKind = "AuthenticationError" | "ConfigurationError" | "CursorSdkError";
 
-const CURSOR_SDK_ERROR_KIND = Symbol.for("@t3tools/provider-cursor/sdkErrorKind");
+const CURSOR_SDK_ERROR_KIND = Symbol.for("@d4research/provider-cursor/sdkErrorKind");
 
 export function tagCursorSdkError(error: Error, kind: CursorSdkErrorKind): Error {
   Reflect.set(error, CURSOR_SDK_ERROR_KIND, kind);

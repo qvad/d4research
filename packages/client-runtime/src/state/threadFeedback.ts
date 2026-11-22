@@ -1,5 +1,5 @@
 import { thrownErrorMessage } from "../errors/translatable.ts";
-import { MessageId, type ProviderUploadFeedbackResult } from "@t3tools/contracts";
+import { MessageId, type ProviderUploadFeedbackResult } from "@d4research/contracts";
 
 import {
   isAtomCommandInterrupted,

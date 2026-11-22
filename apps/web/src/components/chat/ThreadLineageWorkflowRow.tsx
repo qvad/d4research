@@ -2,10 +2,10 @@ import {
   workflowMemberModelSelection,
   type SubagentWorkflowGroup,
   type RuntimeSubagent,
-} from "@t3tools/client-runtime/state/subagentRuntime";
-import type { SideThreadOpenIntent } from "@t3tools/client-runtime/side-thread";
+} from "@d4research/client-runtime/state/subagentRuntime";
+import type { SideThreadOpenIntent } from "@d4research/client-runtime/side-thread";
 import { useSideThreadTrigger } from "../../hooks/useSideThreadTrigger";
-import type { ProviderDriverKind, ProviderInstanceId, ServerProvider } from "@t3tools/contracts";
+import type { ProviderDriverKind, ProviderInstanceId, ServerProvider } from "@d4research/contracts";
 import { msg, T, useGT, useMessages } from "gt-react";
 import { ChevronDownIcon, SquareIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";

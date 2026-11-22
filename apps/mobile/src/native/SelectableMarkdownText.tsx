@@ -1,8 +1,8 @@
 import { Platform } from "react-native";
 import { useState } from "react";
 import { useGT } from "gt-react-native";
-import type { AssistantCitation } from "@t3tools/contracts";
-import { parseAssistantCitationHref } from "@t3tools/shared/assistantCitations";
+import type { AssistantCitation } from "@d4research/contracts";
+import { parseAssistantCitationHref } from "@d4research/shared/assistantCitations";
 import { AssistantCitationSheet } from "../components/AssistantCitationSheet";
 import { copyTextWithHaptic } from "../lib/copyTextWithHaptic";
 import type { SelectableMarkdownTextProps } from "./SelectableMarkdownText.types";

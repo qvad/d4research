@@ -1,4 +1,4 @@
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@d4research/client-runtime/errors";
 import { msg, T, useGT } from "gt-react";
 import { useEffect, useState } from "react";
 

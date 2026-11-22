@@ -1,4 +1,4 @@
-import { IssueTrackerKind, MAX_ISSUE_TRACKER_ADDITIONAL_SCOPES } from "@t3tools/contracts";
+import { IssueTrackerKind, MAX_ISSUE_TRACKER_ADDITIONAL_SCOPES } from "@d4research/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import { issueTrackerScopeOptions } from "./issueTrackers.ts";

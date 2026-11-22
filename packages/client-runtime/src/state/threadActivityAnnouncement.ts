@@ -1,5 +1,5 @@
-import type { OrchestrationV2Run, OrchestrationV2RunStatus, RunId } from "@t3tools/contracts";
-import { latestExecutedRun } from "@t3tools/shared/orchestrationV2ThreadError";
+import type { OrchestrationV2Run, OrchestrationV2RunStatus, RunId } from "@d4research/contracts";
+import { latestExecutedRun } from "@d4research/shared/orchestrationV2ThreadError";
 import { mFallback, msg } from "gt-i18n";
 import type { MFunctionType } from "gt-i18n/types";
 

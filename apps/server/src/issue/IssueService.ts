@@ -33,8 +33,8 @@ import {
   type IssueUpdateInput,
   type OrchestrationProjectShell,
   type ProjectId,
-} from "@t3tools/contracts";
-import * as SourceControlRateLimit from "@t3tools/source-control-core/server/SourceControlRateLimit";
+} from "@d4research/contracts";
+import * as SourceControlRateLimit from "@d4research/source-control-core/server/SourceControlRateLimit";
 import {
   IssueTrackerError,
   isStandaloneIssueTracker,
@@ -43,8 +43,8 @@ import {
   type StandaloneIssueTrackerApi,
   type TrackerIssueDetail,
   type TrackerIssueLink,
-} from "@t3tools/source-control-core/server/IssueTracker";
-import { parseUrl } from "@t3tools/shared/url";
+} from "@d4research/source-control-core/server/IssueTracker";
+import { parseUrl } from "@d4research/shared/url";
 
 import * as IssueTrackerBindings from "../persistence/IssueTrackerBindings.ts";
 import * as ProjectService from "../project/ProjectService.ts";
@@ -185,7 +185,7 @@ export class IssueService extends Context.Service<
       IssueError
     >;
   }
->()("t3/issue/IssueService") {}
+>()("d4research/issue/IssueService") {}
 
 const make = Effect.gen(function* () {
   const registry = yield* IssueTrackerRegistry.IssueTrackerRegistry;

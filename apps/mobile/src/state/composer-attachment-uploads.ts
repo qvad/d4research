@@ -1,12 +1,12 @@
 import { useAtomValue } from "@effect/atom-react";
-import { AuthOrchestrationOperateScope, type EnvironmentId } from "@t3tools/contracts";
+import { AuthOrchestrationOperateScope, type EnvironmentId } from "@d4research/contracts";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 import {
   attachmentUploadError,
   createAttachmentUploadRegistry,
-} from "@t3tools/client-runtime/state/attachment-uploads";
-import { verifyPersistedAttachmentUpload } from "@t3tools/client-runtime/state/attachments";
+} from "@d4research/client-runtime/state/attachment-uploads";
+import { verifyPersistedAttachmentUpload } from "@d4research/client-runtime/state/attachments";
 import { Atom } from "effect/reactivity";
 
 import { uploadComposerAttachment } from "../lib/attachmentUpload";

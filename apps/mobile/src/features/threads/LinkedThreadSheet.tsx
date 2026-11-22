@@ -9,13 +9,13 @@ import {
   linkedThreadFailure,
   type LinkedThreadFailure,
   type LinkedThreadTarget,
-} from "@t3tools/client-runtime/linked-thread";
+} from "@d4research/client-runtime/linked-thread";
 import {
   toolCallLines,
   turnItemDetailRevision,
   turnItemOutputText,
-} from "@t3tools/client-runtime/work-log/item-detail";
-import { EnvironmentId, ThreadId } from "@t3tools/contracts";
+} from "@d4research/client-runtime/work-log/item-detail";
+import { EnvironmentId, ThreadId } from "@d4research/contracts";
 import { T, useGT, useLocale, useMessages } from "gt-react-native";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type * as React from "react";

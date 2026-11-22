@@ -5,7 +5,7 @@ import {
   type TerminalResizeInput,
   type TerminalWriteInput,
   type TerminalCloseInput,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Effect from "effect/Effect";
 import { AsyncResult, Atom, AtomRegistry } from "effect/reactivity";
 import { expect, it } from "vite-plus/test";

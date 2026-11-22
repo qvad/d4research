@@ -1,4 +1,4 @@
-import { EnvironmentId, GuestShareId, ThreadId, type ThreadGuestShare } from "@t3tools/contracts";
+import { EnvironmentId, GuestShareId, ThreadId, type ThreadGuestShare } from "@d4research/contracts";
 import * as DateTime from "effect/DateTime";
 import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";

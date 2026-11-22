@@ -2,7 +2,7 @@
 import * as NodeFS from "node:fs";
 
 import { catalog } from "@handy-computer/models";
-import { recommendSpeechModels } from "@t3tools/shared/speech";
+import { recommendSpeechModels } from "@d4research/shared/speech";
 import policy from "../../../packages/shared/src/speechRecommendationPolicy.json" with { type: "json" };
 import { expect, it } from "vite-plus/test";
 

@@ -1,4 +1,4 @@
-import type { OrchestrationV2AppThread, SideThreadOpenTarget } from "@t3tools/contracts";
+import type { OrchestrationV2AppThread, SideThreadOpenTarget } from "@d4research/contracts";
 
 /**
  * A thread that opens beside the one you are in. `linked` lives on a linked environment this client

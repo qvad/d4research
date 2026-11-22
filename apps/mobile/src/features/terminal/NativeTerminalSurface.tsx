@@ -2,7 +2,7 @@ import {
   terminalOutputText,
   type TerminalGrid,
   type TerminalOutputState,
-} from "@t3tools/client-runtime/state/terminal";
+} from "@d4research/client-runtime/state/terminal";
 import { useGT } from "gt-react-native";
 import { memo, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react";
 import {

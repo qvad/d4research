@@ -1,5 +1,5 @@
-import { EnvironmentId, ProjectId } from "@t3tools/contracts";
-import { savedViewNameError } from "@t3tools/client-runtime/saved-views";
+import { EnvironmentId, ProjectId } from "@d4research/contracts";
+import { savedViewNameError } from "@d4research/client-runtime/saved-views";
 import { describe, expect, it } from "vite-plus/test";
 
 import {

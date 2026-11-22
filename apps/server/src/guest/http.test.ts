@@ -1,5 +1,5 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { GUEST_MESSAGE_MAX_LENGTH } from "@t3tools/contracts";
+import { GUEST_MESSAGE_MAX_LENGTH } from "@d4research/contracts";
 import { assert, it } from "@effect/vitest";
 import * as Effect from "effect/Effect";
 import { HttpServerRequest } from "effect/http";

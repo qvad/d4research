@@ -5,8 +5,8 @@ import type {
   TerminalSessionSnapshot,
   TerminalSummary,
   ThreadId,
-} from "@t3tools/contracts";
-import { DEFAULT_MAX_TERMINAL_BUFFER_BYTES } from "@t3tools/contracts";
+} from "@d4research/contracts";
+import { DEFAULT_MAX_TERMINAL_BUFFER_BYTES } from "@d4research/contracts";
 import {
   appendOutput,
   clearOutput,
@@ -24,7 +24,7 @@ export {
   type TerminalOutputState,
   type TerminalOutputUpdate,
 } from "./terminalOutput.ts";
-export { DEFAULT_MAX_TERMINAL_BUFFER_BYTES } from "@t3tools/contracts";
+export { DEFAULT_MAX_TERMINAL_BUFFER_BYTES } from "@d4research/contracts";
 
 /** The PTY grid every renderer of a shared terminal draws. */
 export interface TerminalGrid {

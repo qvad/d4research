@@ -2,11 +2,11 @@ import {
   requireSettingsSecretLiteral,
   type ServerSettings,
   type SettingsSecretUnresolvedError,
-} from "@t3tools/contracts";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { normalizeHost } from "@t3tools/source-control-core/server/pullRequestUtils";
-import * as SourceControlHost from "@t3tools/source-control-core/server/SourceControlHost";
-import { readSourceControlHostSettings } from "@t3tools/source-control-core/shared/definition";
+} from "@d4research/contracts";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import { normalizeHost } from "@d4research/source-control-core/server/pullRequestUtils";
+import * as SourceControlHost from "@d4research/source-control-core/server/SourceControlHost";
+import { readSourceControlHostSettings } from "@d4research/source-control-core/shared/definition";
 import * as Cache from "effect/Cache";
 import * as Context from "effect/Context";
 import * as Duration from "effect/Duration";
@@ -97,7 +97,7 @@ export class TanStackSourceCredentials extends Context.Service<
     ) => Effect.Effect<TanStackSourceCredential, TanStackSourceCredentialUnavailableError>;
     readonly invalidate: (host: string) => Effect.Effect<void>;
   }
->()("@t3tools/source-control-tanstack-source/server/TanStackSourceCredentials") {}
+>()("@d4research/source-control-tanstack-source/server/TanStackSourceCredentials") {}
 
 /** `src` sends SRC_TOKEN only to SRC_HOST (default source.tanstack.com); so does T3. */
 export function environmentToken(

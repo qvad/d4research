@@ -2,8 +2,8 @@ import {
   type LinkedPrompt,
   promptLinkAppPath,
   promptLinkDeepLink,
-} from "@t3tools/shared/promptLinks";
-import { parseNewThreadLink, parseThreadLinkPrompt } from "@t3tools/shared/promptLinksCopy";
+} from "@d4research/shared/promptLinks";
+import { parseNewThreadLink, parseThreadLinkPrompt } from "@d4research/shared/promptLinksCopy";
 import { useLocation } from "@tanstack/react-router";
 import * as Schema from "effect/Schema";
 import { msg, T, useGT, useMessages } from "gt-react";

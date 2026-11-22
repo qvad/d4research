@@ -15,8 +15,8 @@ import {
   type IssueTrackerConnectInput,
   type IssueTrackerConnection,
   type IssueTrackerConnectionList,
-} from "@t3tools/contracts";
-import type { StandaloneIssueTrackerApi } from "@t3tools/source-control-core/server/IssueTracker";
+} from "@d4research/contracts";
+import type { StandaloneIssueTrackerApi } from "@d4research/source-control-core/server/IssueTracker";
 
 import * as ServerSecretStore from "../auth/ServerSecretStore.ts";
 import * as IssueTrackerBindings from "../persistence/IssueTrackerBindings.ts";
@@ -43,7 +43,7 @@ export class IssueTrackerConnections extends Context.Service<
       input: IssueTrackerBindProjectInput,
     ) => Effect.Effect<void, IssueTrackerConnectionError>;
   }
->()("t3/issue/IssueTrackerConnections") {}
+>()("d4research/issue/IssueTrackerConnections") {}
 
 const make = Effect.gen(function* () {
   const registry = yield* IssueTrackerRegistry.IssueTrackerRegistry;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { TERMINAL_WRITE_MAX_LENGTH } from "@t3tools/contracts";
+import { TERMINAL_WRITE_MAX_LENGTH } from "@d4research/contracts";
 import { createTerminalPasteSession } from "./terminalPaste";
 
 function deferred<T>() {

@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { SecretProviderId, SecretProviderKind } from "@t3tools/contracts";
+import { SecretProviderId, SecretProviderKind } from "@d4research/contracts";
 import { expect } from "e2e";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";

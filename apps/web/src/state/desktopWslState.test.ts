@@ -1,4 +1,4 @@
-import type { DesktopWslState } from "@t3tools/contracts";
+import type { DesktopWslState } from "@d4research/contracts";
 import { AsyncResult, AtomRegistry } from "effect/reactivity";
 import { expect, it, vi } from "vite-plus/test";
 

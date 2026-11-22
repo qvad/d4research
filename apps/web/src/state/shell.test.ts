@@ -2,10 +2,10 @@ import {
   AVAILABLE_CONNECTION_STATE,
   BearerConnectionTarget,
   PrimaryConnectionTarget,
-} from "@t3tools/client-runtime/connection";
-import type { EnvironmentCatalogState } from "@t3tools/client-runtime/state/connections";
-import { EMPTY_SHELL_STATE, type EnvironmentShellState } from "@t3tools/client-runtime/state/shell";
-import { EnvironmentId } from "@t3tools/contracts";
+} from "@d4research/client-runtime/connection";
+import type { EnvironmentCatalogState } from "@d4research/client-runtime/state/connections";
+import { EMPTY_SHELL_STATE, type EnvironmentShellState } from "@d4research/client-runtime/state/shell";
+import { EnvironmentId } from "@d4research/contracts";
 import * as Option from "effect/Option";
 import { AsyncResult, Atom, AtomRegistry } from "effect/reactivity";
 import { describe, expect, it, vi } from "vite-plus/test";

@@ -1,4 +1,4 @@
-import type { ProviderInstanceId } from "@t3tools/contracts";
+import type { ProviderInstanceId } from "@d4research/contracts";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -27,7 +27,7 @@ export class ProviderInstallationGate extends Context.Service<
       effect: Effect.Effect<A, E, R>,
     ) => Effect.Effect<A, E, R>;
   }
->()("t3/provider/ProviderInstallationGate") {}
+>()("d4research/provider/ProviderInstallationGate") {}
 
 export const layer = Layer.sync(ProviderInstallationGate, () => {
   // Instances are few and configured, so their gates are kept for the server's lifetime.

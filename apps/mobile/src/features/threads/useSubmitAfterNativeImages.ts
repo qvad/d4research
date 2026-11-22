@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import type { ActiveTurnComposerAction } from "@t3tools/client-runtime/state/composer-dispatch";
+import type { ActiveTurnComposerAction } from "@d4research/client-runtime/state/composer-dispatch";
 
 export function useSubmitAfterNativeImages(props: {
   readonly draftKey: string;

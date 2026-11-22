@@ -1,5 +1,5 @@
-import { expandHomePath } from "@t3tools/provider-core/server/pathExpansion";
-import type { NativeAppIconReference } from "@t3tools/contracts";
+import { expandHomePath } from "@d4research/provider-core/server/pathExpansion";
+import type { NativeAppIconReference } from "@d4research/contracts";
 import * as Cache from "effect/Cache";
 import * as Cause from "effect/Cause";
 import * as Digest from "effect/crypto/Digest";
@@ -17,7 +17,7 @@ import * as PlatformError from "effect/PlatformError";
 import * as Semaphore from "effect/Semaphore";
 import * as Hex from "effect/encoding/Hex";
 import { ChildProcess, ChildProcessSpawner } from "effect/process";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@d4research/shared/HostProcess";
 
 import * as ServerConfig from "../config.ts";
 
@@ -31,7 +31,7 @@ export class NativeAppIconResolver extends Context.Service<
   {
     readonly resolve: (app: NativeAppIconReference) => Effect.Effect<string | null>;
   }
->()("t3/assets/NativeAppIconResolver") {}
+>()("d4research/assets/NativeAppIconResolver") {}
 
 function appCacheKey(app: NativeAppIconReference): string {
   return JSON.stringify(app);

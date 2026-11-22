@@ -242,7 +242,7 @@ inputs and results, including target options and linked-environment fields.
 import type {
   OrchestratorMcpDelegateTaskInput as DelegateTaskInput,
   OrchestratorMcpDelegateTaskResult as DelegateTaskResult,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 ```
 
 For local delegation, provider, model, runtime mode, and interaction mode inherit
@@ -330,7 +330,7 @@ optional cancellation reason.
 Creates between one and twenty ordinary top-level T3 threads:
 
 ```ts
-import type { OrchestratorMcpCreateThreadsInput as CreateThreadsInput } from "@t3tools/contracts";
+import type { OrchestratorMcpCreateThreadsInput as CreateThreadsInput } from "@d4research/contracts";
 ```
 
 Each entry independently resolves provider, model, and modes. The new threads

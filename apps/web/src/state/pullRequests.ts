@@ -1,5 +1,5 @@
 import { useAtomValue } from "@effect/atom-react";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
 import {
   applyPullRequestSummaryEdits,
   createLinkedPullRequestSummaryAtomFamily,
@@ -8,7 +8,7 @@ import {
   pullRequestPendingEditsFor,
   pullRequestHostAnswer,
   type PullRequestPendingEdit,
-} from "@t3tools/client-runtime/state/pull-requests";
+} from "@d4research/client-runtime/state/pull-requests";
 import {
   PullRequestListResult,
   PullRequestOperationError,
@@ -24,11 +24,11 @@ import {
   type PullRequestRef,
   type PullRequestSummary,
   type ThreadPullRequestLink,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   threadPullRequestKeyOf,
   visibleThreadPullRequests,
-} from "@t3tools/client-runtime/thread-pull-requests";
+} from "@d4research/client-runtime/thread-pull-requests";
 import * as Cause from "effect/Cause";
 import * as Clock from "effect/Clock";
 import * as Effect from "effect/Effect";

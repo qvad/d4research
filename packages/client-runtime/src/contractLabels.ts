@@ -1,5 +1,5 @@
 /**
- * Translatable copies of the English labels in `@t3tools/contracts` helpers. Same ids, same
+ * Translatable copies of the English labels in `@d4research/contracts` helpers. Same ids, same
  * English; apps call these instead of the contracts helpers so the text follows the UI language.
  */
 import {
@@ -13,8 +13,8 @@ import {
   type RuntimeMode,
   type WorktreeSetupStageId,
   worktreeSetupStageLabel as contractsWorktreeSetupStageLabel,
-} from "@t3tools/contracts";
-import type { IdleCompactionMode } from "@t3tools/contracts/settings";
+} from "@d4research/contracts";
+import type { IdleCompactionMode } from "@d4research/contracts/settings";
 import { mFallback, msg } from "gt-i18n";
 import type { MFunctionType } from "gt-i18n/types";
 

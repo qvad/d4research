@@ -3,7 +3,7 @@
 import * as NodeProcess from "node:process";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@d4research/shared/HostProcess";
 import { app, type Details, type Event } from "electron";
 
 class AudioServiceRestartError extends Schema.TaggedError<AudioServiceRestartError>()(

@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import type { EnvironmentSpeechModel, EnvironmentSpeechStatus } from "@t3tools/contracts";
+import type { EnvironmentSpeechModel, EnvironmentSpeechStatus } from "@d4research/contracts";
 import { expect } from "e2e";
 
 import { test, WEB } from "./t3.ts";

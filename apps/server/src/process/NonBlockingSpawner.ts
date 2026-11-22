@@ -2,8 +2,8 @@
 import * as NodeFS from "node:fs";
 import * as NodeFSP from "node:fs/promises";
 
-import { envTrampoline, supportsEnvChdir } from "@t3tools/shared/envTrampoline";
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import { envTrampoline, supportsEnvChdir } from "@d4research/shared/envTrampoline";
+import * as HostProcess from "@d4research/shared/HostProcess";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Path from "effect/Path";

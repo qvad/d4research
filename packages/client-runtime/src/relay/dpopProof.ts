@@ -2,7 +2,7 @@
 // non-extractable WebCrypto key, mobile signs with the platform's P-256 through a native module.
 import { msg } from "gt-i18n";
 import { MarkedText, translatableMessage } from "../errors/translatable.ts";
-import { normalizeDpopHtu, type DpopPublicJwk } from "@t3tools/shared/dpopCommon";
+import { normalizeDpopHtu, type DpopPublicJwk } from "@d4research/shared/dpopCommon";
 import * as Cache from "effect/Cache";
 import * as Clock from "effect/Clock";
 import * as Digest from "effect/crypto/Digest";

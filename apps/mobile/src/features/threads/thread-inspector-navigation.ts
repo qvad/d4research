@@ -2,7 +2,7 @@ import { StackActions, useNavigation } from "@react-navigation/native";
 import { createContext, use } from "react";
 import { Platform } from "react-native";
 
-import { resolveMobileSideThreadPresentation } from "@t3tools/client-runtime/side-thread";
+import { resolveMobileSideThreadPresentation } from "@d4research/client-runtime/side-thread";
 
 import { useWorkspacePaneState } from "../layout/AdaptiveWorkspaceLayout";
 

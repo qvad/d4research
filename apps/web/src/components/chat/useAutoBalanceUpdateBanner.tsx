@@ -1,6 +1,6 @@
 import { T, useGT, useMessages } from "gt-react";
 import { useAtomValue } from "@effect/atom-react";
-import type { ServerUpdateState } from "@t3tools/client-runtime/state/server";
+import type { ServerUpdateState } from "@d4research/client-runtime/state/server";
 import { useState } from "react";
 
 import { environmentIdsKey } from "~/state/environmentAtomList";

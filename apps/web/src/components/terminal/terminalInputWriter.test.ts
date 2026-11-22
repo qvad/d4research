@@ -1,4 +1,4 @@
-import { TerminalWriteInput } from "@t3tools/contracts";
+import { TerminalWriteInput } from "@d4research/contracts";
 import * as Schema from "effect/Schema";
 import { describe, expect, it, vi } from "vite-plus/test";
 

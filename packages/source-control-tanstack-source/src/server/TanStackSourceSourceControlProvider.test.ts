@@ -1,6 +1,6 @@
 import { assert, describe, it } from "@effect/vitest";
-import { GitCommandError } from "@t3tools/contracts";
-import * as TestSourceControlHost from "@t3tools/source-control-testing/TestSourceControlHost";
+import { GitCommandError } from "@d4research/contracts";
+import * as TestSourceControlHost from "@d4research/source-control-testing/TestSourceControlHost";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";

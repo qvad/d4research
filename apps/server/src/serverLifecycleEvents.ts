@@ -1,4 +1,4 @@
-import type { ServerLifecycleStreamEvent } from "@t3tools/contracts";
+import type { ServerLifecycleStreamEvent } from "@d4research/contracts";
 import * as Context from "effect/Context";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
@@ -26,7 +26,7 @@ export class ServerLifecycleEvents extends Context.Service<
     /** Completes once the first ready event is published. */
     readonly awaitReady: Effect.Effect<void>;
   }
->()("t3/serverLifecycleEvents") {}
+>()("d4research/serverLifecycleEvents") {}
 
 const make = Effect.gen(function* () {
   const pubsub = yield* PubSub.unbounded<ServerLifecycleStreamEvent>();

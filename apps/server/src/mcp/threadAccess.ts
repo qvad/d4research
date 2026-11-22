@@ -12,14 +12,14 @@ import {
   type RuntimeMode,
   ThreadId,
   type OrchestrationV2ThreadShell,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   hasThreadLinks,
   parseThreadLinkHref,
   threadLinkCandidates,
   threadLinkRefs,
-} from "@t3tools/shared/threadLinks";
-import { hasPendingBackgroundSubagent } from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
+} from "@d4research/shared/threadLinks";
+import { hasPendingBackgroundSubagent } from "@d4research/shared/orchestrationV2PendingBackgroundWork";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";
 

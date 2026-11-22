@@ -1,4 +1,4 @@
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentId } from "@d4research/contracts";
 
 /**
  * Toggles one connected environment in the Settings scope. `null` means every environment.

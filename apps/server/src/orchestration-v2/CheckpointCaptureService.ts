@@ -9,7 +9,7 @@ import {
   type OrchestrationV2TurnItem,
   RunId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Context from "effect/Context";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
@@ -19,7 +19,7 @@ import * as Schema from "effect/Schema";
 
 import * as CheckpointService from "./CheckpointService.ts";
 import * as EventSink from "./EventSink.ts";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+import * as IdAllocator from "@d4research/provider-core/server/IdAllocator";
 import * as ProjectionStore from "./ProjectionStore.ts";
 
 // Git processes are already capped server-wide; this keeps one thread from taking every slot.
@@ -48,7 +48,7 @@ export interface CheckpointCaptureServiceV2Shape {
 export class CheckpointCaptureServiceV2 extends Context.Service<
   CheckpointCaptureServiceV2,
   CheckpointCaptureServiceV2Shape
->()("t3/orchestration-v2/CheckpointCaptureService/CheckpointCaptureServiceV2") {}
+>()("d4research/orchestration-v2/CheckpointCaptureService/CheckpointCaptureServiceV2") {}
 
 export const layer: Layer.Layer<
   CheckpointCaptureServiceV2,

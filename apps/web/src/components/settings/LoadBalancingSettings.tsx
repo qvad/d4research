@@ -1,4 +1,4 @@
-import { resolveEnvironmentMachineKind } from "@t3tools/contracts";
+import { resolveEnvironmentMachineKind } from "@d4research/contracts";
 import { msg, T, useGT, useMessages } from "gt-react";
 
 import {

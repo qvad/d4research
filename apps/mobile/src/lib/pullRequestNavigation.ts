@@ -1,8 +1,8 @@
-import { parsePullRequestAnchor } from "@t3tools/shared/pullRequestAnchor";
-import { resolveChangeRequestLinkTarget } from "@t3tools/client-runtime/change-request-links";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
-import { EnvironmentId, ProjectId, type IssueRef } from "@t3tools/contracts";
+import { parsePullRequestAnchor } from "@d4research/shared/pullRequestAnchor";
+import { resolveChangeRequestLinkTarget } from "@d4research/client-runtime/change-request-links";
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
+import type { EnvironmentProject } from "@d4research/client-runtime/state/shell";
+import { EnvironmentId, ProjectId, type IssueRef } from "@d4research/contracts";
 
 /** The PullRequest route for a change request link from a project, or null for the browser. */
 export function nativePullRequestDestination(

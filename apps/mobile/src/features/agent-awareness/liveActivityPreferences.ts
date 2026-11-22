@@ -1,7 +1,7 @@
 import * as Effect from "effect/Effect";
 import * as Result from "effect/Result";
 import * as Schema from "effect/Schema";
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { EnvironmentId } from "@d4research/contracts";
 
 import type { SavedRemoteConnection } from "../../lib/connection";
 import type { CloudEnvironmentLinkError } from "../cloud/linkEnvironment";

@@ -8,7 +8,7 @@ import {
   MessageId,
   ThreadId,
   type AssistantCitation,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   assistantCitationLabel,
   assistantCitationsToPlainText,

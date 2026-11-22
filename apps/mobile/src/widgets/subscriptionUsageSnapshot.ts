@@ -1,4 +1,4 @@
-import { normalizeProviderAccentColor } from "@t3tools/client-runtime/state/provider-instance-display";
+import { normalizeProviderAccentColor } from "@d4research/client-runtime/state/provider-instance-display";
 import {
   collectLimitAccounts,
   collectLimitPools,
@@ -6,7 +6,7 @@ import {
   type LimitAccount,
   type LimitPoolWindow,
   type LimitPresentations,
-} from "@t3tools/shared/usageLimits";
+} from "@d4research/shared/usageLimits";
 import { msg } from "gt-react-native";
 
 import { m, type MessageResolver } from "../i18n/messages";

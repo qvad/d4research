@@ -1,15 +1,15 @@
 import { uuidv4 } from "../../lib/uuid";
 import * as Dialog from "../../components/ui/Dialog";
 import { useNavigation } from "@react-navigation/native";
-import { vcsActionLabelText } from "@t3tools/client-runtime/state/vcs";
+import { vcsActionLabelText } from "@d4research/client-runtime/state/vcs";
 import { useGT, useMessages } from "gt-react-native";
 import { AsyncResult } from "effect/reactivity";
 import * as Cause from "effect/Cause";
-import { AuthFilesystemReadScope, AuthSourceControlWriteScope } from "@t3tools/contracts";
+import { AuthFilesystemReadScope, AuthSourceControlWriteScope } from "@d4research/contracts";
 import type {
   EnvironmentProject,
   EnvironmentThreadShell,
-} from "@t3tools/client-runtime/state/shell";
+} from "@d4research/client-runtime/state/shell";
 import { useEnvironmentQuery } from "../../state/query";
 import { useEnvironmentScope } from "../../state/session";
 import { useAtomCommand } from "../../state/use-atom-command";

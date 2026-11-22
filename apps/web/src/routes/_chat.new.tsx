@@ -1,4 +1,4 @@
-import { parseNewThreadLink } from "@t3tools/shared/promptLinksCopy";
+import { parseNewThreadLink } from "@d4research/shared/promptLinksCopy";
 import { createFileRoute, useLocation } from "@tanstack/react-router";
 import { T, useMessages } from "gt-react";
 import { NewThreadLinkView } from "../components/promptLinks/NewThreadLinkView";

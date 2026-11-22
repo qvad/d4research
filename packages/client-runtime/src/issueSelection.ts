@@ -1,4 +1,4 @@
-import type { IssueAssigneeCandidate, IssueDetail, IssueLabelCandidate } from "@t3tools/contracts";
+import type { IssueAssigneeCandidate, IssueDetail, IssueLabelCandidate } from "@d4research/contracts";
 
 import { selectionChanges, type SelectionDraft } from "./pullRequestSelection.ts";
 

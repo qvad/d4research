@@ -1,4 +1,4 @@
-import { PROJECT_TRACKED_FOLDERS_MAX, type WorkspaceScannedFolder } from "@t3tools/contracts";
+import { PROJECT_TRACKED_FOLDERS_MAX, type WorkspaceScannedFolder } from "@d4research/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import { appendTrackedFolders, suggestedTrackedFolders } from "./projectTrackedFolders.ts";

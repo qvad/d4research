@@ -47,12 +47,12 @@ command it names and open the pairing URL to connect to that server. Stop it
 before starting a replacement, or use a different `--base-dir` for an
 independent server.
 
-To try T3 Code once without installing it, run `npx t3@latest` instead (needs
+To try T3 Code once without installing it, run `npx d4research@latest` instead (needs
 Node.js for `npx`). It offers to install the `t3` command first. If you say no,
-it asks again at the next minor release, and `npx t3 install` installs it later.
-`npx t3` always runs the version npm picked, even when a `t3` is installed. On
+it asks again at the next minor release, and `npx d4research install` installs it later.
+`npx d4research` always runs the version npm picked, even when a `t3` is installed. On
 the nightly train, run your installed `t3` (for example `t3 connect`), not
-`npx t3`, which runs the latest stable release.
+`npx d4research`, which runs the latest stable release.
 
 ### Intel Macs
 
@@ -171,7 +171,7 @@ folder paths, so in the web app use **Add project** instead.
 
 Install T3 Code from the
 [App Store](https://apps.apple.com/us/app/t3-code-remote-claude-more/id6787819824) or
-[Google Play](https://play.google.com/store/apps/details?id=com.t3tools.t3code).
+[Google Play](https://play.google.com/store/apps/details?id=ai.dimaggi.d4research).
 The phone connects to a server on another machine. Follow
 [remote access](./remote-access.md) to link it through T3 Connect or a pairing URL.
 

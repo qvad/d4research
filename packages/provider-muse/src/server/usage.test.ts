@@ -1,8 +1,8 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { ProviderInstanceId } from "@t3tools/contracts";
-import { totalTokens } from "@t3tools/provider-core/server/usage";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import { SpawnExecutableResolution } from "@t3tools/shared/shell";
+import { ProviderInstanceId } from "@d4research/contracts";
+import { totalTokens } from "@d4research/provider-core/server/usage";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import { SpawnExecutableResolution } from "@d4research/shared/shell";
 import * as Effect from "effect/Effect";
 import * as Deferred from "effect/Deferred";
 import * as Fiber from "effect/Fiber";

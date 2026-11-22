@@ -80,7 +80,7 @@ vi.mock("expo-image", () => ({
 }));
 vi.mock("expo/fetch", () => ({ fetch: vi.fn() }));
 vi.mock("react-native-svg", () => ({ parse: vi.fn(), SvgAst: () => null }));
-vi.mock("@t3tools/client-runtime/state/assets", () => ({ MISSING_FILE_ACCESS_MESSAGE: "" }));
+vi.mock("@d4research/client-runtime/state/assets", () => ({ MISSING_FILE_ACCESS_MESSAGE: "" }));
 vi.mock("../../components/ui/AppActivityIndicator", () => ({ AppActivityIndicator: () => null }));
 vi.mock("../../components/ui/AppText", () => ({
   AppText: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
@@ -93,7 +93,7 @@ vi.mock("../../state/mediaActions", () => ({ useMediaActions: () => ({ actions: 
 vi.mock("../../state/assets", () => ({ useAssetUrlState: vi.fn() }));
 
 import { RegistryContext } from "@effect/atom-react";
-import { EnvironmentId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, ThreadId } from "@d4research/contracts";
 import { AtomRegistry } from "effect/reactivity";
 import { fetch } from "expo/fetch";
 import { parse } from "react-native-svg";

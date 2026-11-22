@@ -5,7 +5,7 @@ import type {
   PullRequestChecksState,
   PullRequestRef,
   ScopedThreadRef,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import { msg, T, useGT, useMessages, Var } from "gt-react";
 import { useState } from "react";
 

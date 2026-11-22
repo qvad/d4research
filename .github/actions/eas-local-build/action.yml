@@ -109,7 +109,7 @@ runs:
     # scripts: some download native assets that the build's fingerprint check hashes.
     - name: Install mobile dependencies
       shell: bash
-      run: pnpm install --frozen-lockfile --prefer-offline --filter=@t3tools/mobile...
+      run: pnpm install --frozen-lockfile --prefer-offline --filter=@d4research/mobile...
 
     - name: Setup Java
       if: inputs.platform == 'android'

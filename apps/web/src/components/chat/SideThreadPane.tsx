@@ -1,13 +1,13 @@
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
-import { sideThreadKindOf } from "@t3tools/client-runtime/side-thread";
-import { formatSubagentDisplayTitle } from "@t3tools/client-runtime/state/subagent-display";
+import { scopeThreadRef } from "@d4research/client-runtime/environment";
+import { sideThreadKindOf } from "@d4research/client-runtime/side-thread";
+import { formatSubagentDisplayTitle } from "@d4research/client-runtime/state/subagent-display";
 import {
   isAtomCommandInterrupted,
   settlePromise,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
-import { AuthOrchestrationOperateScope, type ScopedThreadRef } from "@t3tools/contracts";
-import { threadContextRecord } from "@t3tools/shared/composerContextReferences";
+} from "@d4research/client-runtime/state/runtime";
+import { AuthOrchestrationOperateScope, type ScopedThreadRef } from "@d4research/contracts";
+import { threadContextRecord } from "@d4research/shared/composerContextReferences";
 import { T, useGT } from "gt-react";
 import { Trash2Icon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";

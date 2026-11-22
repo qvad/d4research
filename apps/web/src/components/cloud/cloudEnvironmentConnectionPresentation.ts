@@ -1,7 +1,7 @@
 import {
   connectionStatusText,
   type EnvironmentConnectionPresentation,
-} from "@t3tools/client-runtime/connection";
+} from "@d4research/client-runtime/connection";
 import { msg } from "gt-react";
 
 import { m, type MessageResolver } from "~/i18n/messages";

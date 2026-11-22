@@ -4,8 +4,8 @@ import {
   WS_METHODS,
   sessionGrantsScope,
   type SessionGrantInput,
-} from "@t3tools/contracts";
-import { scoreQueryMatch } from "@t3tools/shared/searchRanking";
+} from "@d4research/contracts";
+import { scoreQueryMatch } from "@d4research/shared/searchRanking";
 import { Atom } from "effect/reactivity";
 
 import { mFallback, msg } from "gt-i18n";

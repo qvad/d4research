@@ -6,10 +6,10 @@ import {
   type RunId,
   OrchestratorMcpFailure,
   type OrchestrationV2Command,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Effect from "effect/Effect";
-import { modelSelectionCommandType } from "@t3tools/shared/model";
-import { topOfPinnedRunOrderKey } from "@t3tools/shared/pinOrderKey";
+import { modelSelectionCommandType } from "@d4research/shared/model";
+import { topOfPinnedRunOrderKey } from "@d4research/shared/pinOrderKey";
 
 import * as McpInvocationContext from "../../McpInvocationContext.ts";
 import * as McpToolAccess from "../../McpToolAccess.ts";

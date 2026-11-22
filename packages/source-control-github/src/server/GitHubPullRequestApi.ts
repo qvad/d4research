@@ -1,9 +1,9 @@
-import { isCommitSha, normalizeHost } from "@t3tools/source-control-core/server/pullRequestUtils";
+import { isCommitSha, normalizeHost } from "@d4research/source-control-core/server/pullRequestUtils";
 import {
   diffFileSection,
   truncateLongDiffLines,
-} from "@t3tools/source-control-core/server/diffFileRevisions";
-import { removeAgentCredits } from "@t3tools/source-control-core/server/mergeMessage";
+} from "@d4research/source-control-core/server/diffFileRevisions";
+import { removeAgentCredits } from "@d4research/source-control-core/server/mergeMessage";
 import { KnownWorkflowRuns, makeChecksRevalidator } from "./gitHubConditionalChecks.ts";
 import { runGitHubStackAction, type GitHubStackActionError } from "./githubStackActions.ts";
 import * as Cache from "effect/Cache";
@@ -47,7 +47,7 @@ import {
   type PullRequestThreadCommentsResult,
   type PullRequestUpdateMethod,
   type PullRequestPreview,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 
 import * as GitHubAppAccess from "./GitHubAppAccess.ts";
 import * as GitHubRest from "./GitHubRest.ts";
@@ -65,8 +65,8 @@ import {
   PullRequestReadsGraphQLGroup,
 } from "./pullRequestReads.graphql.ts";
 import { PullRequestReviewsGraphQLGroup } from "./pullRequestReviews.graphql.ts";
-import * as SourceControlHost from "@t3tools/source-control-core/server/SourceControlHost";
-import * as SourceControlRateLimit from "@t3tools/source-control-core/server/SourceControlRateLimit";
+import * as SourceControlHost from "@d4research/source-control-core/server/SourceControlHost";
+import * as SourceControlRateLimit from "@d4research/source-control-core/server/SourceControlRateLimit";
 import {
   buildReviewSubmission,
   buildReviewerRequest,
@@ -138,7 +138,7 @@ import {
   type ProviderCheckReference,
   type ProviderCheckRerun,
   type ProviderListCursor,
-} from "@t3tools/source-control-core/server/PullRequestProvider";
+} from "@d4research/source-control-core/server/PullRequestProvider";
 
 export class GitHubPullRequestReadError extends Schema.TaggedError<GitHubPullRequestReadError>()(
   "GitHubPullRequestReadError",
@@ -859,7 +859,7 @@ export class GitHubPullRequestApi extends Context.Service<
       readonly body: string;
     }) => Effect.Effect<void, GitHubPullRequestApiError>;
   }
->()("@t3tools/source-control-github/server/GitHubPullRequestApi") {}
+>()("@d4research/source-control-github/server/GitHubPullRequestApi") {}
 
 const CHECK_LOG_MAX_BYTES = 16 * 1024 * 1024;
 const NOT_A_JOB = "This check is not a GitHub Actions job, so GitHub cannot re-run it.";

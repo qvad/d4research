@@ -2,7 +2,7 @@ import {
   GitCommandError,
   type OrchestrationV2ThreadShell,
   type ProjectId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Effect from "effect/Effect";
 
 import * as GitWorkflowService from "./GitWorkflowService.ts";

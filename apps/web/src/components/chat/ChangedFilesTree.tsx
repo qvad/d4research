@@ -1,5 +1,5 @@
 import { useSyncLayout } from "@legendapp/list/react";
-import { type OrchestrationV2CheckpointFileTotals, type RunId } from "@t3tools/contracts";
+import { type OrchestrationV2CheckpointFileTotals, type RunId } from "@d4research/contracts";
 import { T, useGT } from "gt-react";
 import { type MouseEvent, type ReactNode, memo, useLayoutEffect, useRef, useState } from "react";
 import { type TurnDiffFileChange } from "../../types";
@@ -20,7 +20,7 @@ import { Button } from "../ui/button";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { MiddleTruncate } from "../ui/middle-truncate";
 import { observeResize } from "~/lib/observeResize";
-import { repositoryFilePath } from "@t3tools/client-runtime/state/thread-repositories";
+import { repositoryFilePath } from "@d4research/client-runtime/state/thread-repositories";
 
 const EMPTY_DIRECTORY_OVERRIDES: Record<string, boolean> = {};
 const VIRTUALIZE_AFTER_ROWS = 250;

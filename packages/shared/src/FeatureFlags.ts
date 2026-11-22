@@ -22,7 +22,7 @@ const config = Config.all({
 export type FeatureFlagValues = Config.Success<typeof config>;
 
 export class FeatureFlags extends Context.Service<FeatureFlags, FeatureFlagValues>()(
-  "@t3tools/shared/FeatureFlags",
+  "@d4research/shared/FeatureFlags",
 ) {}
 
 /** The `name=value` pairs of a flags list, with a bare name read as `true`. */

@@ -1,19 +1,19 @@
 import { useAtomValue } from "@effect/atom-react";
-import { threadKey } from "@t3tools/client-runtime/state/entities";
+import { threadKey } from "@d4research/client-runtime/state/entities";
 import { ThreadDetailsControl } from "./ThreadDetailsControl";
 import { ThreadHoverCardPopup } from "../ThreadHoverCard";
 import { ThreadDetailsSection } from "./ThreadDetailsSection";
 import { SectionHeaderStatus } from "../ui/collapsible-section-header";
 import { SubagentTooltipContent } from "./SubagentTooltipContent";
 import { PullRequestGlyph } from "../pullRequest/pullRequestIcons";
-import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
+import { scopedThreadKey, scopeThreadRef } from "@d4research/client-runtime/environment";
 import {
   deriveWorkflowGroups,
   projectedSubagentsToRuntime,
   type RuntimeSubagent,
-} from "@t3tools/client-runtime/state/subagentRuntime";
-import { formatSubagentDisplayTitle } from "@t3tools/client-runtime/state/subagent-display";
-import { deriveProviderSubagentStatus } from "@t3tools/client-runtime/state/thread-execution";
+} from "@d4research/client-runtime/state/subagentRuntime";
+import { formatSubagentDisplayTitle } from "@d4research/client-runtime/state/subagent-display";
+import { deriveProviderSubagentStatus } from "@d4research/client-runtime/state/thread-execution";
 import {
   deriveThreadRelationshipGraph,
   immediateThreadRelationships,
@@ -23,11 +23,11 @@ import {
   resolveMergeBackTargetThreadId,
   type ThreadRelationshipEdge,
   type ThreadRelationshipWalkRow,
-} from "@t3tools/client-runtime/state/thread-relationships";
+} from "@d4research/client-runtime/state/thread-relationships";
 import {
   canDetachThreadProviderSession,
   resolveLatestMergeBackRun,
-} from "@t3tools/client-runtime/state/thread-workflows";
+} from "@d4research/client-runtime/state/thread-workflows";
 import {
   isOrchestrationV2WorkActive,
   isProviderNativeSubagentThread,
@@ -40,8 +40,8 @@ import {
   type ScopedThreadRef,
   type ServerProvider,
   type ThreadId,
-} from "@t3tools/contracts";
-import { deriveSubagentElapsedMs } from "@t3tools/shared/orchestrationTiming";
+} from "@d4research/contracts";
+import { deriveSubagentElapsedMs } from "@d4research/shared/orchestrationTiming";
 import { groupBy } from "effect/Array";
 import * as DateTime from "effect/DateTime";
 import { useNavigate, useRouter } from "@tanstack/react-router";
@@ -63,7 +63,7 @@ import type { MessageResolver } from "~/i18n/messages";
 
 import { useArchivedThreadSnapshots } from "../../lib/archivedThreadsState";
 import { buildThreadRouteParams } from "../../threadRoutes";
-import type { SideThreadOpenIntent } from "@t3tools/client-runtime/side-thread";
+import type { SideThreadOpenIntent } from "@d4research/client-runtime/side-thread";
 import { useLinkedThreadOpener } from "../../state/linkedThreadView";
 import {
   useProjects,

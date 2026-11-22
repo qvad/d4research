@@ -1,14 +1,14 @@
-import * as AzureDevOps from "@t3tools/source-control-azure-devops/shared/definition";
-import * as Bitbucket from "@t3tools/source-control-bitbucket/shared/definition";
-import { makeSourceControlDefinitionRegistry } from "@t3tools/source-control-core/shared/definition";
-import * as CursorOrigin from "@t3tools/source-control-cursor-origin/shared/definition";
-import * as Forgejo from "@t3tools/source-control-forgejo/shared/definition";
-import * as GitCafe from "@t3tools/source-control-gitcafe/shared/definition";
-import * as GitHub from "@t3tools/source-control-github/shared/definition";
-import * as GitLab from "@t3tools/source-control-gitlab/shared/definition";
-import * as TanStackSource from "@t3tools/source-control-tanstack-source/shared/definition";
+import * as AzureDevOps from "@d4research/source-control-azure-devops/shared/definition";
+import * as Bitbucket from "@d4research/source-control-bitbucket/shared/definition";
+import { makeSourceControlDefinitionRegistry } from "@d4research/source-control-core/shared/definition";
+import * as CursorOrigin from "@d4research/source-control-cursor-origin/shared/definition";
+import * as Forgejo from "@d4research/source-control-forgejo/shared/definition";
+import * as GitCafe from "@d4research/source-control-gitcafe/shared/definition";
+import * as GitHub from "@d4research/source-control-github/shared/definition";
+import * as GitLab from "@d4research/source-control-gitlab/shared/definition";
+import * as TanStackSource from "@d4research/source-control-tanstack-source/shared/definition";
 
-export { canonicalizePullRequestUrl as canonicalizeGitCafePullRequestUrl } from "@t3tools/source-control-gitcafe/shared/definition";
+export { canonicalizePullRequestUrl as canonicalizeGitCafePullRequestUrl } from "@d4research/source-control-gitcafe/shared/definition";
 
 /**
  * GitHub comes first as the client default for unknown hosts. GitCafe, TanStack Source and Origin

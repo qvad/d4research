@@ -1,5 +1,5 @@
 import * as Dialog from "../../components/ui/Dialog";
-import { buildNewThreadLink, type LinkedPrompt } from "@t3tools/shared/promptLinks";
+import { buildNewThreadLink, type LinkedPrompt } from "@d4research/shared/promptLinks";
 import { msg } from "gt-react-native";
 
 import { m } from "../../i18n/messages";

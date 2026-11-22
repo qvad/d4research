@@ -1,7 +1,7 @@
 import { msg, useMessages } from "gt-react-native";
 import { useAtomValue } from "@effect/atom-react";
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
-import type { EnvironmentId, ThreadId } from "@t3tools/contracts";
+import { scopeThreadRef } from "@d4research/client-runtime/environment";
+import type { EnvironmentId, ThreadId } from "@d4research/contracts";
 import { useMemo, useCallback, type Dispatch, type SetStateAction } from "react";
 
 import { useProjects, useServerConfigs, useThreadShell } from "../../state/entities";

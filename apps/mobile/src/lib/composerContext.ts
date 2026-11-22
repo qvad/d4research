@@ -1,18 +1,18 @@
 import {
   collectComposerModelMentions,
   type ComposerModelMentionOccurrence,
-} from "@t3tools/client-runtime/composer-model-mentions";
-import { isProviderSkillUserInvocable } from "@t3tools/client-runtime/providerSkills";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
-import { filePreviewKind } from "@t3tools/shared/filePreview";
-import { videoMimeType } from "@t3tools/shared/video";
+} from "@d4research/client-runtime/composer-model-mentions";
+import { isProviderSkillUserInvocable } from "@d4research/client-runtime/providerSkills";
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
+import { filePreviewKind } from "@d4research/shared/filePreview";
+import { videoMimeType } from "@d4research/shared/video";
 import { msg } from "gt-react-native";
 import { m } from "../i18n/messages";
 import {
   assistantCitationLabel,
   collectAssistantCitations,
   expandAssistantCitationsForProvider,
-} from "@t3tools/shared/assistantCitations";
+} from "@d4research/shared/assistantCitations";
 import {
   PROVIDER_SEND_TURN_MAX_INPUT_CHARS,
   COMPOSER_CONTEXT_MAX_RECORDS,
@@ -25,7 +25,7 @@ import {
   type ServerProviderSkill,
   type EnvironmentContextRecord,
   type EnvironmentId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Schema from "effect/Schema";
 import {
   ATTACHMENT_ONLY_BOOTSTRAP_PROMPT,
@@ -34,12 +34,12 @@ import {
   isImageReferencesOnly,
   replaceComposerContextReferences,
   sanitizeComposerContextLabel,
-} from "@t3tools/shared/composerContextReferences";
+} from "@d4research/shared/composerContextReferences";
 import {
   collectComposerInlineTokens,
   composerMathRanges,
   type ComposerInlineToken,
-} from "@t3tools/shared/composerInlineTokens";
+} from "@d4research/shared/composerInlineTokens";
 
 const isMessageContext = Schema.is(OrchestrationMessageContext);
 const decodeMessageContext = Schema.decodeUnknownOption(OrchestrationMessageContext);

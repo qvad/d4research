@@ -4,7 +4,7 @@ import {
   DEFAULT_UNIFIED_SETTINGS,
   MAX_SNOOZE_PRESETS,
   type SnoozePresetSetting,
-} from "@t3tools/contracts/settings";
+} from "@d4research/contracts/settings";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
 

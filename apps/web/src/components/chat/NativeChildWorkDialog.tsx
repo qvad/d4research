@@ -4,7 +4,7 @@ import type {
   OrchestrationV2NativeChildStep,
   OrchestrationV2NativeChildWork,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import { T, useGT } from "gt-react";
 import { ListTreeIcon } from "lucide-react";
 import { useState } from "react";

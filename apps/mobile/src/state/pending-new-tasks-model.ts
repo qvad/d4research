@@ -1,5 +1,5 @@
-import type { EnvironmentShellStatus } from "@t3tools/client-runtime/state/shell";
-import type { EnvironmentId, MessageId, ProjectId } from "@t3tools/contracts";
+import type { EnvironmentShellStatus } from "@d4research/client-runtime/state/shell";
+import type { EnvironmentId, MessageId, ProjectId } from "@d4research/contracts";
 
 import { msg } from "gt-react-native";
 import { m, type MessageResolver } from "../i18n/messages";

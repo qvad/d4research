@@ -14,7 +14,7 @@ import {
   type OrchestrationV2ProviderSession,
   ProviderDriverKind,
   type ThreadId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Context from "effect/Context";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
@@ -26,7 +26,7 @@ import * as Schema from "effect/Schema";
 import * as Semaphore from "effect/Semaphore";
 
 import * as CursorSdk from "./CursorSdk.ts";
-import * as ProviderEventLoggers from "@t3tools/provider-core/server/ProviderEventLoggers";
+import * as ProviderEventLoggers from "@d4research/provider-core/server/ProviderEventLoggers";
 
 export const CURSOR_AGENT_SDK_PROTOCOL = "cursor-agent-sdk.local" as const;
 export const CURSOR_PROVIDER = ProviderDriverKind.make("cursor");
@@ -192,7 +192,7 @@ export class CursorAgentSdkRunner extends Context.Service<
       input: CursorAgentSdkTextGenerateInput,
     ) => Effect.Effect<RunResult, CursorAgentSdkRunnerError>;
   }
->()("@t3tools/provider-cursor/server/CursorAgentSdk/CursorAgentSdkRunner") {}
+>()("@d4research/provider-cursor/server/CursorAgentSdk/CursorAgentSdkRunner") {}
 
 export interface CursorAgentSdkLoggedAgentOptions {
   readonly model?: AgentOptions["model"];

@@ -1,6 +1,6 @@
 import { DiffHunksRenderer, hydratePartialDiff, type FileDiffMetadata } from "@pierre/diffs";
-import { excerptRows, fileDiffRows, rowsToPatch } from "@t3tools/client-runtime/review-guide-tour";
-import { EnvironmentId } from "@t3tools/contracts";
+import { excerptRows, fileDiffRows, rowsToPatch } from "@d4research/client-runtime/review-guide-tour";
+import { EnvironmentId } from "@d4research/contracts";
 import { AsyncResult } from "effect/reactivity";
 import { expect, it } from "vite-plus/test";
 

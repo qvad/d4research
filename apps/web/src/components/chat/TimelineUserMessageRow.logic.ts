@@ -1,5 +1,5 @@
 import { type ChatFileAttachment, type ChatImageAttachment } from "../../types";
-import type { ComposerContextRecord, KnownComposerContextRecord } from "@t3tools/contracts";
+import type { ComposerContextRecord, KnownComposerContextRecord } from "@d4research/contracts";
 import { msg } from "gt-react";
 import { m, type MessageResolver } from "~/i18n/messages";
 import { asKnownContextRecord } from "~/lib/composerContextRecords";

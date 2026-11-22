@@ -1,5 +1,5 @@
 import { RegistryContext, useAtomValue } from "@effect/atom-react";
-import { EnvironmentId, type PeerLinkSummary } from "@t3tools/contracts";
+import { EnvironmentId, type PeerLinkSummary } from "@d4research/contracts";
 import * as DateTime from "effect/DateTime";
 import { AsyncResult, AtomRegistry } from "effect/reactivity";
 import { describe, expect, it, vi } from "vite-plus/test";

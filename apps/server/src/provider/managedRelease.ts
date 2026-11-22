@@ -1,4 +1,4 @@
-import { compareSemverVersions, parseSemver } from "@t3tools/shared/semver";
+import { compareSemverVersions, parseSemver } from "@d4research/shared/semver";
 
 // A non-semver installed version counts any other release as an update.
 const isNewer = (candidate: string, current: string) =>

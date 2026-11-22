@@ -2,11 +2,11 @@ import {
   downscalableImageMimeType,
   fitImageAttachmentSize,
   IMAGE_ATTACHMENT_MAX_EDGE,
-} from "@t3tools/client-runtime/image-attachment-size";
+} from "@d4research/client-runtime/image-attachment-size";
 import {
   IMAGE_DIMENSIONS_HEADER_BYTES,
   readImageDimensions,
-} from "@t3tools/shared/imageDimensions";
+} from "@d4research/shared/imageDimensions";
 import { msg } from "gt-react";
 
 import { m } from "../i18n/messages";

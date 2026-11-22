@@ -1,8 +1,8 @@
-import { vcsActionLabelText } from "@t3tools/client-runtime/state/vcs";
+import { vcsActionLabelText } from "@d4research/client-runtime/state/vcs";
 import { useMessages } from "gt-react-native";
 import { useMemo } from "react";
 
-import { dedupeRemoteBranchesWithLocalMatches } from "@t3tools/shared/git";
+import { dedupeRemoteBranchesWithLocalMatches } from "@d4research/shared/git";
 
 import { useBranches } from "./queries";
 import { useEnvironmentQuery } from "./query";

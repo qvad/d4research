@@ -1,8 +1,8 @@
 import { msg, T, useGT, useMessages } from "gt-react";
 import { useEffect, useImperativeHandle, useRef, useState, type RefObject } from "react";
 import { m } from "~/i18n/messages";
-import { parseDelimitedPreview } from "@t3tools/shared/delimitedPreview";
-import { formatAttachmentSize } from "@t3tools/client-runtime/state/attachments";
+import { parseDelimitedPreview } from "@d4research/shared/delimitedPreview";
+import { formatAttachmentSize } from "@d4research/client-runtime/state/attachments";
 import { useClientSettings } from "~/hooks/useSettings";
 import { FileSurfaceFailure, FileSurfaceLoading, FileSurfaceNotice } from "./fileSurfaceChrome";
 import { PREVIEW_PAGE_ROWS, type TextPreviewResult } from "./largeTextProtocol";

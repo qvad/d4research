@@ -7,7 +7,7 @@ import {
   PEER_LINK_THREAD_STREAM_ROUTE,
   ThreadId,
   TurnItemId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";

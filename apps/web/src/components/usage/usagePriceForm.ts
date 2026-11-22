@@ -1,5 +1,5 @@
 import { msg } from "gt-react";
-import type { UsageModelPriceOverride } from "@t3tools/contracts";
+import type { UsageModelPriceOverride } from "@d4research/contracts";
 
 export const USAGE_PRICE_FIELDS = [
   { key: "inputCostPerMillionTokens", label: msg("Input"), optional: false },

@@ -1,4 +1,4 @@
-import { IssueTrackerKind, ThreadId } from "@t3tools/contracts";
+import { IssueTrackerKind, ThreadId } from "@d4research/contracts";
 import { describe, expect, it } from "@effect/vitest";
 import * as SecureRandom from "effect/crypto/SecureRandom";
 import * as Effect from "effect/Effect";

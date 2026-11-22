@@ -1,4 +1,4 @@
-import type { ProjectIconColor } from "@t3tools/contracts";
+import type { ProjectIconColor } from "@d4research/contracts";
 import { msg } from "gt-react";
 
 export const PROJECT_ICON_COLORS: ReadonlyArray<{

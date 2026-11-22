@@ -1,4 +1,4 @@
-import { CommandId, EnvironmentId, MessageId, ThreadId } from "@t3tools/contracts";
+import { CommandId, EnvironmentId, MessageId, ThreadId } from "@d4research/contracts";
 import { expect, it } from "@effect/vitest";
 import * as Effect from "effect/Effect";
 import { afterEach, beforeEach, vi } from "vite-plus/test";
@@ -146,10 +146,10 @@ vi.mock("./attachments", async () => {
   };
 });
 vi.mock("./assets", () => ({ assetEnvironment: { createUrl: (input: unknown) => input } }));
-vi.mock("@t3tools/client-runtime/state/runtime", async (importOriginal) => {
+vi.mock("@d4research/client-runtime/state/runtime", async (importOriginal) => {
   const Effect = await import("effect/Effect");
   return {
-    ...(await importOriginal<typeof import("@t3tools/client-runtime/state/runtime")>()),
+    ...(await importOriginal<typeof import("@d4research/client-runtime/state/runtime")>()),
     createEnvironmentRpcCommand: () => Symbol("rpc-command"),
     awaitAtomResult: (
       _registry: unknown,

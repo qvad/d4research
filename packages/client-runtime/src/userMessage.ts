@@ -8,14 +8,14 @@ import {
   type OrchestrationV2IdleCompaction,
   type OrchestrationV2UserMessageInputIntent,
   ScheduledTaskId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   isAttachmentOnlyBootstrapPrompt,
   replaceComposerContextReferences,
-} from "@t3tools/shared/composerContextReferences";
-import { filePreviewKind } from "@t3tools/shared/filePreview";
-import { imageMimeType } from "@t3tools/shared/image";
-import { videoMimeType } from "@t3tools/shared/video";
+} from "@d4research/shared/composerContextReferences";
+import { filePreviewKind } from "@d4research/shared/filePreview";
+import { imageMimeType } from "@d4research/shared/image";
+import { videoMimeType } from "@d4research/shared/video";
 import { msg } from "gt-i18n";
 
 /** The working row while T3 Code's own compaction runs. */

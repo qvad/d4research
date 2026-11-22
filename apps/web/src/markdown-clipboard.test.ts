@@ -6,19 +6,19 @@ import {
   serializeTableElementToHtml,
   serializeTableElementToMarkdown,
 } from "./markdown-clipboard";
-import { EnvironmentId, MessageId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, MessageId, ThreadId } from "@d4research/contracts";
 import {
   collectAssistantCitations,
   serializeAssistantCitation,
-} from "@t3tools/shared/assistantCitations";
-import { markdownMathRanges, parseMarkdownWithMath } from "@t3tools/shared/markdownMath";
+} from "@d4research/shared/assistantCitations";
+import { markdownMathRanges, parseMarkdownWithMath } from "@d4research/shared/markdownMath";
 
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import {
   CHAT_MARKDOWN_REMARK_PLUGINS,
   CHAT_USER_MARKDOWN_REMARK_PLUGINS,
-} from "@t3tools/shared/markdownPipeline";
+} from "@d4research/shared/markdownPipeline";
 
 const userMarkdown = unified()
   .use(remarkParse)

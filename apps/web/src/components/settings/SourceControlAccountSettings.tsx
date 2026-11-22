@@ -1,4 +1,4 @@
-import type { EnvironmentId, SourceControlProviderAuth } from "@t3tools/contracts";
+import type { EnvironmentId, SourceControlProviderAuth } from "@d4research/contracts";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
 import { T, useGT, Var } from "gt-react";
@@ -14,7 +14,7 @@ import {
   readHostCredentialSettings,
   type SourceControlDefinition,
   type SourceControlHostCredentials,
-} from "@t3tools/client-runtime/source-control-clients";
+} from "@d4research/client-runtime/source-control-clients";
 import { redactedPlaceholder } from "./RedactedSensitiveText";
 
 /** Sentinel select value for "follow the CLI's active login"; logins never contain spaces. */

@@ -7,9 +7,9 @@ import {
   issuePicksFor,
   issueWriteAfterPicks,
   noIssuePicks,
-} from "@t3tools/client-runtime/issue-selection";
-import { isSelected, toggleSelection } from "@t3tools/client-runtime/pull-request-selection";
-import type { IssueAssigneeCandidate } from "@t3tools/contracts";
+} from "@d4research/client-runtime/issue-selection";
+import { isSelected, toggleSelection } from "@d4research/client-runtime/pull-request-selection";
+import type { IssueAssigneeCandidate } from "@d4research/contracts";
 import { msg, useGT } from "gt-react-native";
 import { useEffect, useState } from "react";
 

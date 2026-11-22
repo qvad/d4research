@@ -9,7 +9,7 @@ import {
   type PeerLinkClientPairingResult,
   PeerLinkError,
   type PeerLinkLinkPairingInput,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Context from "effect/Context";
 import * as DateTime from "effect/DateTime";
 import * as Duration from "effect/Duration";
@@ -57,7 +57,7 @@ export class PeerClientPairingIssuer extends Context.Service<
       PeerClientPairingRefused | EnvironmentAuth.ServerAuthInternalError
     >;
   }
->()("t3/peer/PeerClientPairing/PeerClientPairingIssuer") {}
+>()("d4research/peer/PeerClientPairing/PeerClientPairingIssuer") {}
 
 /**
  * The linking side: gets a client of this environment a pairing credential for an environment
@@ -82,7 +82,7 @@ export class PeerClientPairing extends Context.Service<
       client: { readonly sessionId: AuthSessionId },
     ) => Effect.Effect<PeerLinkClientPairingResult, PeerLinkError>;
   }
->()("t3/peer/PeerClientPairing") {}
+>()("d4research/peer/PeerClientPairing") {}
 
 const makeIssuer = Effect.gen(function* () {
   const auth = yield* EnvironmentAuth.EnvironmentAuth;

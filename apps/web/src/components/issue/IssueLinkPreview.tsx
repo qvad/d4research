@@ -1,5 +1,5 @@
 import type { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
-import type { EnvironmentId, IssueDetail, IssueRef } from "@t3tools/contracts";
+import type { EnvironmentId, IssueDetail, IssueRef } from "@d4research/contracts";
 import { T, Var } from "gt-react";
 import { useRef, useState, type ComponentPropsWithoutRef, type ReactElement } from "react";
 

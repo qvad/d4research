@@ -11,12 +11,12 @@ import {
   type IssueCapabilities,
   type IssueEvent,
   type IssueViewerPermissions,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   IssueTrackerError,
   type IssueInvolvementFilter,
   type IssueTrackerApi,
-} from "@t3tools/source-control-core/server/IssueTracker";
+} from "@d4research/source-control-core/server/IssueTracker";
 
 import * as GitLabCli from "./GitLabCli.ts";
 import {

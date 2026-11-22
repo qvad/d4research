@@ -1,14 +1,14 @@
 import { msg } from "gt-react";
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@d4research/client-runtime/errors";
 import { m } from "~/i18n/messages";
-import type { ModelSelection, RuntimeMode, ScopedThreadRef } from "@t3tools/contracts";
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
-import type { StartThreadTurnInput } from "@t3tools/client-runtime/operations";
+import type { ModelSelection, RuntimeMode, ScopedThreadRef } from "@d4research/contracts";
+import { scopeThreadRef } from "@d4research/client-runtime/environment";
+import type { StartThreadTurnInput } from "@d4research/client-runtime/operations";
 import {
   type AtomCommandResult,
   isAtomCommandInterrupted,
   squashAtomCommandFailure,
-} from "@t3tools/client-runtime/state/runtime";
+} from "@d4research/client-runtime/state/runtime";
 import { useRef } from "react";
 
 import { newMessageId, newThreadId } from "~/lib/utils";

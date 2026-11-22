@@ -1,5 +1,5 @@
-import type { ConnectionTarget } from "@t3tools/client-runtime/connection";
-import type { EnvironmentId } from "@t3tools/contracts";
+import type { ConnectionTarget } from "@d4research/client-runtime/connection";
+import type { EnvironmentId } from "@d4research/contracts";
 import { Atom } from "effect/reactivity";
 import { isLoopbackHostname } from "../environments/primary/target";
 import { environmentPresentations } from "./presentation";

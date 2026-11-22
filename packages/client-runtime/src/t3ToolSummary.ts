@@ -1,6 +1,6 @@
 import { mFallback, msg } from "gt-i18n";
 import type { MFunctionType } from "gt-i18n/types";
-import type { T3McpToolSummaryAction } from "@t3tools/shared/t3McpToolPresentation";
+import type { T3McpToolSummaryAction } from "@d4research/shared/t3McpToolPresentation";
 
 export interface T3ToolSummaryCall {
   readonly input: unknown;

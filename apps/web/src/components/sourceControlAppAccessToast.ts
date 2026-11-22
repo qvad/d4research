@@ -1,6 +1,6 @@
-import type { EnvironmentId } from "@t3tools/contracts";
-import { appSignInTargetForRemote } from "@t3tools/client-runtime/source-control-clients";
-import { runAtomCommand } from "@t3tools/client-runtime/state/runtime";
+import type { EnvironmentId } from "@d4research/contracts";
+import { appSignInTargetForRemote } from "@d4research/client-runtime/source-control-clients";
+import { runAtomCommand } from "@d4research/client-runtime/state/runtime";
 import { msg } from "gt-react";
 
 import { m } from "../i18n/messages";

@@ -1,5 +1,5 @@
-import { resolveLinkedThreadOpen } from "@t3tools/client-runtime/linked-thread";
-import type { EnvironmentId, ScopedThreadRef } from "@t3tools/contracts";
+import { resolveLinkedThreadOpen } from "@d4research/client-runtime/linked-thread";
+import type { EnvironmentId, ScopedThreadRef } from "@d4research/contracts";
 
 import { useEnvironments } from "../../state/environments";
 import { useLinkedEnvironments } from "../../state/peerLinks";

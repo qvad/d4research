@@ -1,10 +1,10 @@
-import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+import { squashAtomCommandFailure } from "@d4research/client-runtime/state/runtime";
 import {
   findProjectByPath,
   inferProjectTitleFromPath,
-} from "@t3tools/client-runtime/state/projects";
+} from "@d4research/client-runtime/state/projects";
 import { useAtomValue } from "@effect/atom-react";
-import type { DesktopAppActivationRequest } from "@t3tools/contracts";
+import type { DesktopAppActivationRequest } from "@d4research/contracts";
 import { msg } from "gt-react";
 
 import { handleDesktopAppActivationRequest } from "../desktopAppActivation";

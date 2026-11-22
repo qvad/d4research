@@ -5,7 +5,7 @@ import {
   PreviewAutomationError,
   PreviewListResult,
   PreviewTabId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as Schema from "effect/Schema";
 import { McpSchema, Tool, Toolkit } from "effect/ai";
 import * as ThreadManagementService from "../../../orchestration-v2/ThreadManagementService.ts";

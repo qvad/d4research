@@ -241,9 +241,9 @@ const HOST_CONTEXT_CHANGED_METHOD = "ui/notifications/host-context-changed";
 const OPEN_LINK_METHOD = "ui/open-link";
 const SIZE_CHANGED_METHOD = "ui/notifications/size-changed";
 // Custom bridge forwards app shortcuts because focused frames otherwise capture them.
-const SHORTCUTS_METHOD = "t3/notifications/shortcuts";
-const KEY_DOWN_METHOD = "t3/notifications/keydown";
-const OPEN_IMAGE_METHOD = "t3/notifications/open-image";
+const SHORTCUTS_METHOD = "d4research/notifications/shortcuts";
+const KEY_DOWN_METHOD = "d4research/notifications/keydown";
+const OPEN_IMAGE_METHOD = "d4research/notifications/open-image";
 
 export function readHtmlRenderContentHeight(data: unknown): number | undefined {
   if (typeof data !== "object" || data === null) return undefined;
@@ -478,9 +478,9 @@ export function injectHtmlRenderBootstrap(html: string): string {
   return `<!doctype html><head>${markup}</head>${html}`;
 }
 
-const FILE_PREVIEW_SCROLL_METHOD = "t3/notifications/file-preview-scroll";
-const FILE_PREVIEW_RESTORE_SCROLL_METHOD = "t3/file-preview/restore-scroll";
-const FILE_PREVIEW_SCROLL_RESTORED_METHOD = "t3/notifications/file-preview-scroll-restored";
+const FILE_PREVIEW_SCROLL_METHOD = "d4research/notifications/file-preview-scroll";
+const FILE_PREVIEW_RESTORE_SCROLL_METHOD = "d4research/file-preview/restore-scroll";
+const FILE_PREVIEW_SCROLL_RESTORED_METHOD = "d4research/notifications/file-preview-scroll-restored";
 
 export interface FilePreviewScroll {
   readonly x: number;

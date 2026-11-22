@@ -12,12 +12,12 @@ import {
   type ComposerContextRecord,
   EnvironmentId,
   type ServerProviderSkill,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   COMPOSER_CONTEXT_CLIPBOARD_MIME,
   encodeComposerContextFragment,
-} from "@t3tools/shared/composerContextClipboard";
-import { formatComposerContextReference } from "@t3tools/shared/composerContextReferences";
+} from "@d4research/shared/composerContextClipboard";
+import { formatComposerContextReference } from "@d4research/shared/composerContextReferences";
 import type { Editor } from "@tiptap/core";
 import { redoDepth, undoDepth } from "@tiptap/pm/history";
 import { NodeSelection } from "@tiptap/pm/state";
@@ -40,7 +40,7 @@ import {
 vi.mock(import("../state/server"), async (original) => {
   const { Atom } = await import("effect/reactivity");
   const { compileResolvedKeybindingsConfig, DEFAULT_KEYBINDINGS } =
-    await import("@t3tools/shared/keybindings");
+    await import("@d4research/shared/keybindings");
   return {
     ...(await original()),
     primaryServerKeybindingsAtom: Atom.make(

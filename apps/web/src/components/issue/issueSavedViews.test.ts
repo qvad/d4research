@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import * as Schema from "effect/Schema";
 
-import { EnvironmentId, ProjectId } from "@t3tools/contracts";
+import { EnvironmentId, ProjectId } from "@d4research/contracts";
 
 import { issueListPreferences, IssueListPreferencesSchema } from "./issueListPreferences";
 import { issueViewMatches } from "./issueSavedViews";

@@ -5,22 +5,22 @@ import type {
   ScopedThreadRef,
   ThreadPullRequestLink,
   VcsStatusResult,
-} from "@t3tools/contracts";
-import type { EnvironmentProject } from "@t3tools/client-runtime/state/shell";
+} from "@d4research/contracts";
+import type { EnvironmentProject } from "@d4research/client-runtime/state/shell";
 import {
   pullRequestListLines,
   resolveThreadPullRequestChains,
   threadPullRequestKeyOf,
   visibleThreadPullRequests,
-} from "@t3tools/client-runtime/thread-pull-requests";
+} from "@d4research/client-runtime/thread-pull-requests";
 import { useMessages } from "gt-react";
 import { useState, type ComponentProps, type MouseEvent as ReactMouseEvent } from "react";
 
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
 import {
   findProjectForChangeRequest,
   findProjectOnChangeRequestHost,
-} from "@t3tools/client-runtime/change-request-links";
+} from "@d4research/client-runtime/change-request-links";
 
 import type { ComposerThreadTarget } from "~/composerDraftStore";
 import { useProjects, useQuietThreadShell } from "~/state/entities";

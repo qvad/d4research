@@ -8,13 +8,13 @@ import {
   type SourceControlProviderInfo,
   TrimmedNonEmptyString,
   TrimmedString,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   canonicalRepositoryPath,
   normalizeGitRemoteUrl,
   parseGitRemoteRepository,
-} from "@t3tools/shared/git";
-import { userlessScpRemoteHost } from "@t3tools/shared/sourceControl";
+} from "@d4research/shared/git";
+import { userlessScpRemoteHost } from "@d4research/shared/sourceControl";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 import * as SchemaTransformation from "effect/SchemaTransformation";

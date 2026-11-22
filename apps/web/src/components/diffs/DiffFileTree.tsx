@@ -27,7 +27,7 @@ import {
   diffFileTreeModel,
   type DiffFileTreeEntry,
 } from "./diffFileTree.logic";
-import { diffFileTreePositions } from "@t3tools/client-runtime/diff-file-order";
+import { diffFileTreePositions } from "@d4research/client-runtime/diff-file-order";
 
 export type { DiffFileTreeEntry } from "./diffFileTree.logic";
 

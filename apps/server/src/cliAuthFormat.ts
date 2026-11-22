@@ -4,7 +4,7 @@ import type {
   AuthConnectDevice,
   AuthConnectDeviceRequest,
   AuthPairingLink,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as DateTime from "effect/DateTime";
 
 import type { IssuedBearerSession, IssuedPairingLink } from "./auth/EnvironmentAuth.ts";

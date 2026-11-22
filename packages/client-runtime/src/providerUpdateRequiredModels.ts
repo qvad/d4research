@@ -1,5 +1,5 @@
-import { PROVIDER_DISPLAY_NAMES, type ServerProvider } from "@t3tools/contracts";
-import { compareSemverVersions, parseSemver } from "@t3tools/shared/semver";
+import { PROVIDER_DISPLAY_NAMES, type ServerProvider } from "@d4research/contracts";
+import { compareSemverVersions, parseSemver } from "@d4research/shared/semver";
 import { mFallback, msg } from "gt-i18n";
 import { formatConjunctionList } from "./listFormat.ts";
 import type { MFunctionType } from "gt-i18n/types";

@@ -1,5 +1,5 @@
-import { Discovery } from "@t3tools/client-runtime/relay";
-import type { EnvironmentId } from "@t3tools/contracts";
+import { Discovery } from "@d4research/client-runtime/relay";
+import type { EnvironmentId } from "@d4research/contracts";
 import { T, useGT, Var } from "gt-react";
 import { useState } from "react";
 

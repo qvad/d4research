@@ -1,6 +1,6 @@
 import { T } from "gt-react";
-import type { EnvironmentId, ScopedThreadRef } from "@t3tools/contracts";
-import { parseUrl } from "@t3tools/shared/url";
+import type { EnvironmentId, ScopedThreadRef } from "@d4research/contracts";
+import { parseUrl } from "@d4research/shared/url";
 import { Globe, History, RadioTower } from "lucide-react";
 
 import type { BrowserHistoryEntry } from "~/browserHistoryStore";

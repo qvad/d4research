@@ -1,4 +1,4 @@
-import type { ProviderDriverKind, ServerProviderCompatibilityAdvisory } from "@t3tools/contracts";
+import type { ProviderDriverKind, ServerProviderCompatibilityAdvisory } from "@d4research/contracts";
 import * as Effect from "effect/Effect";
 
 /** Rates a detected provider version against the host's compatibility policy. */

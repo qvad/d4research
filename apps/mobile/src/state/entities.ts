@@ -1,12 +1,12 @@
 import { useAtomValue } from "@effect/atom-react";
-import { deriveReportedModelSelection } from "@t3tools/client-runtime/state/thread-execution";
+import { deriveReportedModelSelection } from "@d4research/client-runtime/state/thread-execution";
 
 import { appAtomRegistry } from "./atom-registry";
 import type {
   EnvironmentProject,
   EnvironmentThread,
   EnvironmentThreadShell,
-} from "@t3tools/client-runtime/state/shell";
+} from "@d4research/client-runtime/state/shell";
 import {
   allowsPreviewTunnel,
   EnvironmentId,
@@ -15,8 +15,8 @@ import {
   type ScopedProjectRef,
   type ScopedThreadRef,
   type ServerConfig,
-} from "@t3tools/contracts";
-import { scopeThreadRef } from "@t3tools/client-runtime/environment";
+} from "@d4research/contracts";
+import { scopeThreadRef } from "@d4research/client-runtime/environment";
 import {
   guessThreadLinkRef,
   hasThreadLinks,
@@ -24,8 +24,8 @@ import {
   threadLinkCandidates,
   threadLinkRefs,
   type ThreadLink,
-} from "@t3tools/shared/threadLinks";
-import { relabelThreadLinks } from "@t3tools/shared/threadLinksCopy";
+} from "@d4research/shared/threadLinks";
+import { relabelThreadLinks } from "@d4research/shared/threadLinksCopy";
 import * as Schema from "effect/Schema";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { msg, useGT, useMessages } from "gt-react-native";

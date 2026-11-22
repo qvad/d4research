@@ -1,7 +1,7 @@
 import { useAtomValue } from "@effect/atom-react";
-import type { EnvironmentId } from "@t3tools/contracts";
-import { CHATGPT_USAGE_URL } from "@t3tools/shared/usageLimits";
-import { collectExternalUsageLinks } from "@t3tools/shared/usageLimitsCopy";
+import type { EnvironmentId } from "@d4research/contracts";
+import { CHATGPT_USAGE_URL } from "@d4research/shared/usageLimits";
+import { collectExternalUsageLinks } from "@d4research/shared/usageLimitsCopy";
 import { T, useMessages, Var } from "gt-react-native";
 import { Pressable, View } from "react-native";
 import { tryOpenExternalUrl } from "../../lib/openExternalUrl";

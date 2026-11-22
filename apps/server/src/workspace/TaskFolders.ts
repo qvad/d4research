@@ -9,12 +9,12 @@ import {
   type VcsCreateWorktreeInput,
   type VcsCreateWorktreeResult,
   T3_PROJECT_FILE_NAME,
-} from "@t3tools/contracts";
-import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
-import { flattenTemporaryWorktreeBranchName, isTemporaryWorktreeBranch } from "@t3tools/shared/git";
-import * as HostProcess from "@t3tools/shared/HostProcess";
-import * as KeyedLock from "@t3tools/shared/KeyedLock";
-import { parseT3ProjectFile } from "@t3tools/shared/t3ProjectFile";
+} from "@d4research/contracts";
+import { resolveProjectSettings } from "@d4research/shared/projectSettings";
+import { flattenTemporaryWorktreeBranchName, isTemporaryWorktreeBranch } from "@d4research/shared/git";
+import * as HostProcess from "@d4research/shared/HostProcess";
+import * as KeyedLock from "@d4research/shared/KeyedLock";
+import { parseT3ProjectFile } from "@d4research/shared/t3ProjectFile";
 import * as Context from "effect/Context";
 import * as Digest from "effect/crypto/Digest";
 import * as Effect from "effect/Effect";
@@ -177,7 +177,7 @@ export class TaskFolders extends Context.Service<
       readonly recreate: (checkout: TaskFolderCheckout) => Effect.Effect<void, E>;
     }) => Effect.Effect<void, TaskFolderError | E>;
   }
->()("t3/workspace/TaskFolders") {}
+>()("d4research/workspace/TaskFolders") {}
 
 const isTaskFolderError = Schema.is(TaskFolderError);
 

@@ -4,9 +4,9 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import { HttpClient, HttpClientResponse } from "effect/http";
-import { IssueTrackerKind } from "@t3tools/contracts";
-import type { StandaloneIssueTrackerApi } from "@t3tools/source-control-core/server/IssueTracker";
-import * as IssueTrackerHost from "@t3tools/source-control-core/server/IssueTrackerHost";
+import { IssueTrackerKind } from "@d4research/contracts";
+import type { StandaloneIssueTrackerApi } from "@d4research/source-control-core/server/IssueTracker";
+import * as IssueTrackerHost from "@d4research/source-control-core/server/IssueTrackerHost";
 
 import * as LinearApi from "./LinearApi.ts";
 import * as LinearIssueTracker from "./LinearIssueTracker.ts";

@@ -1,11 +1,11 @@
 import { useNavigation, useRoute, StackActions } from "@react-navigation/native";
-import { isStandaloneIssueLink, resolveIssueLinkTarget } from "@t3tools/client-runtime/issue-links";
+import { isStandaloneIssueLink, resolveIssueLinkTarget } from "@d4research/client-runtime/issue-links";
 import {
   nativePullRequestDestination,
   pullRequestCandidateForIssueLink,
 } from "../lib/pullRequestNavigation";
-import { isAtomCommandInterrupted } from "@t3tools/client-runtime/state/runtime";
-import { EnvironmentId, ThreadId } from "@t3tools/contracts";
+import { isAtomCommandInterrupted } from "@d4research/client-runtime/state/runtime";
+import { EnvironmentId, ThreadId } from "@d4research/contracts";
 import { useProjects, useThreadShell } from "../state/entities";
 import { tryOpenExternalUrl } from "../lib/openExternalUrl";
 import { appAtomRegistry } from "../state/atom-registry";

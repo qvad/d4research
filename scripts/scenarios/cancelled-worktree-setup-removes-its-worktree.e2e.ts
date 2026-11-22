@@ -88,6 +88,6 @@ test(
         async () => (await git("worktree", "list", "--porcelain")).match(/^worktree /gm)?.length,
       )
       .toBe(1);
-    await expect.poll(() => git("branch", "--list", "t3/*")).toBe("");
+    await expect.poll(() => git("branch", "--list", "d4research/*")).toBe("");
   },
 );

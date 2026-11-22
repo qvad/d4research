@@ -1,6 +1,6 @@
 import { RegistryContext, useAtomValue } from "@effect/atom-react";
-import { issueEventSentence, issueWriteAccess } from "@t3tools/client-runtime/issue-presentation";
-import { createIssueCommentPager } from "@t3tools/client-runtime/state/issues";
+import { issueEventSentence, issueWriteAccess } from "@d4research/client-runtime/issue-presentation";
+import { createIssueCommentPager } from "@d4research/client-runtime/state/issues";
 import {
   issueAssigneeHeld,
   issueAssigneesAfterPicks,
@@ -9,9 +9,9 @@ import {
   issuePicksFor,
   issueWriteAfterPicks,
   noIssuePicks,
-} from "@t3tools/client-runtime/issue-selection";
-import { isSelected, toggleSelection } from "@t3tools/client-runtime/pull-request-selection";
-import { executeAtomQuery, squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+} from "@d4research/client-runtime/issue-selection";
+import { isSelected, toggleSelection } from "@d4research/client-runtime/pull-request-selection";
+import { executeAtomQuery, squashAtomCommandFailure } from "@d4research/client-runtime/state/runtime";
 import type {
   EnvironmentId,
   IssueAssigneeCandidate,
@@ -25,7 +25,7 @@ import type {
   IssueRef,
   PullRequestRef,
   ScopedThreadRef,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   CheckIcon,
   ChevronDownIcon,

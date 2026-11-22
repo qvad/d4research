@@ -1,5 +1,5 @@
-import { cutLineNote } from "@t3tools/shared/diffCutLines";
-import { unquoteGitPatchPath } from "@t3tools/shared/gitPatchPath";
+import { cutLineNote } from "@d4research/shared/diffCutLines";
+import { unquoteGitPatchPath } from "@d4research/shared/gitPatchPath";
 
 const ENTRY = "diff --git ";
 const QUOTE = '"';

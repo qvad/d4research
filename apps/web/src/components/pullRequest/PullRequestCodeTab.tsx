@@ -5,14 +5,14 @@ import {
   withFileDiffFold,
   withPullRequestDiffFold,
   type FileDiffFoldChoices,
-} from "@t3tools/client-runtime/pull-request-diff-fold";
+} from "@d4research/client-runtime/pull-request-diff-fold";
 import {
   parsePullRequestAnchor,
   pullRequestDiffPathMatches,
   pullRequestLinkCommit,
   resolvePullRequestAnchorRange,
-} from "@t3tools/shared/pullRequestAnchor";
-import { sourceControlClients } from "@t3tools/client-runtime/source-control-clients";
+} from "@d4research/shared/pullRequestAnchor";
+import { sourceControlClients } from "@d4research/client-runtime/source-control-clients";
 import type {
   CodeViewItem,
   DiffLineAnnotation,
@@ -30,8 +30,8 @@ import type {
   PullRequestReviewPosition,
   PullRequestReviewThread,
   PullRequestThreadCommentsResult,
-} from "@t3tools/contracts";
-import { SOURCE_CONTROL_MEDIA_ASSET } from "@t3tools/contracts";
+} from "@d4research/contracts";
+import { SOURCE_CONTROL_MEDIA_ASSET } from "@d4research/contracts";
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -78,11 +78,11 @@ import {
 import {
   canEditPullRequestComment,
   canResolvePullRequestThread,
-} from "@t3tools/client-runtime/pull-request-editing";
-import { fileDiffRows } from "@t3tools/client-runtime/review-guide-tour";
-import { isTestChangedFile } from "@t3tools/shared/changedFileKind";
-import { orderDiffFilesForReview } from "@t3tools/client-runtime/diff-file-order";
-import { isWorkspaceImagePreviewPath } from "@t3tools/shared/mediaPreview";
+} from "@d4research/client-runtime/pull-request-editing";
+import { fileDiffRows } from "@d4research/client-runtime/review-guide-tour";
+import { isTestChangedFile } from "@d4research/shared/changedFileKind";
+import { orderDiffFilesForReview } from "@d4research/client-runtime/diff-file-order";
+import { isWorkspaceImagePreviewPath } from "@d4research/shared/mediaPreview";
 import {
   buildFileDiffIdentityKey,
   buildFileDiffRenderKey,
@@ -146,7 +146,7 @@ import { getFileViewedRange, isLineInFileDiff } from "./pullRequestDiff.logic";
 import { PullRequestDiffStat, PullRequestMetaLine } from "./pullRequestPresentation";
 import { PullRequestDiffUnavailableState } from "./PullRequestDiffUnavailableState";
 import { usePullRequestFilesViewed } from "./usePullRequestFilesViewed";
-import { hasCutLines } from "@t3tools/shared/diffCutLines";
+import { hasCutLines } from "@d4research/shared/diffCutLines";
 import { CUT_LINES_CSS, markCutLineNotes } from "./cutLineNotes";
 import {
   nextPendingReviewCommentId,

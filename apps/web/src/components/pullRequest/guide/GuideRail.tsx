@@ -1,11 +1,11 @@
-import type { PullRequestReviewGuideStop } from "@t3tools/contracts";
+import type { PullRequestReviewGuideStop } from "@d4research/contracts";
 import { T, useGT, useMessages } from "gt-react";
 import { CheckIcon } from "lucide-react";
 
 import { cn } from "~/lib/utils";
 
 import { Badge } from "../../ui/badge";
-import { stopSubline } from "@t3tools/client-runtime/review-guide-tour";
+import { stopSubline } from "@d4research/client-runtime/review-guide-tour";
 
 export function GuideRail({
   stops,

@@ -15,17 +15,17 @@ import {
   type OrchestrationV2ThreadProjection,
   type RuntimeMode,
   type ServerConfig,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   v2Now,
   v2Projection,
 } from "../../../../packages/client-runtime/src/state/orchestrationV2TestFixtures";
 import type { DraftComposerImageAttachment } from "../lib/composerImages";
-import type { PendingThreadRequests } from "@t3tools/client-runtime/state/thread-requests";
+import type { PendingThreadRequests } from "@d4research/client-runtime/state/thread-requests";
 import {
   makeThreadRequestsResolvedAnnouncer,
   sendApprovalFeedback,
-} from "@t3tools/client-runtime/state/thread-requests";
+} from "@d4research/client-runtime/state/thread-requests";
 import { DateTime } from "effect";
 import { AsyncResult, type Atom } from "effect/reactivity";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -101,8 +101,8 @@ vi.mock("gt-react-native", async (importOriginal) => {
     useMessages: () => gt.mFallback,
   };
 });
-vi.mock("@t3tools/client-runtime/state/context-window", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@t3tools/client-runtime/state/context-window")>()),
+vi.mock("@d4research/client-runtime/state/context-window", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@d4research/client-runtime/state/context-window")>()),
   compactBeforeSendTokens: (input: { readonly selection: ModelSelection; readonly now: string }) =>
     input.selection.model === state.compactModel && input.now >= state.compactDueAt
       ? 248_000

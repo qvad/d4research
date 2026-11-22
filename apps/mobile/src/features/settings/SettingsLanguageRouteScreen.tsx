@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useGT } from "gt-react-native";
 import { useLanguagePreference } from "../../i18n/I18nProvider";
-import { SYSTEM_LANGUAGE, nativeLanguageName } from "@t3tools/client-runtime/locales";
+import { SYSTEM_LANGUAGE, nativeLanguageName } from "@d4research/client-runtime/locales";
 import { SUPPORTED_LOCALES } from "../../i18n/locales";
 import { mobilePreferencesAtom, saveMobilePreferences } from "../../state/preferences";
 import { useAtomCommand } from "../../state/use-atom-command";

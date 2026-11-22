@@ -4,7 +4,7 @@ import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 import * as SqlClient from "effect/sql/SqlClient";
 import * as SqlSchema from "effect/sql/SqlSchema";
-import { IssueTrackerKind, IssueTrackerProjectBinding, ProjectId } from "@t3tools/contracts";
+import { IssueTrackerKind, IssueTrackerProjectBinding, ProjectId } from "@d4research/contracts";
 
 import {
   PersistenceDecodeError,
@@ -44,7 +44,7 @@ export class IssueTrackerBindingsRepository extends Context.Service<
       tracker: IssueTrackerKind,
     ) => Effect.Effect<void, IssueTrackerBindingsRepositoryError>;
   }
->()("t3/persistence/IssueTrackerBindings/IssueTrackerBindingsRepository") {}
+>()("d4research/persistence/IssueTrackerBindings/IssueTrackerBindingsRepository") {}
 
 const encodeAdditionalScopes = Schema.encodeEffect(BindingRow.fields.additionalScopes);
 

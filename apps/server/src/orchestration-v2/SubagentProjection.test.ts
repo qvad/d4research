@@ -16,7 +16,7 @@ import {
   ProviderInstanceId,
   ProviderThreadId,
   ThreadId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -29,8 +29,8 @@ import {
   endOrphanedNativeSubagent,
   endRunlessRootTurns,
   PROVIDER_STOP_REASON_SIGNAL,
-} from "@t3tools/provider-core/server/subagentProjection";
-import * as IdAllocator from "@t3tools/provider-core/server/IdAllocator";
+} from "@d4research/provider-core/server/subagentProjection";
+import * as IdAllocator from "@d4research/provider-core/server/IdAllocator";
 
 import * as SqlitePersistence from "../persistence/Sqlite.ts";
 import * as ProjectionStore from "./ProjectionStore.ts";

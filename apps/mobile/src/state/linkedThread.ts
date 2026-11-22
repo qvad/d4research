@@ -2,8 +2,8 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import {
   connectLinkedEnvironment,
   type LinkedThreadTarget,
-} from "@t3tools/client-runtime/linked-thread";
-import type { EnvironmentId, OrchestrationV2Subagent } from "@t3tools/contracts";
+} from "@d4research/client-runtime/linked-thread";
+import type { EnvironmentId, OrchestrationV2Subagent } from "@d4research/contracts";
 import { useState } from "react";
 
 import { connectPairingUrl, reachesEnvironment } from "../connection/onboarding";

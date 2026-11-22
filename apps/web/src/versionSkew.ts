@@ -3,9 +3,9 @@ import type {
   ServerConfig,
   ServerInstallation,
   ServerSelfUpdateCapability,
-} from "@t3tools/contracts";
-import type { ServerUpdateState } from "@t3tools/client-runtime/state/server";
-import { compareSemverVersions, parseSemver } from "@t3tools/shared/semver";
+} from "@d4research/contracts";
+import type { ServerUpdateState } from "@d4research/client-runtime/state/server";
+import { compareSemverVersions, parseSemver } from "@d4research/shared/semver";
 import * as Schema from "effect/Schema";
 import { msg } from "gt-react";
 
@@ -107,7 +107,7 @@ export function manualServerUpdateCommand(
 ): string {
   const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
   if (installation?.kind === "npm-global") {
-    return `npm install --global --prefix ${quote(installation.prefix)} t3@${targetVersion}`;
+    return `npm install --global --prefix ${quote(installation.prefix)} d4research@${targetVersion}`;
   }
   if (installation?.kind === "t3-launcher") {
     // An inherited T3CODE_HOME would otherwise send the update to a home the launcher is not in.
@@ -115,7 +115,7 @@ export function manualServerUpdateCommand(
   }
   const runner =
     installation?.kind === "pnpm-dlx" ? "pnpm dlx" : installation?.kind === "bunx" ? "bunx" : "npx";
-  return `${runner} t3@${targetVersion}`;
+  return `${runner} d4research@${targetVersion}`;
 }
 
 export function buildVersionMismatchDismissalKey(

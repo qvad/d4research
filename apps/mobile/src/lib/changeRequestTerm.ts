@@ -1,4 +1,4 @@
-import type { ChangeRequestTerminology } from "@t3tools/client-runtime/source-control-clients";
+import type { ChangeRequestTerminology } from "@d4research/client-runtime/source-control-clients";
 
 /** Selects the noun in translated sentences, so each language writes the whole sentence per host term. */
 type ChangeRequestTermKind = "mr" | "cr" | "pr";

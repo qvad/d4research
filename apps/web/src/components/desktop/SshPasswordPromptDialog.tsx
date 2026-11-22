@@ -1,6 +1,6 @@
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
-import { settlePromise } from "@t3tools/client-runtime/state/runtime";
-import type { DesktopSshPasswordPromptRequest } from "@t3tools/contracts";
+import { thrownErrorMessage } from "@d4research/client-runtime/errors";
+import { settlePromise } from "@d4research/client-runtime/state/runtime";
+import type { DesktopSshPasswordPromptRequest } from "@d4research/contracts";
 import * as AsyncResult from "effect/reactivity/AsyncResult";
 import * as Cause from "effect/Cause";
 import { msg, T, useGT, Var } from "gt-react";

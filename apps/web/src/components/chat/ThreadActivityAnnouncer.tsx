@@ -1,4 +1,4 @@
-import type { ScreenReaderAnnouncements } from "@t3tools/contracts";
+import type { ScreenReaderAnnouncements } from "@d4research/contracts";
 import { memo, useEffect, useRef } from "react";
 
 import { useLiveRegion } from "../../hooks/useLiveRegion";
@@ -9,7 +9,7 @@ import {
   nextThreadAnnouncement,
   type ThreadActivitySnapshot,
   type ThreadAnnouncementMemory,
-} from "@t3tools/client-runtime/state/thread-activity-announcement";
+} from "@d4research/client-runtime/state/thread-activity-announcement";
 import {
   nextTurnDetailAnnouncement,
   NO_TURN_DETAIL,

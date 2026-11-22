@@ -1,7 +1,7 @@
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
 import * as Dialog from "./Dialog";
 import { requireNativeModule } from "expo";
-import { settlePromise, squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+import { settlePromise, squashAtomCommandFailure } from "@d4research/client-runtime/state/runtime";
 import { AsyncResult } from "effect/reactivity";
 import { msg } from "gt-react-native";
 import { useEffect, useEffectEvent, useId } from "react";

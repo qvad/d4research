@@ -1,5 +1,5 @@
 import { Spinner } from "~/components/ui/spinner";
-import { AuthFilesystemReadScope, type ProjectContentMatch } from "@t3tools/contracts";
+import { AuthFilesystemReadScope, type ProjectContentMatch } from "@d4research/contracts";
 
 import { T, useGT, useMessages } from "gt-react";
 import { useState, type ReactNode } from "react";

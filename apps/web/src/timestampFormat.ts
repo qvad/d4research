@@ -1,4 +1,4 @@
-import { type TimestampFormat } from "@t3tools/contracts/settings";
+import { type TimestampFormat } from "@d4research/contracts/settings";
 import { msg } from "gt-react";
 
 import { DEFAULT_LOCALE } from "./i18n/locales";

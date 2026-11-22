@@ -1,4 +1,4 @@
-import { thrownErrorMessage } from "@t3tools/client-runtime/errors";
+import { thrownErrorMessage } from "@d4research/client-runtime/errors";
 import { useAtomValue } from "@effect/atom-react";
 import { Fragment, useState, type ReactNode } from "react";
 import { msg, T, useGT, useMessages } from "gt-react";
@@ -16,7 +16,7 @@ import {
   type ServerSettingsPatch,
   type SimlockDeviceHostConfig,
   type SshDeviceHostConfig,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import { ChevronDownIcon, MoreVertical, PlusIcon } from "lucide-react";
 
 import { cn, randomUUID } from "../../lib/utils";

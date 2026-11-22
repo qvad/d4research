@@ -3,13 +3,13 @@ import {
   linkableMachines,
   linkedEnvironmentNames,
   offersLinkedEnvironments,
-} from "@t3tools/client-runtime/link-request";
-import { linkBackOffer, type LinkBackOffer } from "@t3tools/client-runtime/link-batch";
+} from "@d4research/client-runtime/link-request";
+import { linkBackOffer, type LinkBackOffer } from "@d4research/client-runtime/link-batch";
 import {
   createPeerLinkEnvironmentAtoms,
   linkThroughRoutes,
-} from "@t3tools/client-runtime/state/peerLinks";
-import { AuthAccessReadScope, AuthAccessWriteScope, type EnvironmentId } from "@t3tools/contracts";
+} from "@d4research/client-runtime/state/peerLinks";
+import { AuthAccessReadScope, AuthAccessWriteScope, type EnvironmentId } from "@d4research/contracts";
 import * as DateTime from "effect/DateTime";
 import { Atom } from "effect/reactivity";
 import { useEffect, useEffectEvent } from "react";

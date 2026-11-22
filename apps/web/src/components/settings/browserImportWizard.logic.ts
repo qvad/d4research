@@ -1,7 +1,7 @@
 import { msg } from "gt-react";
 
 import { m, type MessageResolver } from "../../i18n/messages";
-import type { BrowserImportFailureReason, BrowserImportSource } from "@t3tools/contracts";
+import type { BrowserImportFailureReason, BrowserImportSource } from "@d4research/contracts";
 
 export interface WizardTargetProfile {
   readonly id: string;

@@ -33,7 +33,7 @@ export async function runCliCommand() {
   } else if (command === "__cursor-sdk-worker") {
     const [NodeServices, { runCursorSdkWorker }] = await Promise.all([
       import("@effect/platform-node/NodeServices"),
-      import("@t3tools/provider-cursor/server/worker"),
+      import("@d4research/provider-cursor/server/worker"),
     ]);
     await runCursorSdkWorker(NodeServices.layer);
   } else {

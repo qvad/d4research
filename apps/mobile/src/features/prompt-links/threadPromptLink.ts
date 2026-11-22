@@ -1,8 +1,8 @@
 import * as Dialog from "../../components/ui/Dialog";
 import type { NavigationState, PartialState } from "@react-navigation/native";
-import { EnvironmentId, ThreadId, type ScopedThreadRef } from "@t3tools/contracts";
-import type { LinkedPrompt } from "@t3tools/shared/promptLinks";
-import { parseThreadLinkPrompt } from "@t3tools/shared/promptLinksCopy";
+import { EnvironmentId, ThreadId, type ScopedThreadRef } from "@d4research/contracts";
+import type { LinkedPrompt } from "@d4research/shared/promptLinks";
+import { parseThreadLinkPrompt } from "@d4research/shared/promptLinksCopy";
 import * as Option from "effect/Option";
 import { AsyncResult } from "effect/reactivity";
 import { msg } from "gt-react-native";

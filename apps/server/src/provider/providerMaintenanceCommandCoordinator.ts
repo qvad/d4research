@@ -3,7 +3,7 @@ import * as NodeCrypto from "node:crypto";
 import * as NodeFSP from "node:fs/promises";
 import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
-import * as KeyedLock from "@t3tools/shared/KeyedLock";
+import * as KeyedLock from "@d4research/shared/KeyedLock";
 import { lock } from "proper-lockfile";
 import * as Effect from "effect/Effect";
 import * as Ref from "effect/Ref";

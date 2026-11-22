@@ -6,15 +6,15 @@ import {
   ThreadId,
   type OrchestrationMessageContext,
   type ServerProviderSkill,
-} from "@t3tools/contracts";
-import { collectComposerInlineTokens } from "@t3tools/shared/composerInlineTokens";
-import { serializeAssistantCitation } from "@t3tools/shared/assistantCitations";
+} from "@d4research/contracts";
+import { collectComposerInlineTokens } from "@d4research/shared/composerInlineTokens";
+import { serializeAssistantCitation } from "@d4research/shared/assistantCitations";
 import {
   ATTACHMENT_ONLY_BOOTSTRAP_PROMPT,
   collectComposerContextReferences,
   formatComposerContextReference,
   projectComposerContextForProvider,
-} from "@t3tools/shared/composerContextReferences";
+} from "@d4research/shared/composerContextReferences";
 import { describe, expect, it } from "vite-plus/test";
 import {
   assistantCitationDraftWithinLimit,

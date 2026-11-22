@@ -1,6 +1,6 @@
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
-import { isZipError } from "@t3tools/client-runtime/zip/error";
-import { ZIP_ERROR_MESSAGES } from "@t3tools/client-runtime/zip/error-messages";
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
+import { isZipError } from "@d4research/client-runtime/zip/error";
+import { ZIP_ERROR_MESSAGES } from "@d4research/client-runtime/zip/error-messages";
 import { msg } from "gt-react";
 
 import { m, type MessageResolver } from "~/i18n/messages";

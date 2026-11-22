@@ -1,4 +1,4 @@
-import type { SubagentPillSegment } from "@t3tools/client-runtime/state/thread-subagents";
+import type { SubagentPillSegment } from "@d4research/client-runtime/state/thread-subagents";
 import { GlassContainer, GlassView } from "expo-glass-effect";
 import { useGT } from "gt-react-native";
 import { Fragment, type ReactNode, useEffect, useRef, useState } from "react";

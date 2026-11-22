@@ -1,4 +1,4 @@
-import * as HostProcess from "@t3tools/shared/HostProcess";
+import * as HostProcess from "@d4research/shared/HostProcess";
 import {
   buildEnvironmentCaptureCommand,
   extractEnvironmentValues,
@@ -10,7 +10,7 @@ import {
   resolveWindowsEnvironment,
   setWindowsPath,
   WindowsShellEnvironment,
-} from "@t3tools/shared/shell";
+} from "@d4research/shared/shell";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";

@@ -6,7 +6,7 @@ import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
 import type * as EffectAcpSchema from "effect-acp/compat";
-import type { OrchestrationV2ProviderFailure } from "@t3tools/contracts";
+import type { OrchestrationV2ProviderFailure } from "@d4research/contracts";
 
 import { watchAntigravityPromptOutcome } from "./AntigravityTurnOutcome.ts";
 

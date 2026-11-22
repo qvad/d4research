@@ -1,4 +1,4 @@
-import type { IssueListEntry } from "@t3tools/contracts";
+import type { IssueListEntry } from "@d4research/contracts";
 import { T, useGT, useMessages, Var } from "gt-react";
 import { ExternalLinkIcon } from "lucide-react";
 

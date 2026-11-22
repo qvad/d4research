@@ -1,6 +1,6 @@
-import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/models";
-import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
-import type { ContextMenuSource } from "@t3tools/contracts";
+import type { EnvironmentThreadShell } from "@d4research/client-runtime/state/models";
+import { scopedThreadKey, scopeThreadRef } from "@d4research/client-runtime/environment";
+import type { ContextMenuSource } from "@d4research/contracts";
 import { ChevronDownIcon, SquarePenIcon } from "lucide-react";
 import { msg, T, useGT, useMessages, Var } from "gt-react";
 import { memo } from "react";

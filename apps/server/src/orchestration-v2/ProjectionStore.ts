@@ -1,24 +1,24 @@
-import type { ProjectThreadAwarenessV2Input } from "@t3tools/shared/agentAwareness";
-import { applyOrchestrationV2ThreadVisit, pendingGuestMessageCount } from "@t3tools/contracts";
+import type { ProjectThreadAwarenessV2Input } from "@d4research/shared/agentAwareness";
+import { applyOrchestrationV2ThreadVisit, pendingGuestMessageCount } from "@d4research/contracts";
 import { applyThreadPullRequestLinkUpdate } from "../sourceControl/threadPullRequests.ts";
 import { projectTurnItemForWire } from "./WireProjection.ts";
 import * as Stream from "effect/Stream";
-import * as NodeSqliteClient from "@t3tools/shared/nodeSqliteClient";
+import * as NodeSqliteClient from "@d4research/shared/nodeSqliteClient";
 import { makeThreadFind } from "./ThreadFind.ts";
-import { unsentManualContinuationSource } from "@t3tools/shared/orchestrationV2ManualContinuation";
+import { unsentManualContinuationSource } from "@d4research/shared/orchestrationV2ManualContinuation";
 import type {
   OrchestrationV2ThreadLinkMetadata,
   OrchestrationV2SearchThreadInput,
   OrchestrationV2SearchThreadResult,
   OrchestrationV2ThreadHistoryPage,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   latestRootProviderFailure,
   latestUnheldRun,
   runRanAfter,
   threadErrorSummary,
   usageLimitRunPresentedAsLatest,
-} from "@t3tools/shared/orchestrationV2ThreadError";
+} from "@d4research/shared/orchestrationV2ThreadError";
 import { threadPullRequestsOf } from "../sourceControl/threadPullRequests.ts";
 import {
   anchorsModelSwitch,
@@ -53,7 +53,7 @@ import type {
   ProviderThreadId,
   ProviderTurnId,
   RunAttemptId,
-} from "@t3tools/contracts";
+} from "@d4research/contracts";
 import {
   IDLE_COMPACTION_TEXT,
   idleCompactionOf,
@@ -86,12 +86,12 @@ import {
   NodeId,
   ProjectId,
   ProviderInstanceId,
-} from "@t3tools/contracts";
-import { createOrchestrationV2TurnItemVisibility } from "@t3tools/shared/orchestrationV2Timeline";
+} from "@d4research/contracts";
+import { createOrchestrationV2TurnItemVisibility } from "@d4research/shared/orchestrationV2Timeline";
 import {
   deriveBlockedOnThreadWait,
   derivePendingBackgroundWork,
-} from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
+} from "@d4research/shared/orchestrationV2PendingBackgroundWork";
 import * as Context from "effect/Context";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
@@ -101,7 +101,7 @@ import * as Schema from "effect/Schema";
 import * as SqlClient from "effect/sql/SqlClient";
 import type * as Statement from "effect/sql/Statement";
 
-import { MCP_APP_OUTPUT_KEY } from "@t3tools/shared/mcpApp";
+import { MCP_APP_OUTPUT_KEY } from "@d4research/shared/mcpApp";
 import { threadHtmlRenderAttachmentIds } from "../attachmentStore.ts";
 import { DELEGATED_TASK_MESSAGE_CONDITION } from "./delegatedTaskMessage.ts";
 import {
@@ -900,7 +900,7 @@ type ProjectionWindow = Omit<
 };
 
 export class ProjectionStoreV2 extends Context.Service<ProjectionStoreV2, ProjectionStoreV2Shape>()(
-  "t3/orchestration-v2/ProjectionStore/ProjectionStoreV2",
+  "d4research/orchestration-v2/ProjectionStore/ProjectionStoreV2",
 ) {}
 
 // The provider batch owns the writer, so no other write can change these rows before it commits.
@@ -911,7 +911,7 @@ export interface ProviderBatchProjection {
 }
 export class ProviderBatchProjectionState extends Context.Reference<
   ProviderBatchProjection | undefined
->("t3/orchestration-v2/ProjectionStore/ProviderBatchProjectionState", {
+>("d4research/orchestration-v2/ProjectionStore/ProviderBatchProjectionState", {
   defaultValue: () => undefined,
 }) {}
 

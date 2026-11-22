@@ -25,7 +25,7 @@ import {
   localSnoozeTime,
   resolveCustomSnooze,
   type CustomSnoozeInput,
-} from "@t3tools/client-runtime/state/thread-settled";
+} from "@d4research/client-runtime/state/thread-settled";
 import { requireNativeModule } from "expo";
 import { msg, useGT, useMessages } from "gt-react-native";
 import { useEffect, useState } from "react";

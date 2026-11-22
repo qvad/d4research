@@ -1,8 +1,8 @@
 import {
   clampFileAttachmentUploadBytes,
   fileAttachmentTooLargeMessage,
-} from "@t3tools/client-runtime/state/attachments";
-import { errorDisplayMessage } from "@t3tools/client-runtime/errors";
+} from "@d4research/client-runtime/state/attachments";
+import { errorDisplayMessage } from "@d4research/client-runtime/errors";
 import {
   isProviderSendTurnSupportedImageMimeType,
   PROVIDER_SEND_TURN_MAX_ATTACHMENTS,
@@ -11,8 +11,8 @@ import {
   type EnvironmentId,
   type PastedTextAttachmentSource,
   type UploadChatImageAttachment,
-} from "@t3tools/contracts";
-import type { AttachmentUploadStatus } from "@t3tools/client-runtime/state/attachment-uploads";
+} from "@d4research/contracts";
+import type { AttachmentUploadStatus } from "@d4research/client-runtime/state/attachment-uploads";
 import type { DocumentPickerResult } from "expo-document-picker";
 import { msg } from "gt-react-native";
 import { m } from "../i18n/messages";
@@ -22,8 +22,8 @@ import {
   isComposerAttachmentFileRetained,
   resolveOwnedComposerAttachmentFileUri,
 } from "./composerAttachmentFiles";
-import { imageMimeType } from "@t3tools/shared/image";
-import { videoMimeType } from "@t3tools/shared/video";
+import { imageMimeType } from "@d4research/shared/image";
+import { videoMimeType } from "@d4research/shared/video";
 import { fitComposerImage, renderPhoto } from "./composerImageFit";
 import { beginForegroundHandoff } from "./foreground-handoff";
 import { uuidv4 } from "./uuid";

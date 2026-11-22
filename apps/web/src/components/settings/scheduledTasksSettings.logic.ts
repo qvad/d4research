@@ -1,4 +1,4 @@
-import { isListedThreadLineage, isWebhookDedupeTemplate } from "@t3tools/contracts";
+import { isListedThreadLineage, isWebhookDedupeTemplate } from "@d4research/contracts";
 import {
   EnvironmentId,
   MAX_WEBHOOK_DELIVERY_AGE_MINUTES,
@@ -14,23 +14,23 @@ import {
   type ProviderInteractionMode,
   type ServerSettings,
   type ThreadId,
-} from "@t3tools/contracts";
-import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/models";
+} from "@d4research/contracts";
+import type { EnvironmentThreadShell } from "@d4research/client-runtime/state/models";
 import {
   parseMaxDeliveryAge,
   parseWebhookFilterDrafts,
   webhookFilterDrafts,
   webhookFilterDraftsChanged,
   type WebhookFilterDraft,
-} from "@t3tools/client-runtime/scheduled-task-webhook";
-import { scheduleTimeZoneLabel } from "@t3tools/client-runtime/scheduled-task-time-zone";
-import type { TimestampFormat } from "@t3tools/contracts/settings";
+} from "@d4research/client-runtime/scheduled-task-webhook";
+import { scheduleTimeZoneLabel } from "@d4research/client-runtime/scheduled-task-time-zone";
+import type { TimestampFormat } from "@d4research/contracts/settings";
 import { msg } from "gt-react";
 
 import {
   resolveProjectSettings,
   type LegacyProjectSettingsFields,
-} from "@t3tools/shared/projectSettings";
+} from "@d4research/shared/projectSettings";
 import { getActiveLocale, m, type MessageResolver } from "../../i18n/messages";
 import type { ProviderInstanceEntry } from "../../providerInstances";
 import { formatDateTimeTimestamp, formatTimeOfDay } from "../../timestampFormat";
