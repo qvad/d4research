@@ -26,20 +26,46 @@ describe("reloadOnceForChunkLoadError", () => {
     const target = new EventTarget();
     const storage = createStorageStub();
     const reload = vi.fn();
-    const uninstall = installChunkLoadRecovery(target, () => storage, reload);
+    const recovery = installChunkLoadRecovery(target, () => storage, reload);
     const first = new Event("vite:preloadError", { cancelable: true });
     target.dispatchEvent(first);
     expect(first.defaultPrevented).toBe(true);
     expect(reload).toHaveBeenCalledTimes(1);
+    expect(storage.getItem("t3code:chunk-load-reloaded")).toBe("1");
 
     const repeated = new Event("vite:preloadError", { cancelable: true });
     target.dispatchEvent(repeated);
     expect(repeated.defaultPrevented).toBe(false);
     expect(reload).toHaveBeenCalledTimes(1);
 
-    uninstall();
+    recovery.completeStartup();
+    expect(storage.getItem("t3code:chunk-load-reloaded")).toBe("1");
+    recovery.dispose();
     target.dispatchEvent(new Event("vite:preloadError", { cancelable: true }));
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears a recovered startup streak without clearing the lazy chunk build guard", () => {
+    const storage = createStorageStub();
+    const reload = vi.fn();
+    storage.setItem("t3code:chunk-load-reloaded", "1");
+    const target = new EventTarget();
+    const recovery = installChunkLoadRecovery(target, () => storage, reload);
+    recovery.completeStartup();
+    expect(storage.getItem("t3code:chunk-load-reloaded")).toBeNull();
+
+    const first = new Event("vite:preloadError", { cancelable: true });
+    target.dispatchEvent(first);
+    expect(first.defaultPrevented).toBe(true);
+    recovery.dispose();
+
+    const nextBoot = installChunkLoadRecovery(target, () => storage, reload);
+    nextBoot.completeStartup();
+    const repeated = new Event("vite:preloadError", { cancelable: true });
+    target.dispatchEvent(repeated);
+    expect(repeated.defaultPrevented).toBe(false);
+    expect(reload).toHaveBeenCalledTimes(1);
+    nextBoot.dispose();
   });
 
   it("reloads on the first failure and lets the second one surface", () => {

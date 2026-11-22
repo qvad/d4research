@@ -56,6 +56,32 @@ describe("sidebar shift guard", () => {
     expect(list.pressed).toEqual(["B"]);
   });
 
+  it.each([false, true])("accepts a new row away from the pointer (known: %s)", async (known) => {
+    await using screen = await render(null);
+    using list = mountList(screen.container, ["A"]);
+    using _clock = fakeTimers();
+
+    if (known) await userEvent.hover(list.button("A"));
+    list.add("B");
+    list.guard.update();
+    await userEvent.click(list.button("B"));
+    expect(list.pressed).toEqual(["B"]);
+  });
+
+  it("guards a new row that arrives under the pointer", async () => {
+    await using screen = await render(null);
+    using list = mountList(screen.container, ["A"]);
+    using _clock = fakeTimers();
+
+    await userEvent.hover(list.button("A"));
+    list.add("B");
+    const row = list.button("B").closest("li")!;
+    row.parentElement!.prepend(row);
+    list.guard.update();
+    await userEvent.click(list.button("B"));
+    expect(list.pressed).toEqual([]);
+  });
+
   it("keeps rows that did not move, or barely moved, clickable", async () => {
     await using screen = await render(null);
     using list = mountList(screen.container, ["A", "B", "C"]);

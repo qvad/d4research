@@ -39,6 +39,7 @@ export function createSidebarShiftGuard(list: HTMLElement) {
   let tops = readTops(list);
   const movedAt = new WeakMap<Element, number>();
   let lastInputAt = Number.NEGATIVE_INFINITY;
+  let pointer: { x: number; y: number } | null = null;
   // Pointers still down on a dropped press. Only their own release or cancel ends the drop, so
   // a key or another pointer meanwhile cannot hand that press's click to the row.
   const heldDrops = new Set<number>();
@@ -53,6 +54,9 @@ export function createSidebarShiftGuard(list: HTMLElement) {
   const swallow = (event: Event) => {
     event.preventDefault();
     event.stopPropagation();
+  };
+  const onPointerMove = (event: PointerEvent) => {
+    pointer = { x: event.clientX, y: event.clientY };
   };
   const onPointerDown = (event: PointerEvent) => {
     // A new press from the same pointer means its earlier release was missed.
@@ -98,6 +102,7 @@ export function createSidebarShiftGuard(list: HTMLElement) {
   };
 
   // Window capture runs before React and dnd-kit see the press.
+  view?.addEventListener("pointermove", onPointerMove, { capture: true });
   view?.addEventListener("pointerdown", onPointerDown, { capture: true });
   view?.addEventListener("pointerup", onPointerUp, { capture: true });
   view?.addEventListener("pointercancel", onPointerCancel, { capture: true });
@@ -115,6 +120,18 @@ export function createSidebarShiftGuard(list: HTMLElement) {
       for (const [row, top] of next) {
         const previous = tops.get(row);
         if (previous === top) continue;
+        // New rows away from the pointer cannot take a press aimed at another row.
+        if (previous === undefined) {
+          if (pointer === null) continue;
+          const bounds = row.getBoundingClientRect();
+          if (
+            pointer.x < bounds.left ||
+            pointer.x >= bounds.right ||
+            pointer.y < bounds.top ||
+            pointer.y >= bounds.bottom
+          )
+            continue;
+        }
         // A nudge of under half a row, such as a header settling, still leaves the row the pointer
         // aimed at under it.
         if (previous !== undefined && Math.abs(top - previous) * 2 < row.offsetHeight) continue;
@@ -125,6 +142,7 @@ export function createSidebarShiftGuard(list: HTMLElement) {
       tops = next;
     },
     dispose() {
+      view?.removeEventListener("pointermove", onPointerMove, { capture: true });
       view?.removeEventListener("pointerdown", onPointerDown, { capture: true });
       view?.removeEventListener("pointerup", onPointerUp, { capture: true });
       view?.removeEventListener("pointercancel", onPointerCancel, { capture: true });

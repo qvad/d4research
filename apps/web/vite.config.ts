@@ -26,7 +26,6 @@ import { thirdPartyLicensesPlugin } from "../../scripts/lib/third-party-licenses
 
 import { stampPwaServiceWorker } from "./src/pwaServiceWorkerBuild";
 import { warmBundledDevPlugin } from "./vite/warmBundledDev";
-import { formatAppDisplayName, resolveWebAppStageLabel } from "./src/branding.logic";
 
 const repoEnv = loadRepoEnv();
 
@@ -270,28 +269,6 @@ function bundledDevStableNamesPlugin(): Plugin {
   };
 }
 
-// Stamps index.html's title with the name branding.ts resolves once the app
-// loads, so a tab opens on the right channel instead of flashing another's.
-// Desktop swaps in its injected branding from an inline script in index.html.
-function bootstrapTitlePlugin(): Plugin {
-  let development = false;
-  return {
-    name: "t3code:bootstrap-title",
-    configResolved(config) {
-      // The same flag Vite exposes to the app as import.meta.env.DEV.
-      development = !config.isProduction;
-    },
-    transformIndexHtml(html) {
-      const stageLabel = resolveWebAppStageLabel({
-        hostedAppChannel: configuredHostedAppChannel,
-        development,
-      });
-      const title = formatAppDisplayName({ baseName: "T3 Code", stageLabel });
-      return html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
-    },
-  };
-}
-
 // Allow Tailnet hosts for sharing; Tailscale-controlled DNS prevents attacker rebinding.
 const configuredAllowedHosts = (process.env.T3CODE_DEV_ALLOWED_HOSTS ?? "")
   .split(",")
@@ -322,7 +299,6 @@ export default defineConfig(({ command }) => {
     },
     assetsInclude: ["**/*.wasm"],
     plugins: [
-      bootstrapTitlePlugin(),
       devCompressionPlugin(),
       chunkCycleGuardPlugin(),
       builtDev
@@ -425,6 +401,13 @@ export default defineConfig(({ command }) => {
     },
     build: {
       outDir: "dist",
+      modulePreload: {
+        resolveDependencies: (url, dependencies, { hostType }) =>
+          // A failed JS preload is not awaited; let the startup import own its retry.
+          hostType === "js" && /(?:^|\/)main-[^/]+\.js$/.test(url)
+            ? dependencies.filter((dependency) => dependency !== url)
+            : dependencies,
+      },
       // Retain hashed chunks still requested by open tabs after an in-place update.
       emptyOutDir: false,
       manifest: true,

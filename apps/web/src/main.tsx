@@ -7,16 +7,13 @@ import "./index.css";
 import { startAppServices } from "./appInit";
 import { AppRoot } from "./AppRoot";
 import { whenLocaleReady } from "./i18n/runtime";
-import { reloadOnceForChunkLoadError } from "./lib/chunkReloadGuard";
 
 const router = startAppServices();
 
 let reloadScheduled = false;
 window.addEventListener("vite:preloadError", (event) => {
-  if (reloadOnceForChunkLoadError()) {
-    reloadScheduled = true;
-    event.preventDefault();
-  }
+  // Bootstrap owns recovery before main loads and handles this event first.
+  if (event.defaultPrevented) reloadScheduled = true;
 });
 
 const app = <AppRoot router={router} />;
