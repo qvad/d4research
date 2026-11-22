@@ -118,7 +118,10 @@ vi.mock("@d4research/client-runtime/state/server", async (importOriginal) => {
 vi.mock("../../state/threads", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../state/threads")>()),
   environmentThreadShells: { threadShellAtom: () => "shell" },
-  environmentThreadDetails: { pendingRequestsAtom: () => "pending-requests" },
+  environmentThreadDetails: {
+    pendingRequestsAtom: () => "pending-requests",
+    assistantMessageTextAtom: () => "assistant-text",
+  },
   threadEnvironment: {
     ...(await importOriginal<typeof import("../../state/threads")>()).threadEnvironment,
     interruptTurn: { kind: "interrupt" },
@@ -208,7 +211,9 @@ vi.mock("@effect/atom-react", async (importOriginal) => ({
           : null
         : value === "pending-requests"
           ? mocks.pendingRequests
-          : mocks.allowed,
+          : value === "assistant-text"
+            ? null
+            : mocks.allowed,
 }));
 vi.mock("../../state/server", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../state/server")>()),
